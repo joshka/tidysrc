@@ -2,6 +2,7 @@ import type { CollectionEntry } from 'astro:content';
 
 export type PatternEntry = CollectionEntry<'patterns'>;
 export type ConceptEntry = CollectionEntry<'concepts'>;
+export type ProblemEntry = CollectionEntry<'problems'>;
 
 export function patternHref(pattern: PatternEntry | string): string {
   const slug = typeof pattern === 'string' ? pattern : pattern.id;
@@ -13,6 +14,11 @@ export function conceptHref(concept: ConceptEntry | string): string {
   return `/concepts/${slug}/`;
 }
 
+export function problemHref(problem: ProblemEntry | string): string {
+  const slug = typeof problem === 'string' ? problem : problem.id;
+  return `/problems/${slug}/`;
+}
+
 export function sortedPatterns(patterns: PatternEntry[]): PatternEntry[] {
   return [...patterns].sort((left, right) => {
     const statusWeight = statusRank(right.data.status) - statusRank(left.data.status);
@@ -22,6 +28,10 @@ export function sortedPatterns(patterns: PatternEntry[]): PatternEntry[] {
 
     return left.data.title.localeCompare(right.data.title);
   });
+}
+
+export function sortedProblems(problems: ProblemEntry[]): ProblemEntry[] {
+  return [...problems].sort((left, right) => left.data.title.localeCompare(right.data.title));
 }
 
 export function statusRank(status: PatternEntry['data']['status']): number {
@@ -58,3 +68,17 @@ export function patternSearchText(pattern: PatternEntry): string {
     .toLowerCase();
 }
 
+export function problemSearchText(problem: ProblemEntry): string {
+  return [
+    problem.data.title,
+    problem.data.summary,
+    problem.data.impact,
+    problem.data.signals.join(' '),
+    problem.data.diagnosticQuestions.join(' '),
+    problem.data.approach.join(' '),
+    problem.data.relatedPatterns.join(' '),
+    problem.data.relatedConcepts.join(' '),
+  ]
+    .join(' ')
+    .toLowerCase();
+}

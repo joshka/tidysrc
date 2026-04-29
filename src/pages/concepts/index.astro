@@ -10,12 +10,18 @@ const concepts = await getCollection('concepts');
 
 <BaseLayout title="Concepts" description="Deeper TidySrc concepts behind the pattern catalog.">
   <section class="section shell">
-    <p class="eyebrow">Concepts</p>
-    <h1>Deeper ideas behind the concise pattern entries.</h1>
-    <p class="lede">
-      Concepts carry the teaching depth that would otherwise bloat every pattern page. Use them when
-      you want the why, not just the review-comment form.
-    </p>
+    <div class="page-hero">
+      <div class="page-hero-main">
+        <p class="eyebrow">Concepts</p>
+        <h1>Deeper ideas behind the concise pattern entries.</h1>
+      </div>
+      <div class="page-hero-side">
+        <p class="lede">
+          Concepts carry the teaching depth that would otherwise bloat every pattern page. Use them
+          when you want the why, not just the review-comment form.
+        </p>
+      </div>
+    </div>
   </section>
 
   <section class="section-tight shell grid grid-3">
@@ -48,4 +54,3 @@ const concepts = await getCollection('concepts');
     color: var(--muted);
   }
 </style>
-

@@ -1,23 +1,35 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { references } from '../../data/catalog';
+
+const slug = (value: string) =>
+  value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
 ---
 
 <BaseLayout title="References" description="Influences and adjacent sources for TidySrc.">
   <section class="section shell">
-    <p class="eyebrow">References</p>
-    <h1>Influences, not authorities.</h1>
-    <p class="lede">
-      TidySrc borrows from refactoring catalogs, pattern languages, Rust guidance, legacy-code
-      practice, and agent workflow experience. These references are useful context, not a hierarchy
-      of rules.
-    </p>
+    <div class="page-hero">
+      <div class="page-hero-main">
+        <p class="eyebrow">References</p>
+        <h1>Influences, not authorities.</h1>
+      </div>
+      <div class="page-hero-side">
+        <p class="lede">
+          TidySrc borrows from refactoring catalogs, pattern languages, Rust guidance, legacy-code
+          practice, and agent workflow experience. These references are useful context, not a
+          hierarchy of rules.
+        </p>
+      </div>
+    </div>
   </section>
 
   <section class="section-tight shell grid">
     {
       references.map((reference) => (
-        <a class="panel reference" href={reference.href}>
+        <a class="panel reference" href={reference.href} id={slug(reference.title)}>
           <h2>{reference.title}</h2>
           <p>{reference.note}</p>
           <span>{reference.href}</span>
@@ -50,4 +62,3 @@ import { references } from '../../data/catalog';
     font-size: 0.84rem;
   }
 </style>
-

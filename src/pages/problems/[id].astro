@@ -1,0 +1,348 @@
+---
+import { getCollection } from 'astro:content';
+
+import Chips from '../../components/Chips.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import {
+  type ConceptEntry,
+  type PatternEntry,
+  conceptHref,
+  patternHref,
+  problemHref,
+} from '../../lib/catalog';
+
+export async function getStaticPaths() {
+  const problems = await getCollection('problems');
+  return problems.map((problem) => ({
+    params: { id: problem.id },
+    props: { problem },
+  }));
+}
+
+const { problem } = Astro.props;
+const patterns = await getCollection('patterns');
+const concepts = await getCollection('concepts');
+const allProblems = await getCollection('problems');
+
+const patternById = new Map(patterns.map((pattern) => [pattern.id, pattern]));
+const conceptById = new Map(concepts.map((concept) => [concept.id, concept]));
+const isPatternEntry = (pattern: PatternEntry | undefined): pattern is PatternEntry =>
+  pattern !== undefined;
+const isConceptEntry = (concept: ConceptEntry | undefined): concept is ConceptEntry =>
+  concept !== undefined;
+
+const relatedPatterns = problem.data.relatedPatterns
+  .map((id) => patternById.get(id))
+  .filter(isPatternEntry);
+const relatedConcepts = problem.data.relatedConcepts
+  .map((id) => conceptById.get(id))
+  .filter(isConceptEntry);
+const adjacentProblems = allProblems
+  .filter((entry) => entry.id !== problem.id)
+  .filter((entry) =>
+    entry.data.relatedPatterns.some((patternId) => problem.data.relatedPatterns.includes(patternId)),
+  )
+  .slice(0, 3);
+---
+
+<BaseLayout title={problem.data.title} description={problem.data.summary}>
+  <section class="section shell">
+    <div class="page-hero">
+      <div class="page-hero-main">
+        <p class="eyebrow">Problem</p>
+        <h1>{problem.data.title}</h1>
+      </div>
+      <div class="page-hero-side">
+        <p class="lede">{problem.data.summary}</p>
+        <a class="button" href="/problems/">Problem index</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section-tight shell problem-detail">
+    <article class="problem-main">
+      <section class="panel impact-panel">
+        <p class="eyebrow">Why it matters</p>
+        <p>{problem.data.impact}</p>
+      </section>
+
+      <section class="panel checklist-panel">
+        <div class="section-label">
+          <p class="eyebrow">Signals</p>
+          <h2>What you are seeing</h2>
+        </div>
+        <ul>
+          {problem.data.signals.map((signal) => <li>{signal}</li>)}
+        </ul>
+      </section>
+
+      <section class="panel question-panel">
+        <div class="section-label">
+          <p class="eyebrow">Diagnosis</p>
+          <h2>Questions to ask before choosing a pattern</h2>
+        </div>
+        <ol>
+          {problem.data.diagnosticQuestions.map((question) => <li>{question}</li>)}
+        </ol>
+      </section>
+
+      <section class="panel approach-panel">
+        <div class="section-label">
+          <p class="eyebrow">Approach</p>
+          <h2>How to work the problem down</h2>
+        </div>
+        <div class="approach-grid">
+          {
+            problem.data.approach.map((step, index) => (
+              <div>
+                <span>{String(index + 1).padStart(2, '0')}</span>
+                <p>{step}</p>
+              </div>
+            ))
+          }
+        </div>
+      </section>
+
+      <section class="panel pattern-panel">
+        <div class="section-label">
+          <p class="eyebrow">Patterns</p>
+          <h2>Moves that usually fit</h2>
+        </div>
+        <div class="pattern-grid">
+          {
+            relatedPatterns.map((pattern) => (
+              <a class="pattern-card" href={patternHref(pattern)}>
+                <Chips items={pattern.data.tags.slice(0, 2)} status={pattern.data.status} />
+                <h3>{pattern.data.title}</h3>
+                <p>{pattern.data.summary}</p>
+              </a>
+            ))
+          }
+        </div>
+      </section>
+    </article>
+
+    <aside class="problem-rail">
+      <section class="panel rail-panel">
+        <h2>Concept anchors</h2>
+        <div class="rail-links">
+          {
+            relatedConcepts.map((concept) => (
+              <a href={conceptHref(concept)}>
+                <span>{concept.data.title}</span>
+                <small>{concept.data.summary}</small>
+              </a>
+            ))
+          }
+        </div>
+      </section>
+
+      <section class="panel rail-panel">
+        <h2>Nearby problems</h2>
+        <div class="rail-links compact">
+          {
+            adjacentProblems.map((entry) => (
+              <a href={problemHref(entry)}>
+                <span>{entry.data.title}</span>
+              </a>
+            ))
+          }
+        </div>
+      </section>
+    </aside>
+  </section>
+</BaseLayout>
+
+<style>
+  .problem-detail {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: 1rem;
+    align-items: start;
+  }
+
+  .problem-main {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .problem-rail {
+    position: sticky;
+    top: 88px;
+    display: grid;
+    gap: 1rem;
+  }
+
+  .impact-panel {
+    border-color: var(--border-strong);
+    background: var(--surface-strong);
+    color: var(--strong-text);
+  }
+
+  .impact-panel .eyebrow {
+    color: var(--accent);
+  }
+
+  .impact-panel p:last-child {
+    margin-bottom: 0;
+    font-size: 1.08rem;
+  }
+
+  .section-label {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 1rem;
+    border-bottom: 2px solid var(--border);
+    margin: -1rem -1rem 1rem;
+    padding: 1rem;
+  }
+
+  .section-label h2 {
+    font-size: clamp(1.25rem, 2vw, 1.65rem);
+    text-transform: uppercase;
+  }
+
+  .checklist-panel ul,
+  .question-panel ol {
+    display: grid;
+    gap: 0.75rem;
+    margin: 0;
+    padding-left: 1.25rem;
+  }
+
+  .checklist-panel li,
+  .question-panel li {
+    padding-left: 0.25rem;
+  }
+
+  .approach-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0;
+    border: 2px solid var(--border);
+  }
+
+  .approach-grid div {
+    display: grid;
+    gap: 0.6rem;
+    min-height: 150px;
+    padding: 1rem;
+  }
+
+  .approach-grid div:nth-child(odd) {
+    border-right: 2px solid var(--border);
+  }
+
+  .approach-grid div:nth-child(n + 3) {
+    border-top: 2px solid var(--border);
+  }
+
+  .approach-grid span {
+    color: var(--accent-strong);
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+  }
+
+  .approach-grid p {
+    margin: 0;
+    color: var(--muted);
+  }
+
+  .pattern-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+
+  .pattern-card {
+    display: grid;
+    align-content: start;
+    gap: 0.65rem;
+    min-height: 190px;
+    border: 2px solid var(--border);
+    background: var(--surface);
+    color: inherit;
+    padding: 0.9rem;
+    text-decoration: none;
+  }
+
+  .pattern-card:hover {
+    background: var(--accent-soft);
+  }
+
+  .pattern-card h3 {
+    text-transform: uppercase;
+  }
+
+  .pattern-card p {
+    color: var(--muted);
+  }
+
+  .rail-panel {
+    display: grid;
+    gap: 0.85rem;
+  }
+
+  .rail-panel h2 {
+    font-size: 0.85rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .rail-links {
+    display: grid;
+    gap: 0.6rem;
+  }
+
+  .rail-links a {
+    display: grid;
+    gap: 0.25rem;
+    border: 1px solid var(--border);
+    background: var(--surface-muted);
+    color: var(--text);
+    padding: 0.65rem;
+    text-decoration: none;
+  }
+
+  .rail-links a:hover {
+    background: var(--accent);
+    color: var(--accent-text);
+  }
+
+  .rail-links small {
+    color: var(--muted);
+    font-size: 0.82rem;
+  }
+
+  .rail-links a:hover small {
+    color: var(--accent-text);
+  }
+
+  .rail-links.compact a {
+    font-weight: 700;
+  }
+
+  @media (max-width: 900px) {
+    .problem-detail,
+    .approach-grid,
+    .pattern-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .problem-rail {
+      position: static;
+    }
+
+    .approach-grid div,
+    .approach-grid div:nth-child(odd),
+    .approach-grid div:nth-child(n + 3) {
+      border: 0;
+    }
+
+    .approach-grid div + div {
+      border-top: 2px solid var(--border);
+    }
+  }
+</style>

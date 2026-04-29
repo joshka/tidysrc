@@ -32,16 +32,22 @@ allow-registry = ["https://github.com/rust-lang/crates.io-index"]`;
 
 <BaseLayout title="Configs" description="Reusable TidySrc config defaults.">
   <section class="section shell">
-    <p class="eyebrow">Configs</p>
-    <h1>Reusable defaults that match the pattern language.</h1>
-    <p class="lede">
-      These examples are practical starting points, not universal law. Copy them when they fit the
-      project, and prefer repo-local conventions when they are deliberate.
-    </p>
+    <div class="page-hero">
+      <div class="page-hero-main">
+        <p class="eyebrow">Configs</p>
+        <h1>Reusable defaults that match the pattern language.</h1>
+      </div>
+      <div class="page-hero-side">
+        <p class="lede">
+          These examples are practical starting points, not universal law. Copy them when they fit
+          the project, and prefer repo-local conventions when they are deliberate.
+        </p>
+      </div>
+    </div>
   </section>
 
-  <section class="section-tight narrow config-stack">
-    <article>
+  <section class="section-tight shell config-stack">
+    <article class="config-card">
       <h2>rustfmt.toml</h2>
       <p>
         Rust formatting defaults favor 2024 edition syntax, shorthand initialization, readable
@@ -50,7 +56,7 @@ allow-registry = ["https://github.com/rust-lang/crates.io-index"]`;
       <Code code={rustfmtToml} lang="toml" meta={'title="rustfmt.toml"'} />
     </article>
 
-    <article>
+    <article class="config-card">
       <h2>clippy.toml</h2>
       <p>
         This setting avoids treating exported API compatibility as a blanket blocker for local
@@ -59,7 +65,7 @@ allow-registry = ["https://github.com/rust-lang/crates.io-index"]`;
       <Code code={clippyToml} lang="toml" meta={'title="clippy.toml"'} />
     </article>
 
-    <article>
+    <article class="config-card">
       <h2>deny.toml</h2>
       <p>
         A conservative license and source-policy starting point. Pull this in deliberately rather
@@ -68,7 +74,7 @@ allow-registry = ["https://github.com/rust-lang/crates.io-index"]`;
       <Code code={denyToml} lang="toml" meta={'title="deny.toml"'} />
     </article>
 
-    <article>
+    <article class="config-card">
       <h2>markdownlint-cli2.yaml</h2>
       <p>
         Documentation should be readable in review diffs. The default prose width is 100
@@ -82,7 +88,18 @@ allow-registry = ["https://github.com/rust-lang/crates.io-index"]`;
 <style>
   .config-stack {
     display: grid;
-    gap: 2rem;
+    gap: 1rem;
+  }
+
+  .config-card {
+    border: 2px solid var(--border);
+    background: var(--surface);
+    padding: clamp(1rem, 2.5vw, 1.5rem);
+  }
+
+  .config-card h2 {
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 0.5rem;
+    text-transform: uppercase;
   }
 </style>
-

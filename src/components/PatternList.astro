@@ -33,6 +33,7 @@ const sorted = sortedPatterns(patterns);
           {pattern.data.audiences.map((audience) => <span class="chip">{audience}</span>)}
           {pattern.data.languages.map((language) => <span class="chip">{language}</span>)}
         </div>
+        <span class="read-docs">Read pattern</span>
       </a>
     ))
   }
@@ -54,10 +55,24 @@ const sorted = sortedPatterns(patterns);
 
   .row-head h2 {
     font-size: 1.1rem;
+    text-transform: uppercase;
   }
 
   .pattern-row p {
     color: var(--muted);
+  }
+
+  .read-docs {
+    display: inline-flex;
+    width: max-content;
+    border-top: 2px solid var(--border);
+    margin-top: 0.9rem;
+    padding-top: 0.55rem;
+    color: var(--accent-strong);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
   }
 
   .empty-state {
@@ -67,4 +82,3 @@ const sorted = sortedPatterns(patterns);
     color: var(--muted);
   }
 </style>
-

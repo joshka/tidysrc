@@ -8,9 +8,11 @@ const { label, text } = Astro.props;
 ---
 
 <div class="copy-box" data-copy-box>
-  <strong>{label}</strong>
+  <div class="copy-box-header">
+    <strong>{label}</strong>
+    <button class="button" type="button" data-copy-button data-copy-text={text}>Copy</button>
+  </div>
   <pre><code>{text}</code></pre>
-  <button class="button" type="button" data-copy-button data-copy-text={text}>Copy</button>
 </div>
 
 <script>
@@ -27,3 +29,32 @@ const { label, text } = Astro.props;
   }
 </script>
 
+<style>
+  .copy-box-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .copy-box strong {
+    font-size: clamp(1.15rem, 2vw, 1.5rem);
+    line-height: 1.2;
+  }
+
+  .copy-box pre {
+    font-size: clamp(1rem, 1.8vw, 1.35rem);
+    line-height: 1.55;
+  }
+
+  .copy-box .button {
+    flex: none;
+  }
+
+  @media (max-width: 560px) {
+    .copy-box-header {
+      align-items: stretch;
+      flex-direction: column;
+    }
+  }
+</style>

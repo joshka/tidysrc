@@ -14,49 +14,208 @@ type Props = {
 };
 
 const { examples } = Astro.props;
+const languageNames = new Map([
+  ['go', 'Go'],
+  ['java', 'Java'],
+  ['js', 'JavaScript'],
+  ['javascript', 'JavaScript'],
+  ['rs', 'Rust'],
+  ['rust', 'Rust'],
+  ['ts', 'TypeScript'],
+  ['typescript', 'TypeScript'],
+]);
+const languages = [...new Set(examples.map((example) => example.language))];
+const hasTabs = languages.length > 1;
+const tabId = `code-tabs-${examples
+  .map((example) => `${example.language}-${example.title}`)
+  .join('-')
+  .toLowerCase()
+  .replace(/[^a-z0-9]+/g, '-')
+  .replace(/^-|-$/g, '')}`;
 ---
 
-<div class="examples">
-  {
-    examples.map((example) => (
-      <article class="example">
-        <div class="example-header">
-          <h3>{example.title}</h3>
-          <span>{example.path}</span>
+{
+  hasTabs ? (
+    <div class="code-tabs" data-code-tabs>
+      <div class="code-tab-list" role="tablist" aria-label="Code language">
+        {languages.map((language, index) => (
+          <button
+            aria-controls={`${tabId}-${language}`}
+            aria-selected={index === 0 ? 'true' : 'false'}
+            class="code-tab"
+            data-code-tab={language}
+            id={`${tabId}-${language}-tab`}
+            role="tab"
+            type="button"
+          >
+            {languageNames.get(language) ?? language}
+          </button>
+        ))}
+      </div>
+      {languages.map((language, index) => (
+        <div
+          aria-labelledby={`${tabId}-${language}-tab`}
+          data-code-panel={language}
+          hidden={index !== 0}
+          id={`${tabId}-${language}`}
+          role="tabpanel"
+        >
+          <div class="examples">
+            {examples
+              .filter((example) => example.language === language)
+              .map((example) => (
+                <article class="example">
+                  <div class="example-header">
+                    <h3>{example.title}</h3>
+                    <span>{example.path}</span>
+                  </div>
+                  {example.note && <p class="example-note">{example.note}</p>}
+                  <Code code={example.code} lang={example.language} meta={`title="${example.path}"`} />
+                </article>
+              ))}
+          </div>
         </div>
-        {example.note && <p>{example.note}</p>}
-        <Code code={example.code} lang={example.language} meta={`title="${example.path}"`} />
-      </article>
-    ))
-  }
-</div>
+      ))}
+    </div>
+  ) : (
+    <div class="examples">
+      {examples.map((example) => (
+        <article class="example">
+          <div class="example-header">
+            <h3>{example.title}</h3>
+            <span>{example.path}</span>
+          </div>
+          {example.note && <p class="example-note">{example.note}</p>}
+          <Code code={example.code} lang={example.language} meta={`title="${example.path}"`} />
+        </article>
+      ))}
+    </div>
+  )
+}
 
-<style>
+<script>
+  for (const tabs of document.querySelectorAll<HTMLElement>('[data-code-tabs]')) {
+    const buttons = [...tabs.querySelectorAll<HTMLButtonElement>('[data-code-tab]')];
+    const panels = [...tabs.querySelectorAll<HTMLElement>('[data-code-panel]')];
+
+    for (const button of buttons) {
+      button.addEventListener('click', () => {
+        const language = button.dataset.codeTab;
+        for (const candidate of buttons) {
+          candidate.setAttribute('aria-selected', String(candidate === button));
+        }
+        for (const panel of panels) {
+          panel.hidden = panel.dataset.codePanel !== language;
+        }
+      });
+    }
+  }
+</script>
+
+<style is:global>
+  .code-tabs {
+    display: grid;
+    gap: 1rem;
+    min-width: 0;
+  }
+
+  .code-tab-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .code-tab {
+    appearance: none;
+    border: 2px solid var(--border);
+    border-radius: 0;
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    padding: 0.45rem 0.7rem;
+    text-transform: uppercase;
+  }
+
+  .code-tab[aria-selected='true'] {
+    background: var(--accent);
+    color: var(--accent-text);
+  }
+
+  [role='tabpanel'] {
+    min-width: 0;
+  }
+
   .examples {
     display: grid;
     gap: 1.25rem;
+    min-width: 0;
   }
 
   .example {
     display: grid;
     gap: 0.75rem;
+    min-width: 0;
   }
 
   .example-header {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
     gap: 0.5rem;
   }
 
   .example-header h3 {
     margin: 0;
+    min-width: 0;
   }
 
   .example-header span {
     color: var(--muted);
     font-family: var(--font-mono);
     font-size: 0.86rem;
+    overflow-wrap: anywhere;
+    text-align: right;
+  }
+
+  .example-note {
+    border: 2px solid var(--border);
+    background: var(--surface-muted);
+    margin: 0;
+    padding: 0.75rem;
+  }
+
+  .example .expressive-code {
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .example .expressive-code figure.frame {
+    max-width: 100%;
+  }
+
+  .example .expressive-code pre {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  .example .expressive-code .ec-line,
+  .example .expressive-code .code {
+    inline-size: auto;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+  }
+
+  @media (max-width: 700px) {
+    .example-header {
+      grid-template-columns: 1fr;
+    }
+
+    .example-header span {
+      text-align: left;
+    }
   }
 </style>
-
