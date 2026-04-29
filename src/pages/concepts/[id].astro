@@ -1,0 +1,91 @@
+---
+import { getCollection } from 'astro:content';
+
+import Chips from '../../components/Chips.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { patternHref } from '../../lib/catalog';
+
+export async function getStaticPaths() {
+  const concepts = await getCollection('concepts');
+  return concepts.map((concept) => ({ params: { id: concept.id }, props: { concept } }));
+}
+
+const { concept } = Astro.props;
+const patterns = await getCollection('patterns');
+const patternById = new Map(patterns.map((entry) => [entry.id, entry]));
+---
+
+<BaseLayout title={concept.data.title} description={concept.data.summary}>
+  <section class="section narrow">
+    <p class="eyebrow">Concept</p>
+    <h1>{concept.data.title}</h1>
+    <p class="lede">{concept.data.summary}</p>
+    <Chips items={concept.data.tags} />
+  </section>
+
+  <section class="section-tight shell page-grid">
+    <article class="article">
+      {
+        concept.data.sections.map((section) => (
+          <section id={section.title.toLowerCase().replaceAll(' ', '-')}>
+            <h2>{section.title}</h2>
+            {section.body.map((paragraph) => <p>{paragraph}</p>)}
+          </section>
+        ))
+      }
+
+      <section id="patterns">
+        <h2>Related Patterns</h2>
+        <div class="related-grid">
+          {
+            concept.data.relatedPatterns.map((id) => {
+              const pattern = patternById.get(id);
+              return pattern ? (
+                <a class="panel" href={patternHref(pattern)}>
+                  <strong>{pattern.data.title}</strong>
+                  <span>{pattern.data.summary}</span>
+                </a>
+              ) : null;
+            })
+          }
+        </div>
+      </section>
+    </article>
+
+    <nav class="toc" aria-label="On this page">
+      {concept.data.sections.map((section) => (
+        <a href={`#${section.title.toLowerCase().replaceAll(' ', '-')}`}>{section.title}</a>
+      ))}
+      <a href="#patterns">Related Patterns</a>
+    </nav>
+  </section>
+</BaseLayout>
+
+<style>
+  .article {
+    display: grid;
+    gap: 2rem;
+    max-width: 800px;
+  }
+
+  .article section {
+    scroll-margin-top: 90px;
+  }
+
+  .related-grid {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .related-grid a {
+    display: grid;
+    gap: 0.25rem;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .related-grid span {
+    color: var(--muted);
+  }
+</style>
+

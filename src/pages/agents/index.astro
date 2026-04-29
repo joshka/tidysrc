@@ -1,0 +1,77 @@
+---
+import { getCollection } from 'astro:content';
+
+import CopyBox from '../../components/CopyBox.astro';
+import PatternList from '../../components/PatternList.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const patterns = await getCollection('patterns');
+const agentPatterns = patterns.filter((pattern) => pattern.data.tags.includes('agent-guidance'));
+const baselineInstruction = `Follow the repository's local instructions first.
+
+When the project is silent, prefer small source changes that reduce reader burden,
+protect observable behavior, avoid premature architecture, and run the smallest
+trustworthy verification before claiming the work is done.`;
+---
+
+<BaseLayout title="Agents" description="TidySrc guidance for coding agents.">
+  <section class="section shell">
+    <p class="eyebrow">Agent guidance</p>
+    <h1>Short operating rules for coding agents.</h1>
+    <p class="lede">
+      TidySrc is useful to agents when the guidance is explicit, local, and easy to copy. This page
+      is the consolidated surface; pattern pages carry specific snippets.
+    </p>
+  </section>
+
+  <section class="section-tight shell agent-grid">
+    <div class="main-column">
+      <CopyBox label="Baseline agent instruction" text={baselineInstruction} />
+
+      <section class="panel">
+        <h2>Operational Defaults</h2>
+        <ul>
+          <li>Read repo-local instructions before applying general TidySrc guidance.</li>
+          <li>Make the smallest coherent change that satisfies the request.</li>
+          <li>Prefer observable behavior tests over private implementation tests.</li>
+          <li>Do not invent architecture from one or two local examples.</li>
+          <li>Report the verification that actually ran.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Agent-Relevant Patterns</h2>
+        <PatternList patterns={agentPatterns} />
+      </section>
+    </div>
+
+    <aside class="panel">
+      <h2>Machine-readable surfaces</h2>
+      <p>
+        The prototype includes <a href="/llms.txt">llms.txt</a> as a compact summary for tools.
+        Future versions can add generated pattern packs by tag or audience.
+      </p>
+    </aside>
+  </section>
+</BaseLayout>
+
+<style>
+  .agent-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 280px;
+    gap: 1rem;
+    align-items: start;
+  }
+
+  .main-column {
+    display: grid;
+    gap: 1.5rem;
+  }
+
+  @media (max-width: 820px) {
+    .agent-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+

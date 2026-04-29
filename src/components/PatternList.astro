@@ -1,0 +1,70 @@
+---
+import type { PatternEntry } from '../lib/catalog';
+import { patternHref, patternSearchText, sortedPatterns } from '../lib/catalog';
+import Chips from './Chips.astro';
+
+type Props = {
+  patterns: PatternEntry[];
+};
+
+const { patterns } = Astro.props;
+const sorted = sortedPatterns(patterns);
+---
+
+<div class="catalog-list" data-catalog-list>
+  {
+    sorted.map((pattern) => (
+      <a
+        class="pattern-row"
+        href={patternHref(pattern)}
+        data-pattern-row
+        data-search={patternSearchText(pattern)}
+        data-tags={pattern.data.tags.join(' ')}
+        data-status={pattern.data.status}
+        data-languages={pattern.data.languages.join(' ')}
+        data-audiences={pattern.data.audiences.join(' ')}
+      >
+        <div class="row-head">
+          <h2>{pattern.data.title}</h2>
+          <Chips items={pattern.data.tags.slice(0, 4)} status={pattern.data.status} />
+        </div>
+        <p>{pattern.data.summary}</p>
+        <div class="meta-line">
+          {pattern.data.audiences.map((audience) => <span class="chip">{audience}</span>)}
+          {pattern.data.languages.map((language) => <span class="chip">{language}</span>)}
+        </div>
+      </a>
+    ))
+  }
+  <p class="empty-state" data-empty-state hidden>No patterns match the current filters.</p>
+</div>
+
+<style>
+  .catalog-list {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .row-head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+
+  .row-head h2 {
+    font-size: 1.1rem;
+  }
+
+  .pattern-row p {
+    color: var(--muted);
+  }
+
+  .empty-state {
+    border: 1px dashed var(--border-strong);
+    border-radius: 8px;
+    padding: 1.5rem;
+    color: var(--muted);
+  }
+</style>
+

@@ -1,0 +1,53 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { references } from '../../data/catalog';
+---
+
+<BaseLayout title="References" description="Influences and adjacent sources for TidySrc.">
+  <section class="section shell">
+    <p class="eyebrow">References</p>
+    <h1>Influences, not authorities.</h1>
+    <p class="lede">
+      TidySrc borrows from refactoring catalogs, pattern languages, Rust guidance, legacy-code
+      practice, and agent workflow experience. These references are useful context, not a hierarchy
+      of rules.
+    </p>
+  </section>
+
+  <section class="section-tight shell grid">
+    {
+      references.map((reference) => (
+        <a class="panel reference" href={reference.href}>
+          <h2>{reference.title}</h2>
+          <p>{reference.note}</p>
+          <span>{reference.href}</span>
+        </a>
+      ))
+    }
+  </section>
+</BaseLayout>
+
+<style>
+  .reference {
+    display: grid;
+    gap: 0.35rem;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .reference h2 {
+    font-size: 1.1rem;
+  }
+
+  .reference p,
+  .reference span {
+    color: var(--muted);
+  }
+
+  .reference span {
+    overflow-wrap: anywhere;
+    font-family: var(--font-mono);
+    font-size: 0.84rem;
+  }
+</style>
+

@@ -1,0 +1,62 @@
+---
+import { Code } from 'astro-expressive-code/components';
+
+type Example = {
+  title: string;
+  path: string;
+  language: string;
+  code: string;
+  note?: string;
+};
+
+type Props = {
+  examples: Example[];
+};
+
+const { examples } = Astro.props;
+---
+
+<div class="examples">
+  {
+    examples.map((example) => (
+      <article class="example">
+        <div class="example-header">
+          <h3>{example.title}</h3>
+          <span>{example.path}</span>
+        </div>
+        {example.note && <p>{example.note}</p>}
+        <Code code={example.code} lang={example.language} meta={`title="${example.path}"`} />
+      </article>
+    ))
+  }
+</div>
+
+<style>
+  .examples {
+    display: grid;
+    gap: 1.25rem;
+  }
+
+  .example {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .example-header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .example-header h3 {
+    margin: 0;
+  }
+
+  .example-header span {
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.86rem;
+  }
+</style>
+

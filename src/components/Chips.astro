@@ -1,0 +1,14 @@
+---
+type Props = {
+  items: string[];
+  status?: string;
+};
+
+const { items, status } = Astro.props;
+---
+
+<div class="chip-list">
+  {status && <span class={`chip status-${status}`}>{status}</span>}
+  {items.map((item) => <span class="chip">{item}</span>)}
+</div>
+

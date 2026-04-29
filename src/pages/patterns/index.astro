@@ -1,0 +1,157 @@
+---
+import { getCollection } from 'astro:content';
+
+import PatternList from '../../components/PatternList.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { allLanguages, allTags } from '../../lib/catalog';
+
+const patterns = await getCollection('patterns');
+const tags = allTags(patterns);
+const languages = allLanguages(patterns);
+---
+
+<BaseLayout title="Patterns" description="Searchable TidySrc pattern catalog.">
+  <section class="section shell">
+    <p class="eyebrow">Pattern catalog</p>
+    <h1>Short, addressable patterns for source change.</h1>
+    <p class="lede">
+      Search by pattern name, problem, tag, audience, or language. Each pattern is designed to be
+      useful as a review link, an agent instruction, and a learning anchor.
+    </p>
+  </section>
+
+  <section class="section-tight shell catalog-layout">
+    <aside class="filters panel" aria-label="Pattern filters">
+      <label>
+        Search
+        <input data-catalog-search type="search" placeholder="legacy tests, guard, Rust" />
+      </label>
+
+      <label>
+        Status
+        <select data-catalog-filter="status">
+          <option value="">Any status</option>
+          <option value="stable">Stable</option>
+          <option value="draft">Draft</option>
+          <option value="seed">Seed</option>
+        </select>
+      </label>
+
+      <label>
+        Tag
+        <select data-catalog-filter="tags">
+          <option value="">Any tag</option>
+          {tags.map((tag) => <option value={tag}>{tag}</option>)}
+        </select>
+      </label>
+
+      <label>
+        Language
+        <select data-catalog-filter="languages">
+          <option value="">Any language</option>
+          {languages.map((language) => <option value={language}>{language}</option>)}
+        </select>
+      </label>
+
+      <label>
+        Audience
+        <select data-catalog-filter="audiences">
+          <option value="">Any audience</option>
+          <option value="reviewers">Reviewers</option>
+          <option value="agents">Agents</option>
+          <option value="learners">Learners</option>
+        </select>
+      </label>
+    </aside>
+
+    <PatternList patterns={patterns} />
+  </section>
+</BaseLayout>
+
+<script>
+  const search = document.querySelector<HTMLInputElement>('[data-catalog-search]');
+  const filters = Array.from(document.querySelectorAll<HTMLSelectElement>('[data-catalog-filter]'));
+  const rows = Array.from(document.querySelectorAll<HTMLElement>('[data-pattern-row]'));
+  const empty = document.querySelector<HTMLElement>('[data-empty-state]');
+  const params = new URLSearchParams(window.location.search);
+
+  if (search && params.has('q')) {
+    search.value = params.get('q') ?? '';
+  }
+
+  function applyFilters() {
+    const query = search?.value.trim().toLowerCase() ?? '';
+    let visible = 0;
+
+    for (const row of rows) {
+      const matchesQuery = !query || row.dataset.search?.includes(query);
+      const matchesFilters = filters.every((filter) => {
+        const value = filter.value;
+        const key = filter.dataset.catalogFilter;
+        return !value || row.dataset[key ?? '']?.split(' ').includes(value);
+      });
+
+      const show = Boolean(matchesQuery && matchesFilters);
+      row.hidden = !show;
+      if (show) {
+        visible += 1;
+      }
+    }
+
+    if (empty) {
+      empty.hidden = visible > 0;
+    }
+  }
+
+  search?.addEventListener('input', applyFilters);
+  for (const filter of filters) {
+    filter.addEventListener('change', applyFilters);
+  }
+  applyFilters();
+</script>
+
+<style>
+  .catalog-layout {
+    display: grid;
+    grid-template-columns: 250px minmax(0, 1fr);
+    gap: 1rem;
+    align-items: start;
+  }
+
+  .filters {
+    position: sticky;
+    top: 88px;
+    display: grid;
+    gap: 0.85rem;
+  }
+
+  .filters label {
+    display: grid;
+    gap: 0.3rem;
+    color: var(--muted);
+    font-size: 0.9rem;
+    font-weight: 700;
+  }
+
+  .filters input,
+  .filters select {
+    width: 100%;
+    border: 1px solid var(--border-strong);
+    border-radius: 6px;
+    padding: 0.55rem 0.6rem;
+    background: var(--surface);
+    color: var(--text);
+    font: inherit;
+  }
+
+  @media (max-width: 820px) {
+    .catalog-layout {
+      grid-template-columns: 1fr;
+    }
+
+    .filters {
+      position: static;
+    }
+  }
+</style>
+

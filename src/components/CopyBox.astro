@@ -1,0 +1,29 @@
+---
+type Props = {
+  label: string;
+  text: string;
+};
+
+const { label, text } = Astro.props;
+---
+
+<div class="copy-box" data-copy-box>
+  <strong>{label}</strong>
+  <pre><code>{text}</code></pre>
+  <button class="button" type="button" data-copy-button data-copy-text={text}>Copy</button>
+</div>
+
+<script>
+  for (const button of document.querySelectorAll<HTMLButtonElement>('[data-copy-button]')) {
+    button.addEventListener('click', async () => {
+      const text = button.dataset.copyText ?? '';
+      await navigator.clipboard.writeText(text);
+      const previous = button.textContent;
+      button.textContent = 'Copied';
+      window.setTimeout(() => {
+        button.textContent = previous;
+      }, 1200);
+    });
+  }
+</script>
+

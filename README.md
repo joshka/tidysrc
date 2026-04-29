@@ -1,45 +1,36 @@
-# Astro Starter Kit: Minimal
+# TidySrc
+
+TidySrc is a standalone pattern language for making source code easier to change.
+
+This prototype uses Astro content collections, a searchable pattern catalog, concise pattern pages,
+concept anchors, agent guidance, reusable config examples, and code examples rendered with
+Expressive Code.
+
+## Development
+
+This repo uses mise and pnpm.
 
 ```sh
-pnpm create astro@latest -- --template minimal
+mise install
+pnpm install
+pnpm dev
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+## Commands
 
-## 🚀 Project Structure
+| Command        | Action                                    |
+| :------------- | :---------------------------------------- |
+| `pnpm dev`     | Start the local dev server                |
+| `pnpm check`   | Run Astro diagnostics                     |
+| `pnpm build`   | Run Astro diagnostics and build the site  |
+| `pnpm preview` | Preview the built site                    |
 
-Inside of your Astro project, you'll see the following folders and files:
+## Current Prototype
 
-```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
-```
-
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page
-is exposed as a route based on its file name.
-
-There's nothing special about `src/components/`, but that's where we like to put
-any Astro/React/Vue/Svelte/Preact components.
-
-Any static assets, like images, can be placed in the `public/` directory.
-
-## 🧞 Commands
-
-All commands are run from the root of the project, from a terminal:
-
-| Command                 | Action                                           |
-| :---------------------- | :----------------------------------------------- |
-| `pnpm install`          | Installs dependencies                            |
-| `pnpm dev`              | Starts local dev server at `localhost:4321`      |
-| `pnpm build`            | Build your production site to `./dist/`          |
-| `pnpm preview`          | Preview your build locally, before deploying     |
-| `pnpm astro ...`        | Run CLI commands like `astro add`, `astro check` |
-| `pnpm astro -- --help`  | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+- `/patterns/` is the searchable/filterable pattern catalog.
+- `/patterns/:slug/` renders concise pattern pages with examples and agent snippets.
+- `/concepts/` contains deeper teaching anchors.
+- `/agents/` contains consolidated agent-facing guidance.
+- `/configs/` shows reusable Rust and Markdown tooling defaults.
+- `/references/` links to influences and adjacent sources.
+- `/llms.txt` exposes a compact machine-readable summary.

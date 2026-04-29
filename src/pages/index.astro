@@ -1,17 +1,173 @@
 ---
+import { getCollection } from 'astro:content';
 
+import Chips from '../components/Chips.astro';
+import PatternList from '../components/PatternList.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { patternHref, sortedPatterns } from '../lib/catalog';
+
+const patterns = await getCollection('patterns');
+const concepts = await getCollection('concepts');
+const featured = sortedPatterns(patterns).slice(0, 4);
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<BaseLayout title="TidySrc">
+  <section class="section shell hero">
+    <div>
+      <p class="eyebrow">Pattern language for everyday source change</p>
+      <h1>TidySrc is a pattern language for making source code easier to change.</h1>
+      <p class="lede">
+        Use it to name patterns in review, give coding agents durable fallback guidance, and teach
+        source-change habits without turning every answer into a long style guide.
+      </p>
+      <form class="hero-search" action="/patterns/">
+        <label for="home-search">Find a pattern</label>
+        <div>
+          <input id="home-search" name="q" type="search" placeholder="guard clause, legacy tests, agents" />
+          <button class="button primary" type="submit">Search</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <section class="section-tight shell grid grid-3" aria-label="Primary sections">
+    <a class="panel nav-panel" href="/patterns/">
+      <strong>Patterns</strong>
+      <span>Short, linkable entries for review and implementation.</span>
+    </a>
+    <a class="panel nav-panel" href="/concepts/">
+      <strong>Concepts</strong>
+      <span>Deeper ideas that repeat across several patterns.</span>
+    </a>
+    <a class="panel nav-panel" href="/agents/">
+      <strong>Agents</strong>
+      <span>Copyable operating guidance for coding agents.</span>
+    </a>
+  </section>
+
+  <section class="section shell">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">Featured patterns</p>
+        <h2>Start with concrete source-change moves.</h2>
+      </div>
+      <a class="button" href="/patterns/">Browse all {patterns.length}</a>
+    </div>
+    <div class="grid grid-3 feature-grid">
+      {
+        featured.map((pattern) => (
+          <a class="panel feature" href={patternHref(pattern)}>
+            <Chips items={pattern.data.tags.slice(0, 2)} status={pattern.data.status} />
+            <h3>{pattern.data.title}</h3>
+            <p>{pattern.data.summary}</p>
+          </a>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="section shell">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">Catalog preview</p>
+        <h2>Search by the problem you are seeing.</h2>
+      </div>
+    </div>
+    <PatternList patterns={patterns.slice(0, 6)} />
+  </section>
+
+  <section class="section shell">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">Concept anchors</p>
+        <h2>Depth lives behind the concise entries.</h2>
+      </div>
+    </div>
+    <div class="grid grid-3">
+      {
+        concepts.slice(0, 3).map((concept) => (
+          <a class="panel feature" href={`/concepts/${concept.id}/`}>
+            <h3>{concept.data.title}</h3>
+            <p>{concept.data.summary}</p>
+          </a>
+        ))
+      }
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .hero {
+    padding-block: 72px 40px;
+  }
+
+  .hero h1 {
+    max-width: 900px;
+  }
+
+  .hero-search {
+    display: grid;
+    gap: 0.5rem;
+    max-width: 680px;
+    margin-top: 2rem;
+  }
+
+  .hero-search label {
+    font-weight: 700;
+  }
+
+  .hero-search div {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .hero-search input {
+    flex: 1;
+    min-width: 0;
+    border: 1px solid var(--border-strong);
+    border-radius: 6px;
+    padding: 0.7rem 0.8rem;
+    background: var(--surface);
+    color: var(--text);
+    font: inherit;
+  }
+
+  .nav-panel,
+  .feature {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .nav-panel {
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  .nav-panel span,
+  .feature p {
+    color: var(--muted);
+  }
+
+  .section-head {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .feature {
+    display: grid;
+    align-content: start;
+    gap: 0.7rem;
+  }
+
+  @media (max-width: 720px) {
+    .hero-search div,
+    .section-head {
+      align-items: stretch;
+      flex-direction: column;
+    }
+  }
+</style>
+

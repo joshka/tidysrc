@@ -1,0 +1,88 @@
+---
+import { Code } from 'astro-expressive-code/components';
+
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { clippyToml, markdownlintYaml, rustfmtToml } from '../../data/catalog';
+
+const denyToml = `[licenses]
+version = 2
+confidence-threshold = 0.8
+allow = [
+  "Apache-2.0",
+  "BSD-2-Clause",
+  "BSD-3-Clause",
+  "ISC",
+  "MIT",
+  "Unicode-3.0",
+  "Unicode-DFS-2016",
+  "Zlib",
+]
+
+[advisories]
+version = 2
+
+[bans]
+multiple-versions = "allow"
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "warn"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]`;
+---
+
+<BaseLayout title="Configs" description="Reusable TidySrc config defaults.">
+  <section class="section shell">
+    <p class="eyebrow">Configs</p>
+    <h1>Reusable defaults that match the pattern language.</h1>
+    <p class="lede">
+      These examples are practical starting points, not universal law. Copy them when they fit the
+      project, and prefer repo-local conventions when they are deliberate.
+    </p>
+  </section>
+
+  <section class="section-tight narrow config-stack">
+    <article>
+      <h2>rustfmt.toml</h2>
+      <p>
+        Rust formatting defaults favor 2024 edition syntax, shorthand initialization, readable
+        comments, organized imports, and formatter-owned consistency.
+      </p>
+      <Code code={rustfmtToml} lang="toml" meta={'title="rustfmt.toml"'} />
+    </article>
+
+    <article>
+      <h2>clippy.toml</h2>
+      <p>
+        This setting avoids treating exported API compatibility as a blanket blocker for local
+        maintainability work. Public crates should still evaluate API impact deliberately.
+      </p>
+      <Code code={clippyToml} lang="toml" meta={'title="clippy.toml"'} />
+    </article>
+
+    <article>
+      <h2>deny.toml</h2>
+      <p>
+        A conservative license and source-policy starting point. Pull this in deliberately rather
+        than blindly; projects may need different license rules.
+      </p>
+      <Code code={denyToml} lang="toml" meta={'title="deny.toml"'} />
+    </article>
+
+    <article>
+      <h2>markdownlint-cli2.yaml</h2>
+      <p>
+        Documentation should be readable in review diffs. The default prose width is 100
+        characters, with tables exempted so they can remain aligned.
+      </p>
+      <Code code={markdownlintYaml} lang="yaml" meta={'title=".markdownlint-cli2.yaml"'} />
+    </article>
+  </section>
+</BaseLayout>
+
+<style>
+  .config-stack {
+    display: grid;
+    gap: 2rem;
+  }
+</style>
+
