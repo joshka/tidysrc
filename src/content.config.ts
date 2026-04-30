@@ -2,16 +2,6 @@ import { defineCollection } from 'astro:content';
 import { glob } from 'astro/loaders';
 import { z } from 'astro/zod';
 
-import { concepts } from './data/catalog';
-
-const exampleSchema = z.object({
-  title: z.string(),
-  path: z.string(),
-  language: z.string(),
-  code: z.string(),
-  note: z.string().optional(),
-});
-
 const patternSchema = z.object({
   title: z.string(),
   summary: z.string(),
@@ -25,19 +15,11 @@ const patternSchema = z.object({
 });
 
 const conceptSchema = z.object({
-  id: z.string(),
   title: z.string(),
   summary: z.string(),
   status: z.enum(['seed', 'draft', 'reviewed', 'stable']),
   tags: z.array(z.string()),
   relatedPatterns: z.array(z.string()),
-  examples: z.array(exampleSchema).optional(),
-  sections: z.array(
-    z.object({
-      title: z.string(),
-      body: z.array(z.string()),
-    }),
-  ),
 });
 
 const problemSchema = z.object({
@@ -67,7 +49,7 @@ const patternCollection = defineCollection({
 });
 
 const conceptCollection = defineCollection({
-  loader: () => concepts,
+  loader: glob({ pattern: '*.md', base: './src/content/concepts' }),
   schema: conceptSchema,
 });
 
@@ -76,8 +58,17 @@ const problemCollection = defineCollection({
   schema: problemSchema,
 });
 
+const referenceCollection = defineCollection({
+  loader: glob({ pattern: '*.md', base: './src/content/references' }),
+  schema: z.object({
+    title: z.string(),
+    href: z.string().startsWith('https://'),
+  }),
+});
+
 export const collections = {
   patterns: patternCollection,
   concepts: conceptCollection,
   problems: problemCollection,
+  references: referenceCollection,
 };

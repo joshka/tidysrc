@@ -1,12 +1,12 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import { references } from '../../data/catalog';
+import { getCollection } from 'astro:content';
 
-const slug = (value: string) =>
-  value
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '');
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const references = await getCollection('references');
+const sortedReferences = references.sort((left, right) =>
+  left.data.title.localeCompare(right.data.title),
+);
 ---
 
 <BaseLayout title="References" description="Influences and adjacent sources for TidySrc.">
@@ -28,13 +28,13 @@ const slug = (value: string) =>
 
   <section class="section-tight shell grid">
     {
-      references.map((reference) => (
-        <article class="panel reference" id={slug(reference.title)}>
+      sortedReferences.map((reference) => (
+        <article class="panel reference" id={reference.id}>
           <h2>
-            <a href={reference.href}>{reference.title}</a>
+            <a href={reference.data.href}>{reference.data.title}</a>
           </h2>
-          <p>{reference.note}</p>
-          <a class="reference-url" href={reference.href}>{reference.href}</a>
+          <p>{reference.body}</p>
+          <a class="reference-url" href={reference.data.href}>{reference.data.href}</a>
         </article>
       ))
     }

@@ -5,6 +5,7 @@ import Chips from '../../components/Chips.astro';
 import CodeExamples from '../../components/CodeExamples.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { patternHref } from '../../lib/catalog';
+import { parseConceptContent } from '../../lib/conceptContent';
 
 export async function getStaticPaths() {
   const concepts = await getCollection('concepts');
@@ -12,6 +13,7 @@ export async function getStaticPaths() {
 }
 
 const { concept } = Astro.props;
+const conceptContent = parseConceptContent(concept.body ?? '', concept.id);
 const patterns = await getCollection('patterns');
 const patternById = new Map(patterns.map((entry) => [entry.id, entry]));
 const conceptMetrics = ['Cognitive load', 'Review time', 'Change radius'];
@@ -35,7 +37,7 @@ const conceptMetrics = ['Cognitive load', 'Review time', 'Change radius'];
     <article class="concept-sheet">
       <div class="concept-narrative">
         {
-          concept.data.sections.map((section, index) => (
+          conceptContent.sections.map((section, index) => (
             <section
               class:list={['concept-card', { muted: index % 2 === 1 }]}
               id={section.title.toLowerCase().replaceAll(' ', '-')}
@@ -48,21 +50,11 @@ const conceptMetrics = ['Cognitive load', 'Review time', 'Change radius'];
         }
 
         {
-          concept.data.examples && concept.data.examples.length > 0 && (
-            <section class="concept-card comparison-card" id="examples">
-              <p class="eyebrow">Reader contrast</p>
-              <h2>Locality in Code</h2>
-              <div class="comparison-grid">
-                {concept.data.examples.map((example, index) => (
-                  <div class:list={['comparison-panel', index === 0 ? 'warning' : 'target']}>
-                    <div class="comparison-label">
-                      <span>{index === 0 ? 'Low locality' : 'High locality'}</span>
-                      <span>{example.path}</span>
-                    </div>
-                    <CodeExamples examples={[example]} />
-                  </div>
-                ))}
-              </div>
+          conceptContent.examples && conceptContent.examples.length > 0 && (
+            <section class="concept-card example-card" id="examples">
+              <p class="eyebrow">Examples</p>
+              <h2>How it shows up in code</h2>
+              <CodeExamples examples={conceptContent.examples} />
             </section>
           )
         }
@@ -256,73 +248,8 @@ const conceptMetrics = ['Cognitive load', 'Review time', 'Change radius'];
     white-space: nowrap;
   }
 
-  .comparison-card {
-    padding: 0;
-  }
-
-  .comparison-card > .eyebrow,
-  .comparison-card > h2 {
-    margin-inline: clamp(1.25rem, 3vw, 2rem);
-  }
-
-  .comparison-card > .eyebrow {
-    margin-top: clamp(1.25rem, 3vw, 2rem);
-  }
-
-  .comparison-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1rem;
-    padding: 1rem;
-  }
-
-  .comparison-panel {
-    border: 2px solid var(--border);
-    min-width: 0;
-  }
-
-  .comparison-panel.warning {
-    background: var(--warning-soft);
-  }
-
-  .comparison-panel.target {
-    background: var(--accent-soft);
-  }
-
-  .comparison-label {
-    display: flex;
-    justify-content: space-between;
-    gap: 1rem;
-    border-bottom: 2px solid var(--border);
-    background: var(--surface);
-    padding: 0.65rem 0.8rem;
-    font-size: 0.78rem;
-    font-weight: 800;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-  }
-
-  .comparison-label span:last-child {
-    color: var(--muted);
-    font-family: var(--font-mono);
-    overflow-wrap: anywhere;
-    text-align: right;
-  }
-
-  .comparison-panel :global(.examples) {
-    padding: 1rem;
-  }
-
-  .comparison-panel :global(.example-header) {
-    display: none;
-  }
-
-  .comparison-panel :global(.example p) {
-    background: var(--surface);
-    border: 2px solid var(--border);
-    margin: 0;
-    max-width: none;
-    padding: 0.75rem;
+  .example-card :global(.examples) {
+    margin-top: 1rem;
   }
 
   .related-card {
@@ -358,7 +285,6 @@ const conceptMetrics = ['Cognitive load', 'Review time', 'Change radius'];
   }
 
   @media (max-width: 860px) {
-    .comparison-grid,
     .concept-sidebar,
     .related-grid {
       grid-template-columns: 1fr;

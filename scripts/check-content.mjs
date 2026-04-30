@@ -1,8 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-import ts from 'typescript';
-
 const coreExampleLanguages = ['csharp', 'java', 'python', 'rust'];
 
 function markdownFiles(dir) {
@@ -49,7 +47,7 @@ function parseFrontmatter(source, file) {
       }
       frontmatter[key] = folded.join(' ');
     } else {
-      frontmatter[key] = value;
+      frontmatter[key] = value.startsWith('"') ? JSON.parse(value) : value;
     }
   }
 
@@ -102,21 +100,14 @@ function reportMissing(errors, owner, field, values, allowed) {
   }
 }
 
-async function importCatalogData() {
-  const source = fs.readFileSync('src/data/catalog.ts', 'utf8');
-  const js = ts.transpileModule(source, {
-    compilerOptions: { module: ts.ModuleKind.ES2022, target: ts.ScriptTarget.ES2022 },
-  }).outputText;
-  return import(`data:text/javascript;base64,${Buffer.from(js).toString('base64')}`);
-}
-
 const errors = [];
 const patternFiles = markdownFiles('src/content/patterns');
 const problemFiles = markdownFiles('src/content/problems');
+const conceptFiles = markdownFiles('src/content/concepts');
+const referenceFiles = markdownFiles('src/content/references');
 const patternIds = new Set(patternFiles.map(idFor));
 const problemIds = new Set(problemFiles.map(idFor));
-const { concepts } = await importCatalogData();
-const conceptIds = new Set(concepts.map((concept) => concept.id));
+const conceptIds = new Set(conceptFiles.map(idFor));
 
 for (const file of patternFiles) {
   const id = idFor(file);
@@ -178,8 +169,34 @@ for (const file of problemFiles) {
   }
 }
 
-for (const concept of concepts) {
-  reportMissing(errors, `concept:${concept.id}`, 'relatedPatterns', concept.relatedPatterns, patternIds);
+for (const file of conceptFiles) {
+  const id = idFor(file);
+  const source = fs.readFileSync(file, 'utf8');
+  const data = parseFrontmatter(source, file);
+  const owner = `concept:${id}`;
+
+  reportMissing(errors, owner, 'relatedPatterns', data.relatedPatterns, patternIds);
+
+  const sectionCount = [...source.matchAll(/^##\s+(.+)$/gm)].filter(
+    (match) => match[1].trim().toLowerCase() !== 'examples',
+  ).length;
+  if (data.status !== 'seed' && sectionCount < 2) {
+    errors.push(`${owner} needs at least two explanatory sections`);
+  }
+}
+
+for (const file of referenceFiles) {
+  const id = idFor(file);
+  const source = fs.readFileSync(file, 'utf8');
+  const data = parseFrontmatter(source, file);
+  if (!data.href?.startsWith('https://')) {
+    errors.push(`reference:${id}.href must be an https URL`);
+  }
+
+  const body = source.replace(/^---\n[\s\S]*?\n---/, '').trim();
+  if (!body) {
+    errors.push(`reference:${id} needs a body note`);
+  }
 }
 
 if (errors.length > 0) {
@@ -187,5 +204,5 @@ if (errors.length > 0) {
 }
 
 console.log(
-  `Content validation passed for ${patternIds.size} patterns, ${problemIds.size} problems, and ${conceptIds.size} concepts.`,
+  `Content validation passed for ${patternIds.size} patterns, ${problemIds.size} problems, ${conceptIds.size} concepts, and ${referenceFiles.length} references.`,
 );
