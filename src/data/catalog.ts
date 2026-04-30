@@ -126,7 +126,6 @@ fn summarize_rows(rows: &[Row]) -> Totals {
     ],
     references: [
       'epage Rust Style: central item first and caller-before-callee ordering.',
-      'Internal TidySrc note: optimize for reducing the reader’s live mental stack.',
     ],
   },
   {
@@ -279,7 +278,7 @@ fn summarize_rows(rows: &[Row]) -> Totals {
 }`,
       },
     ],
-    references: ['Internal TidySrc note: use blank lines as logic paragraphs.'],
+    references: [],
   },
   {
     id: 'explaining-variable',
@@ -546,7 +545,7 @@ fn finds_pattern_by_problem_terms() {
 }`,
       },
     ],
-    references: ['Internal TidySrc note: tests should protect observable behavior.'],
+    references: ['Working Effectively with Legacy Code: characterize behavior before refactoring.'],
   },
   {
     id: 'make-invalid-states-hard-to-express',
@@ -747,7 +746,7 @@ cargo clippy --workspace --all-targets -- -D warnings`,
 }`,
       },
     ],
-    references: ['Internal TidySrc note: use the strongest cheap behavior-preservation check.'],
+    references: ['Tidy First: behavior-preserving changes should stay small and easy to verify.'],
   },
   {
     id: 'repo-local-instructions-win',
@@ -866,7 +865,7 @@ const href = patternHref(pattern.slug);
 }`,
       },
     ],
-    references: ['Internal TidySrc note: extract concepts only with semantic coherence.'],
+    references: [],
   },
 ];
 
