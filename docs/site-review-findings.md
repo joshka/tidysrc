@@ -81,10 +81,10 @@ The mobile site is usable, but it does not yet feel as disciplined as the deskto
 
 Recommended fixes:
 
-- Remove the small bento-card overflow on narrow screens.
-- Compact the mobile navigation.
-- Reduce large display text on detail pages.
-- Tune the problem-detail hero and impact panels so they feel like dense reference material rather
+- [x] Remove the small bento-card overflow on narrow screens.
+- [x] Compact the mobile navigation.
+- [ ] Reduce large display text on detail pages.
+- [ ] Tune the problem-detail hero and impact panels so they feel like dense reference material rather
   than posters.
 
 ### Dark Mode Still Needs Proportion Tuning
@@ -95,16 +95,18 @@ The dark theme sometimes uses large high-contrast panels where a smaller accent 
 
 Keep the warmer dark palette, but tune:
 
-- Large tan panels.
-- Large black impact cards.
-- Internal borders versus major borders.
-- Muted text hierarchy.
-- Mobile proportions.
+- [ ] Large tan panels.
+- [ ] Large black impact cards.
+- [x] Internal borders versus major borders.
+- [x] Muted text hierarchy.
+- [ ] Mobile proportions.
 
 ### Metadata Has Some Noise
 
 Pattern pages can show duplicated metadata, such as a `rust` tag and a `Rust` language chip on the
 same page. Tags and languages should either be visually separated or deduplicated before rendering.
+
+Status: DONE. Pattern hero chips now suppress duplicate language-like tags.
 
 Language ordering should remain consistent:
 
@@ -133,17 +135,17 @@ being silently dropped or turning into a broken link.
 
 One concrete issue found during review:
 
-- `characterize-before-changing` references `find-the-seam`, but no matching pattern route appears
+- [x] `characterize-before-changing` references `find-the-seam`, but no matching pattern route appears
   to exist.
 
 Validation should cover:
 
-- Duplicate ids.
-- Missing related pattern ids.
-- Missing related concept ids.
-- Missing problem ids.
-- Duplicate tag/language chips.
-- Required examples for launch-ready patterns.
+- [x] Duplicate ids.
+- [x] Missing related pattern ids.
+- [x] Missing related concept ids.
+- [x] Missing problem ids.
+- [x] Duplicate tag/language chips.
+- [x] Required examples for launch-ready patterns.
 
 ### References Are Valid but Under-Organized
 
@@ -169,6 +171,8 @@ workflow patterns.
 Global search can wait, but the current indexes should preserve useful filter state in the URL before
 the catalog gets much larger.
 
+Status: DONE for index filters. Pattern and problem search/filter state is URL-addressable.
+
 ### Authorship Is in the Right Direction
 
 The footer now points back to Josh without turning the site into a personal sales page. That balance
@@ -179,26 +183,32 @@ clearly useful, carefully edited, and lightly attributed.
 
 ## Suggested Next Steps
 
-1. Add catalog validation for ids, relationships, required fields, and duplicate language/tag chips.
-2. Review the problem catalog first, because problems define why the site exists.
-3. Review patterns second, making sure each one clearly answers one or more problems.
-4. Review concepts third, using them to explain the durable mental models behind the patterns.
-5. Add a maturity field for all content types, such as `seed`, `draft`, `reviewed`, and `stable`.
-6. Group `/problems/` by domain or add durable URL-addressable filters.
-7. Fix the narrow mobile overflow on pattern detail pages.
-8. Compact the mobile navigation.
-9. Tune dark-mode proportions on problem and pattern detail pages.
-10. Add an examples policy and audit all examples against it.
-11. Add richer concept pages for the core mental models.
-12. Rework the references page into grouped, purposeful sources.
-13. Verify generated deployment assets such as `favicon.ico`, `favicon.svg`, and `llms.txt`.
-14. Add a final prelaunch checklist that combines build, link checks, accessibility checks, and
-    editorial review.
+- [x] Add catalog validation for ids, relationships, required fields, and duplicate language/tag
+  chips.
+- [ ] Review the problem catalog first, because problems define why the site exists.
+- [ ] Review patterns second, making sure each one clearly answers one or more problems.
+- [ ] Review concepts third, using them to explain the durable mental models behind the patterns.
+- [x] Add a maturity field for all content types, such as `seed`, `draft`, `reviewed`, and
+  `stable`.
+- [x] Add durable URL-addressable filters to `/problems/`.
+- [ ] Group `/problems/` by domain.
+- [x] Fix the narrow mobile overflow on pattern detail pages.
+- [x] Compact the mobile navigation.
+- [x] Tune dark-mode borders, muted text, and syntax-highlighted code contrast.
+- [ ] Tune dark-mode proportions on problem and pattern detail pages.
+- [ ] Add an examples policy and audit all examples against it.
+- [ ] Add richer concept pages for the core mental models.
+- [ ] Rework the references page into grouped, purposeful sources.
+- [x] Verify generated deployment assets such as `favicon.ico`, `favicon.svg`, and `llms.txt`.
+- [x] Add automated prelaunch checks for build, internal links, and syntax-highlight contrast.
+- [ ] Add the editorial-review portion of the final prelaunch checklist.
 
 ## Verification Notes
 
 - `mise exec -- pnpm build` passed during review.
+- `mise exec -- pnpm check:site` now verifies build, internal links, and syntax-highlight contrast.
 - Playwright sampled light and dark desktop pages.
 - Playwright sampled mobile pages at a narrow viewport.
 - Desktop sampled pages did not show broad horizontal overflow.
-- Mobile pattern detail pages showed small bento-card overflow.
+- Mobile pattern detail pages showed small bento-card overflow during review.
+- Status: DONE. The pattern detail mobile overflow now measures `0` at a 390px viewport.

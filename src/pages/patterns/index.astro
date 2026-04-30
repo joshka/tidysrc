@@ -79,6 +79,32 @@ const languages = allLanguages(patterns);
     search.value = params.get('q') ?? '';
   }
 
+  for (const filter of filters) {
+    const key = filter.dataset.catalogFilter;
+    if (key && params.has(key)) {
+      filter.value = params.get(key) ?? '';
+    }
+  }
+
+  function updateUrl() {
+    const next = new URLSearchParams();
+    const query = search?.value.trim() ?? '';
+    if (query) {
+      next.set('q', query);
+    }
+
+    for (const filter of filters) {
+      const key = filter.dataset.catalogFilter;
+      if (key && filter.value) {
+        next.set(key, filter.value);
+      }
+    }
+
+    const queryString = next.toString();
+    const url = queryString ? `${window.location.pathname}?${queryString}` : window.location.pathname;
+    window.history.replaceState(null, '', url);
+  }
+
   function applyFilters() {
     const query = search?.value.trim().toLowerCase() ?? '';
     let visible = 0;
@@ -101,6 +127,8 @@ const languages = allLanguages(patterns);
     if (empty) {
       empty.hidden = visible > 0;
     }
+
+    updateUrl();
   }
 
   search?.addEventListener('input', applyFilters);

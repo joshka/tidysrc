@@ -7,6 +7,7 @@ import CopyBox from '../../components/CopyBox.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import {
   conceptHref,
+  isKnownLanguage,
   languageLabel,
   patternHref,
   problemHref,
@@ -44,6 +45,11 @@ const reviewMarkdownSnippet = [
 ].join('\n');
 const languageChoices = sortedLanguageCodes(pattern.data.languages);
 const languageChoiceLabels = languageChoices.map(languageLabel);
+const languageTags = new Set(languageChoices.map((language) => language.toLowerCase()));
+const displayTags = pattern.data.tags.filter((tag) => {
+  const normalized = tag.toLowerCase();
+  return !languageTags.has(normalized) && !isKnownLanguage(normalized);
+});
 ---
 
 <BaseLayout title={pattern.data.title} description={pattern.data.summary}>
@@ -53,7 +59,7 @@ const languageChoiceLabels = languageChoices.map(languageLabel);
         <p class="eyebrow">Pattern // {pattern.id}</p>
         <h1>{pattern.data.title}</h1>
         <Chips
-          items={[...pattern.data.tags.slice(0, 3), ...languageChoiceLabels]}
+          items={[...displayTags.slice(0, 3), ...languageChoiceLabels]}
           status={pattern.data.status}
         />
       </div>
@@ -182,6 +188,8 @@ const languageChoiceLabels = languageChoices.map(languageLabel);
     grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.65fr);
     border: 2px solid var(--border);
     background: var(--surface);
+    max-width: 100%;
+    min-width: 0;
   }
 
   .hero-title {
@@ -216,6 +224,11 @@ const languageChoiceLabels = languageChoices.map(languageLabel);
   .article {
     display: grid;
     gap: 2rem;
+    min-width: 0;
+  }
+
+  .article > * {
+    min-width: 0;
   }
 
   .article section {
@@ -255,9 +268,13 @@ const languageChoiceLabels = languageChoices.map(languageLabel);
     grid-template-columns: repeat(3, minmax(0, 1fr));
     border: 2px solid var(--border);
     background: var(--surface);
+    max-width: 100%;
+    min-width: 0;
   }
 
   .bento-card {
+    min-width: 0;
+    overflow-wrap: anywhere;
     padding: clamp(1rem, 2.5vw, 1.5rem);
   }
 
@@ -357,6 +374,11 @@ const languageChoiceLabels = languageChoices.map(languageLabel);
     grid-template-columns: minmax(220px, 0.28fr) minmax(0, 1fr);
     border: 2px solid var(--border);
     background: var(--surface);
+    min-width: 0;
+  }
+
+  .agent-panel > * {
+    min-width: 0;
   }
 
   .agent-mark {
@@ -416,7 +438,7 @@ const languageChoiceLabels = languageChoices.map(languageLabel);
     .agent-panel,
     .review-snippet,
     .related-grid {
-      grid-template-columns: 1fr;
+      grid-template-columns: minmax(0, 1fr);
     }
 
     .hero-title,

@@ -28,7 +28,7 @@ const concepts = await getCollection('concepts');
     {
       concepts.map((concept) => (
         <a class="panel concept-card" href={conceptHref(concept)}>
-          <Chips items={concept.data.tags} />
+          <Chips items={concept.data.tags} status={concept.data.status} />
           <h2>{concept.data.title}</h2>
           <p>{concept.data.summary}</p>
         </a>

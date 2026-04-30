@@ -1,14 +1,34 @@
 ---
 type Props = {
   items: string[];
+  links?: Record<string, string>;
   status?: string;
+  statusHref?: string;
 };
 
-const { items, status } = Astro.props;
+const { items, links = {}, status, statusHref } = Astro.props;
 ---
 
 <div class="chip-list">
-  {status && <span class={`chip status-${status}`}>{status}</span>}
-  {items.map((item) => <span class="chip">{item}</span>)}
+  {
+    status &&
+      (statusHref ? (
+        <a class={`chip status-${status}`} href={statusHref}>
+          {status}
+        </a>
+      ) : (
+        <span class={`chip status-${status}`}>{status}</span>
+      ))
+  }
+  {
+    items.map((item) =>
+      links[item] ? (
+        <a class="chip" href={links[item]}>
+          {item}
+        </a>
+      ) : (
+        <span class="chip">{item}</span>
+      ),
+    )
+  }
 </div>
-

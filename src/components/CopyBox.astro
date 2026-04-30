@@ -67,6 +67,7 @@ const { label, text, resolveCurrentUrl = false } = Astro.props;
     flex-direction: column;
     gap: 1rem;
     height: 100%;
+    min-width: 0;
     position: relative;
   }
 
@@ -80,6 +81,14 @@ const { label, text, resolveCurrentUrl = false } = Astro.props;
     font-size: clamp(1rem, 1.8vw, 1.35rem);
     line-height: 1.55;
     margin: 0;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+  }
+
+  .copy-box code {
+    overflow-wrap: anywhere;
+    white-space: inherit;
   }
 
   .copy-box-actions {

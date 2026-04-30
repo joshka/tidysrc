@@ -10,6 +10,7 @@
     "dev": "astro dev",
     "build": "astro check && astro build",
     "check": "astro check",
+    "check:site": "pnpm build && node scripts/check-site.mjs",
     "preview": "astro preview",
     "astro": "astro"
   },
@@ -21,6 +22,7 @@
   "devDependencies": {
     "@astrojs/check": "^0.9.9",
     "@playwright/test": "^1.59.1",
+    "@types/node": "^25.6.0",
     "typescript": "^5.9.3"
   }
 }

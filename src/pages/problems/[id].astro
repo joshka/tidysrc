@@ -2,6 +2,7 @@
 import { getCollection } from 'astro:content';
 
 import Chips from '../../components/Chips.astro';
+import CodeExamples from '../../components/CodeExamples.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import {
   type ConceptEntry,
@@ -10,6 +11,7 @@ import {
   patternHref,
   problemHref,
 } from '../../lib/catalog';
+import { parseProblemContent } from '../../lib/problemContent';
 
 export async function getStaticPaths() {
   const problems = await getCollection('problems');
@@ -20,6 +22,15 @@ export async function getStaticPaths() {
 }
 
 const { problem } = Astro.props;
+const problemContent = parseProblemContent(problem.body ?? '', problem.id);
+const problemChips = [problem.data.category, ...problem.data.topics];
+const chipLinks = Object.fromEntries([
+  [problem.data.category, `/problems/?category=${encodeURIComponent(problem.data.category)}`],
+  ...problem.data.topics.map((topic) => [
+    topic,
+    `/problems/?q=${encodeURIComponent(topic)}`,
+  ]),
+]);
 const patterns = await getCollection('patterns');
 const concepts = await getCollection('concepts');
 const allProblems = await getCollection('problems');
@@ -54,6 +65,12 @@ const adjacentProblems = allProblems
       </div>
       <div class="page-hero-side">
         <p class="lede">{problem.data.summary}</p>
+        <Chips
+          items={problemChips}
+          links={chipLinks}
+          status={problem.data.status}
+          statusHref={`/problems/?status=${encodeURIComponent(problem.data.status)}`}
+        />
         <a class="button" href="/problems/">Problem index</a>
       </div>
     </div>
@@ -63,7 +80,7 @@ const adjacentProblems = allProblems
     <article class="problem-main">
       <section class="panel impact-panel">
         <p class="eyebrow">Why it matters</p>
-        <p>{problem.data.impact}</p>
+        <p>{problemContent.impact}</p>
       </section>
 
       <section class="panel checklist-panel">
@@ -72,7 +89,7 @@ const adjacentProblems = allProblems
           <h2>What you are seeing</h2>
         </div>
         <ul>
-          {problem.data.signals.map((signal) => <li>{signal}</li>)}
+          {problemContent.signals.map((signal) => <li>{signal}</li>)}
         </ul>
       </section>
 
@@ -82,7 +99,7 @@ const adjacentProblems = allProblems
           <h2>Questions to ask before choosing a pattern</h2>
         </div>
         <ol>
-          {problem.data.diagnosticQuestions.map((question) => <li>{question}</li>)}
+          {problemContent.diagnosticQuestions.map((question) => <li>{question}</li>)}
         </ol>
       </section>
 
@@ -93,7 +110,7 @@ const adjacentProblems = allProblems
         </div>
         <div class="approach-grid">
           {
-            problem.data.approach.map((step, index) => (
+            problemContent.approach.map((step, index) => (
               <div>
                 <span>{String(index + 1).padStart(2, '0')}</span>
                 <p>{step}</p>
@@ -102,6 +119,18 @@ const adjacentProblems = allProblems
           }
         </div>
       </section>
+
+      {
+        problemContent.examples && problemContent.examples.length > 0 && (
+          <section class="panel example-panel" id="examples">
+            <div class="section-label">
+              <p class="eyebrow">Examples</p>
+              <h2>How it shows up in code</h2>
+            </div>
+            <CodeExamples examples={problemContent.examples} />
+          </section>
+        )
+      }
 
       <section class="panel pattern-panel">
         <div class="section-label">
@@ -254,6 +283,10 @@ const adjacentProblems = allProblems
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.75rem;
+  }
+
+  .example-panel :global(.examples) {
+    gap: 1rem;
   }
 
   .pattern-card {

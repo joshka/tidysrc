@@ -1,20 +1,40 @@
 ---
 import { getCollection } from 'astro:content';
 
+import Chips from '../../components/Chips.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import {
+  allProblemCategories,
   type PatternEntry,
   patternHref,
   problemHref,
   problemSearchText,
   sortedProblems,
 } from '../../lib/catalog';
+import { parseProblemContent } from '../../lib/problemContent';
 
 const problems = sortedProblems(await getCollection('problems'));
+const categories = allProblemCategories(problems);
 const patterns = await getCollection('patterns');
 const patternById = new Map(patterns.map((pattern) => [pattern.id, pattern]));
 const isPatternEntry = (pattern: PatternEntry | undefined): pattern is PatternEntry =>
   pattern !== undefined;
+const selectedQuery = Astro.url.searchParams.get('q')?.trim() ?? '';
+const selectedQueryLower = selectedQuery.toLowerCase();
+const selectedStatus = Astro.url.searchParams.get('status') ?? '';
+const selectedCategory = Astro.url.searchParams.get('category') ?? '';
+const initialVisibility = new Map(
+  problems.map((problem) => {
+    const matchesQuery =
+      selectedQueryLower.length === 0 || problemSearchText(problem).includes(selectedQueryLower);
+    const matchesStatus = selectedStatus.length === 0 || problem.data.status === selectedStatus;
+    const matchesCategory =
+      selectedCategory.length === 0 || problem.data.category === selectedCategory;
+
+    return [problem.id, matchesQuery && matchesStatus && matchesCategory];
+  }),
+);
+const visibleProblemCount = [...initialVisibility.values()].filter(Boolean).length;
 ---
 
 <BaseLayout
@@ -44,16 +64,49 @@ const isPatternEntry = (pattern: PatternEntry | undefined): pattern is PatternEn
           data-problem-search
           type="search"
           placeholder="legacy, validation, agents, tests"
+          value={selectedQuery}
         />
       </label>
       <div class="filter-note">
         Search reads titles, symptoms, diagnostic questions, approaches, and related pattern ids.
       </div>
+      <label>
+        Status
+        <select data-problem-status>
+          <option value="" selected={selectedStatus === ''}>Any status</option>
+          <option value="stable" selected={selectedStatus === 'stable'}>Stable</option>
+          <option value="reviewed" selected={selectedStatus === 'reviewed'}>Reviewed</option>
+          <option value="draft" selected={selectedStatus === 'draft'}>Draft</option>
+          <option value="seed" selected={selectedStatus === 'seed'}>Seed</option>
+        </select>
+      </label>
+      <label>
+        Category
+        <select data-problem-category>
+          <option value="" selected={selectedCategory === ''}>Any category</option>
+          {
+            categories.map((category) => (
+              <option value={category} selected={selectedCategory === category}>
+                {category}
+              </option>
+            ))
+          }
+        </select>
+      </label>
     </aside>
 
     <div class="problem-list" data-problem-list>
       {
         problems.map((problem) => {
+          const problemContent = parseProblemContent(problem.body ?? '', problem.id);
+          const cardChips = [problem.data.category, ...problem.data.topics.slice(0, 2)];
+          const chipLinks = Object.fromEntries([
+            [problem.data.category, `/problems/?category=${encodeURIComponent(problem.data.category)}`],
+            ...problem.data.topics.slice(0, 2).map((topic) => [
+              topic,
+              `/problems/?q=${encodeURIComponent(topic)}`,
+            ]),
+          ]);
           const relatedPatterns = problem.data.relatedPatterns
             .map((id) => patternById.get(id))
             .filter(isPatternEntry)
@@ -64,6 +117,9 @@ const isPatternEntry = (pattern: PatternEntry | undefined): pattern is PatternEn
               class="panel problem-card"
               data-problem-card
               data-search={problemSearchText(problem)}
+              data-status={problem.data.status}
+              data-category={problem.data.category}
+              hidden={!initialVisibility.get(problem.id)}
             >
               <div class="problem-card-main">
                 <div>
@@ -71,10 +127,16 @@ const isPatternEntry = (pattern: PatternEntry | undefined): pattern is PatternEn
                   <h2>
                     <a href={problemHref(problem)}>{problem.data.title}</a>
                   </h2>
+                  <Chips
+                    items={cardChips}
+                    links={chipLinks}
+                    status={problem.data.status}
+                    statusHref={`/problems/?status=${encodeURIComponent(problem.data.status)}`}
+                  />
                 </div>
                 <p>{problem.data.summary}</p>
                 <div class="signal-strip" aria-label="Common signals">
-                  {problem.data.signals.slice(0, 2).map((signal) => (
+                  {problemContent.signals.slice(0, 2).map((signal) => (
                     <span>{signal}</span>
                   ))}
                 </div>
@@ -91,22 +153,62 @@ const isPatternEntry = (pattern: PatternEntry | undefined): pattern is PatternEn
           );
         })
       }
-      <p class="empty-state" data-empty-state hidden>No problems match the current search.</p>
+      <p class="empty-state" data-empty-state hidden={visibleProblemCount > 0}>
+        No problems match the current search.
+      </p>
     </div>
   </section>
 </BaseLayout>
 
 <script>
   const search = document.querySelector<HTMLInputElement>('[data-problem-search]');
+  const status = document.querySelector<HTMLSelectElement>('[data-problem-status]');
+  const category = document.querySelector<HTMLSelectElement>('[data-problem-category]');
   const cards = Array.from(document.querySelectorAll<HTMLElement>('[data-problem-card]'));
   const empty = document.querySelector<HTMLElement>('[data-empty-state]');
+  const params = new URLSearchParams(window.location.search);
+
+  if (search && params.has('q')) {
+    search.value = params.get('q') ?? '';
+  }
+
+  if (status && params.has('status')) {
+    status.value = params.get('status') ?? '';
+  }
+
+  if (category && params.has('category')) {
+    category.value = params.get('category') ?? '';
+  }
+
+  function updateUrl() {
+    const next = new URLSearchParams();
+    const query = search?.value.trim() ?? '';
+    if (query) {
+      next.set('q', query);
+    }
+    if (status?.value) {
+      next.set('status', status.value);
+    }
+    if (category?.value) {
+      next.set('category', category.value);
+    }
+
+    const queryString = next.toString();
+    const url = queryString ? `${window.location.pathname}?${queryString}` : window.location.pathname;
+    window.history.replaceState(null, '', url);
+  }
 
   function applySearch() {
     const query = search?.value.trim().toLowerCase() ?? '';
+    const statusValue = status?.value ?? '';
+    const categoryValue = category?.value ?? '';
     let visible = 0;
 
     for (const card of cards) {
-      const show = !query || card.dataset.search?.includes(query);
+      const matchesQuery = !query || card.dataset.search?.includes(query);
+      const matchesStatus = !statusValue || card.dataset.status === statusValue;
+      const matchesCategory = !categoryValue || card.dataset.category === categoryValue;
+      const show = Boolean(matchesQuery && matchesStatus && matchesCategory);
       card.hidden = !show;
       if (show) {
         visible += 1;
@@ -116,9 +218,13 @@ const isPatternEntry = (pattern: PatternEntry | undefined): pattern is PatternEn
     if (empty) {
       empty.hidden = visible > 0;
     }
+
+    updateUrl();
   }
 
   search?.addEventListener('input', applySearch);
+  status?.addEventListener('change', applySearch);
+  category?.addEventListener('change', applySearch);
   applySearch();
 </script>
 
@@ -147,7 +253,8 @@ const isPatternEntry = (pattern: PatternEntry | undefined): pattern is PatternEn
     text-transform: uppercase;
   }
 
-  .filters input {
+  .filters input,
+  .filters select {
     width: 100%;
     border: 2px solid var(--border-strong);
     border-radius: 0;

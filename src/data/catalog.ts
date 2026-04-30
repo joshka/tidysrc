@@ -1,5 +1,5 @@
 export type Audience = 'reviewers' | 'agents' | 'learners';
-export type Status = 'seed' | 'draft' | 'stable';
+export type Status = 'seed' | 'draft' | 'reviewed' | 'stable';
 
 export type CodeExample = {
   title: string;
@@ -33,6 +33,7 @@ export type Concept = {
   id: string;
   title: string;
   summary: string;
+  status: Status;
   tags: string[];
   relatedPatterns: string[];
   examples?: CodeExample[];
@@ -46,10 +47,14 @@ export type Problem = {
   id: string;
   title: string;
   summary: string;
+  status: Status;
+  category?: string;
+  topics?: string[];
   impact: string;
   signals: string[];
   diagnosticQuestions: string[];
   approach: string[];
+  examples?: CodeExample[];
   relatedPatterns: string[];
   relatedConcepts: string[];
 };
@@ -465,7 +470,11 @@ record.validate_required_fields()?;`,
     languages: ['rust', 'java', 'go'],
     problems: ['Nobody is sure which quirks are bugs and which are depended-on behavior.'],
     concepts: ['observable-behavior'],
-    related: ['observable-behavior-tests', 'find-the-seam', 'separate-structure-from-behavior'],
+    related: [
+      'observable-behavior-tests',
+      'smallest-trustworthy-verification',
+      'separate-structure-from-behavior',
+    ],
     useWhen: [
       'The code is hard to understand and lacks reliable tests, so a refactor would otherwise depend on the editor’s confidence alone.',
       'Consumers may depend on surprising behavior, including strange defaults, formatting quirks, or edge-case outputs that are not documented.',
@@ -1650,6 +1659,7 @@ export const concepts: Concept[] = [
     title: 'Reader Locality',
     summary:
       'Put related ideas where the reader needs them, especially when the abstraction is weak.',
+    status: 'draft',
     tags: ['readability', 'organization'],
     relatedPatterns: ['reader-locality', 'chunk-statements', 'explaining-variable'],
     examples: [
@@ -1717,6 +1727,7 @@ function isEligibleForApproval(user: User) {
     title: 'Observable Behavior',
     summary:
       'Treat outputs, errors, persisted state, and visible side effects as the behavior tests should protect.',
+    status: 'draft',
     tags: ['testing', 'legacy-code'],
     relatedPatterns: ['observable-behavior-tests', 'characterize-before-changing'],
     sections: [
@@ -1741,6 +1752,7 @@ function isEligibleForApproval(user: User) {
     title: 'Structure Versus Behavior',
     summary:
       'Structure changes alter code shape; behavior changes alter what callers can observe.',
+    status: 'draft',
     tags: ['workflow', 'review'],
     relatedPatterns: ['separate-structure-from-behavior', 'smallest-trustworthy-verification'],
     sections: [
@@ -1764,6 +1776,7 @@ function isEligibleForApproval(user: User) {
     title: 'Agent Guidance',
     summary:
       'Coding agents need concise local rules, explicit precedence, and verification matched to the change.',
+    status: 'draft',
     tags: ['agent-guidance', 'workflow'],
     relatedPatterns: ['repo-local-instructions-win', 'avoid-premature-agent-architecture'],
     sections: [
@@ -1787,6 +1800,7 @@ function isEligibleForApproval(user: User) {
     title: 'Cognitive Burden',
     summary:
       'Parameters, fields, jumps, concepts, and hidden side effects all add to what the reader must hold at once.',
+    status: 'draft',
     tags: ['readability', 'review'],
     relatedPatterns: ['explaining-variable', 'chunk-statements', 'reader-locality'],
     sections: [
@@ -1804,6 +1818,7 @@ function isEligibleForApproval(user: User) {
     title: 'Change Radius',
     summary:
       'The set of files, concepts, call sites, tests, and contracts that must move for one source change.',
+    status: 'draft',
     tags: ['workflow', 'architecture', 'review'],
     relatedPatterns: ['cap-change-radius', 'separate-structure-from-behavior', 'reader-locality'],
     sections: [
@@ -1828,6 +1843,7 @@ function isEligibleForApproval(user: User) {
     title: 'Side Effect Visibility',
     summary:
       'A reader should be able to see where code mutates state, touches I/O, reads time, or starts work.',
+    status: 'draft',
     tags: ['side-effects', 'readability', 'testing'],
     relatedPatterns: [
       'make-side-effects-visible',
@@ -1855,6 +1871,7 @@ function isEligibleForApproval(user: User) {
     title: 'State Space',
     summary:
       'The set of states a program can represent, including impossible combinations the code accidentally permits.',
+    status: 'draft',
     tags: ['correctness', 'api-design', 'state'],
     relatedPatterns: [
       'make-state-transitions-explicit',
@@ -1882,6 +1899,7 @@ function isEligibleForApproval(user: User) {
     title: 'Boundary Trust',
     summary:
       'A boundary earns trust when it converts uncertain external shape into data the next layer can rely on.',
+    status: 'draft',
     tags: ['boundaries', 'api-design', 'correctness'],
     relatedPatterns: [
       'parse-dont-validate',
@@ -1910,6 +1928,7 @@ function isEligibleForApproval(user: User) {
     title: 'Temporal Coupling',
     summary:
       'Code is temporally coupled when correctness depends on hidden ordering, timing, or lifecycle assumptions.',
+    status: 'draft',
     tags: ['async', 'testing', 'state'],
     relatedPatterns: [
       'keep-async-boundaries-explicit',
@@ -1934,914 +1953,7 @@ function isEligibleForApproval(user: User) {
   },
 ];
 
-export const problems: Problem[] = [
-  {
-    id: 'hard-to-scan-control-flow',
-    title: 'Hard-to-scan control flow',
-    summary:
-      'The normal path is buried under validation, branching, dense expressions, or incidental sequencing.',
-    impact:
-      'Readers spend their attention reconstructing execution order instead of judging whether the behavior is correct. That makes small reviews feel larger than they are and encourages agents to rewrite more code than the change requires.',
-    signals: [
-      'The function starts with the important work hidden several indentation levels deep.',
-      'A reviewer has to keep several conditions in memory while reading the main behavior.',
-      'A technically short function still feels like a wall because setup, decisions, mutation, and return assembly are visually blended.',
-      'Dense expressions combine naming, calculation, branching, and side effects in one place.',
-    ],
-    diagnosticQuestions: [
-      'What is the one path a maintainer should understand first?',
-      'Which branches are preconditions, empty cases, or unsupported modes?',
-      'Where does the function change from setup to decision to mutation to result assembly?',
-      'Would naming one intermediate value remove a mental calculation from the reader?',
-    ],
-    approach: [
-      'Make the main path visible. Use guard clauses for boring preconditions and keep the valid behavior unindented.',
-      'Chunk nearby statements into logic paragraphs so phase changes are visible before a reader studies each line.',
-      'Name intermediate decisions when the name carries domain meaning or removes repeated expression parsing.',
-      'Stop before extracting broad architecture; a clearer local shape often solves the problem.',
-    ],
-    relatedPatterns: ['guard-clause', 'chunk-statements', 'explaining-variable'],
-    relatedConcepts: ['reader-locality', 'cognitive-burden'],
-  },
-  {
-    id: 'weak-abstractions-hide-context',
-    title: 'Weak abstractions hide context',
-    summary:
-      'A helper, provider, strategy, registry, or module boundary makes readers jump without carrying enough meaning.',
-    impact:
-      'The code looks more organized but is harder to understand locally. Each extra name and file adds a live fact the reader must remember, and agents often multiply these abstractions when repo-local guidance is absent.',
-    signals: [
-      'A helper is used once and only makes sense beside its caller.',
-      'The name describes mechanics, not a durable domain concept.',
-      'A review requires opening several files to understand one small behavior.',
-      'A proposed extraction reduces line count while increasing navigation and indirection.',
-    ],
-    diagnosticQuestions: [
-      'Can the new name be understood from its signature and local module context?',
-      'Does the abstraction remove a concept or add one?',
-      'Is there a real second caller, or only a speculative one?',
-      'Would keeping the code nearby make the workflow easier to verify?',
-    ],
-    approach: [
-      'Keep weak helpers near the caller that gives them meaning.',
-      'Promote code only when the extracted concept has a clear contract beyond mechanical reuse.',
-      'Prefer a small amount of repetition over a premature shared layer when the repetition is easier to read and test.',
-      'For agent work, state the boundary explicitly: do not add framework-shaped architecture unless the current change needs it.',
-    ],
-    relatedPatterns: ['reader-locality', 'avoid-premature-agent-architecture'],
-    relatedConcepts: ['reader-locality', 'agent-guidance', 'cognitive-burden'],
-  },
-  {
-    id: 'risky-legacy-change',
-    title: 'Risky legacy change',
-    summary:
-      'The existing behavior is unclear, under-tested, or coupled to callers that a small edit can break.',
-    impact:
-      'The danger comes from uncertainty about intentional behavior. Without characterization, a tidy can silently become a product change.',
-    signals: [
-      'The code has few tests or tests that only cover internal helpers.',
-      'A small edit changes parsing, error handling, ordering, or public output at the same time.',
-      'Callers rely on behavior that is not written down anywhere.',
-      'The reviewer needs to ask “what changed?” and the diff does not make that question answerable.',
-    ],
-    diagnosticQuestions: [
-      'What observable behavior would prove the current system still works?',
-      'Which outputs, errors, logs, side effects, or calls are part of the public contract?',
-      'Can the structure be improved without changing behavior first?',
-      'What is the smallest verification that would catch the likely regression?',
-    ],
-    approach: [
-      'Characterize the current behavior before changing it, especially around edge cases and public boundaries.',
-      'Separate structural cleanup from behavior changes so review can answer one question at a time.',
-      'Protect observable behavior instead of private implementation shape.',
-      'Use the smallest trustworthy verification loop before broadening tests or refactoring further.',
-    ],
-    relatedPatterns: [
-      'characterize-before-changing',
-      'separate-structure-from-behavior',
-      'observable-behavior-tests',
-      'smallest-trustworthy-verification',
-    ],
-    relatedConcepts: ['observable-behavior', 'structure-vs-behavior'],
-  },
-  {
-    id: 'tests-freeze-private-shape',
-    title: 'Tests freeze private shape',
-    summary:
-      'A test fails when internals move even though the user-visible behavior has not changed.',
-    impact:
-      'These tests make code harder to improve. They turn harmless refactors into test rewrites, train developers to avoid cleanup, and give agents false confidence because the suite is sensitive to the wrong thing.',
-    signals: [
-      'Tests assert private helper calls, exact internal ordering, or intermediate data that users never observe.',
-      'A pure extraction or rename requires widespread test changes.',
-      'Mocks encode implementation details instead of collaborator behavior.',
-      'The test suite is noisy during structural changes but misses real output regressions.',
-    ],
-    diagnosticQuestions: [
-      'What behavior would a user, caller, or downstream system actually observe?',
-      'Could the same behavior be produced by a different internal shape?',
-      'Is the mock verifying a contract or only the current implementation path?',
-      'Would this assertion survive a legitimate refactor?',
-    ],
-    approach: [
-      'Move assertions toward outputs, errors, side effects, persisted state, or collaborator contracts.',
-      'Keep private-shape assertions only when the shape itself is the contract, such as ordering guarantees or performance-sensitive calls.',
-      'When replacing brittle tests, keep enough coverage to protect the behavior before deleting the old assertions.',
-      'For agents, make the verification target explicit so they do not satisfy the suite by preserving accidental internals.',
-    ],
-    relatedPatterns: ['observable-behavior-tests', 'smallest-trustworthy-verification'],
-    relatedConcepts: ['observable-behavior'],
-  },
-  {
-    id: 'raw-input-leaks-inward',
-    title: 'Raw input leaks inward',
-    summary:
-      'Strings, maps, nullable values, or unchecked data move through the system after the boundary should have parsed them.',
-    impact:
-      'Every caller has to remember the same validation rules. That spreads defensive code, creates inconsistent edge handling, and makes invalid states look like normal application data.',
-    signals: [
-      'The same null, empty, format, or enum checks appear in multiple places.',
-      'A type says string or boolean when the domain has a narrower set of valid states.',
-      'Errors are discovered far from the input boundary that introduced them.',
-      'A function accepts raw data even though every successful caller already validated it.',
-    ],
-    diagnosticQuestions: [
-      'Where is the first point that has enough context to parse this input?',
-      'What type would make the invalid state impossible or at least uncommon?',
-      'Which checks are boundary validation and which are real business rules?',
-      'Can callers receive a parsed value instead of being trusted to repeat the rule?',
-    ],
-    approach: [
-      'Parse raw input at the boundary and pass domain values inward.',
-      'Use guard clauses for local preconditions, but avoid repeated guards that signal a missing parsed type.',
-      'Prefer constructors, enums, refined types, or result-bearing parsers that encode the successful state.',
-      'Keep error messages and failure modes observable while improving the internal shape.',
-    ],
-    relatedPatterns: ['parse-dont-validate', 'make-invalid-states-hard-to-express', 'guard-clause'],
-    relatedConcepts: ['observable-behavior', 'reader-locality'],
-  },
-  {
-    id: 'mixed-diff-risk',
-    title: 'Mixed diff risk',
-    summary:
-      'A single change mixes formatting, movement, renaming, behavior, tests, and cleanup until review cannot isolate the risk.',
-    impact:
-      'Mixed diffs make reviewers compare too many possible causes at once. Even when the final code is better, the diff hides behavioral changes and makes regressions harder to blame.',
-    signals: [
-      'A diff contains both pure movement and changed conditionals.',
-      'Formatting churn surrounds a small behavior change.',
-      'Test updates, renames, and production behavior changes are all needed to understand one patch.',
-      'Reviewers cannot tell whether a failure came from cleanup or the intended behavior change.',
-    ],
-    diagnosticQuestions: [
-      'Can the structural change be reviewed as behavior-preserving first?',
-      'Which lines are supposed to alter observable behavior?',
-      'Would a smaller verification pass prove the cleanup stayed neutral?',
-      'Is this change easier to review as two stacked changes?',
-    ],
-    approach: [
-      'Make behavior-preserving structure changes separately from behavior changes.',
-      'Keep renames, movement, and formatting narrow enough that review can recognize them as neutral.',
-      'Run focused verification after the structural step before changing behavior.',
-      'Use source control to keep the stack honest instead of asking a reviewer to mentally split the diff.',
-    ],
-    relatedPatterns: [
-      'separate-structure-from-behavior',
-      'smallest-trustworthy-verification',
-      'characterize-before-changing',
-    ],
-    relatedConcepts: ['structure-vs-behavior', 'observable-behavior'],
-  },
-  {
-    id: 'agent-overbuilds',
-    title: 'Agent overbuilds',
-    summary:
-      'Agent-written code adds broad architecture, generic frameworks, or non-local conventions for a narrow request.',
-    impact:
-      'The output may look polished while increasing maintenance cost. Extra files, providers, registries, and abstractions make human changes slower and can conflict with the repo’s existing design language.',
-    signals: [
-      'A small feature introduces a new architecture vocabulary.',
-      'The implementation is organized around generic patterns instead of local code shape.',
-      'The agent ignores nearby examples or repo-specific instructions.',
-      'Verification proves the happy path but not the actual risk introduced by the abstraction.',
-    ],
-    diagnosticQuestions: [
-      'What is the smallest local change that satisfies the request?',
-      'Which existing repo pattern should the implementation imitate?',
-      'Does the abstraction reduce concepts for the reader or add them?',
-      'What instruction would prevent the agent from widening scope again?',
-    ],
-    approach: [
-      'Read repo-local instructions and nearby code before applying generic guidance.',
-      'Constrain the agent to the narrow behavior and explicit non-goals.',
-      'Reject architecture whose main benefit is hypothetical future reuse.',
-      'Ask for verification tied to the risk of the change, not only a broad test run.',
-    ],
-    relatedPatterns: [
-      'repo-local-instructions-win',
-      'avoid-premature-agent-architecture',
-      'smallest-trustworthy-verification',
-    ],
-    relatedConcepts: ['agent-guidance', 'reader-locality', 'cognitive-burden'],
-  },
-  {
-    id: 'unclear-done-signal',
-    title: 'Unclear done signal',
-    summary:
-      'The change is considered complete without evidence that the relevant behavior still works.',
-    impact:
-      'A passing command matters only when it exercises the risk. Without a clear done signal, teams either over-test everything or accept shallow verification that misses the bug the change could realistically introduce.',
-    signals: [
-      'The final note says tests passed but does not say what behavior they protect.',
-      'A broad suite is run because nobody knows the smallest relevant check.',
-      'Manual inspection substitutes for an executable signal even when a targeted test is available.',
-      'The verification step ignores the highest-risk branch or integration point.',
-    ],
-    diagnosticQuestions: [
-      'What could this change realistically break?',
-      'Which command, test, screenshot, or manual check would catch that break?',
-      'Is a narrower check trustworthy enough, or does the change touch shared behavior?',
-      'What evidence should a reviewer see in the final handoff?',
-    ],
-    approach: [
-      'Choose the smallest verification that genuinely exercises the risk.',
-      'Broaden verification when the change touches shared behavior, contracts, rendering, or integration points.',
-      'State what was checked and what was not checked in the handoff.',
-      'When no trustworthy check exists, say so directly and prefer adding characterization before larger edits.',
-    ],
-    relatedPatterns: ['smallest-trustworthy-verification', 'observable-behavior-tests'],
-    relatedConcepts: ['observable-behavior', 'agent-guidance'],
-  },
-  {
-    id: 'repeated-validation-rules',
-    title: 'Repeated validation rules',
-    summary:
-      'Multiple callers repeat the same rules because the valid domain shape is not represented once.',
-    impact:
-      'Repeated validation looks defensive but often marks a weak domain boundary. Over time the rules drift, edge cases differ, and callers can pass values that should never exist inside the system.',
-    signals: [
-      'Several functions check the same string format, range, enum value, or nullability.',
-      'Validation happens after data has already crossed multiple module boundaries.',
-      'Callers disagree about what error to return for the same invalid input.',
-      'The type system allows impossible combinations that every consumer has to reject.',
-    ],
-    diagnosticQuestions: [
-      'What is the canonical place where this value becomes trusted?',
-      'Can the validated value be named as its own type?',
-      'Which callers should receive an error and which should never see raw input?',
-      'Will this representation make common valid states easier to construct?',
-    ],
-    approach: [
-      'Create a parsed or refined value at the boundary and pass that value inward.',
-      'Move repeated validation rules into a constructor or parser with explicit failure behavior.',
-      'Use invalid-state-resistant types where they reduce caller burden without over-modeling the domain.',
-      'Keep behavior-visible error messages covered while consolidating the rule.',
-    ],
-    relatedPatterns: ['make-invalid-states-hard-to-express', 'parse-dont-validate'],
-    relatedConcepts: ['observable-behavior', 'reader-locality'],
-  },
-  {
-    id: 'hidden-side-effects',
-    title: 'Hidden side effects',
-    summary:
-      'A call reads like a calculation but mutates state, performs I/O, reads time, or starts external work.',
-    impact:
-      'Hidden effects make review depend on implementation inspection. A maintainer cannot judge ordering, retries, or failure behavior from the call site, and tests often become broad because the real input or output is invisible.',
-    signals: [
-      'A helper named like a formatter, mapper, or calculator writes to storage or mutates its arguments.',
-      'A code path reads the clock, random source, process environment, or global state from inside business logic.',
-      'A review comment asks whether a call is safe to move, repeat, or skip.',
-      'Tests need extensive setup because a pure-looking function depends on process state.',
-    ],
-    diagnosticQuestions: [
-      'What does this call change outside its return value?',
-      'Can the effect be seen from the function name, receiver, return type, or statement shape?',
-      'Should the effect be passed in as a dependency or moved to a boundary?',
-      'What verification would catch the effect happening at the wrong time?',
-    ],
-    approach: [
-      'Separate calculation from mutation or I/O when the ordering matters.',
-      'Rename or reshape effectful boundaries so the side effect is visible at the call site.',
-      'Pass time, randomness, clients, stores, or publishers explicitly when ambient access hides behavior.',
-      'Test the observable effect at the smallest boundary that can catch ordering or failure regressions.',
-    ],
-    relatedPatterns: [
-      'make-side-effects-visible',
-      'inject-time-and-randomness',
-      'keep-async-boundaries-explicit',
-    ],
-    relatedConcepts: ['side-effect-visibility', 'temporal-coupling', 'observable-behavior'],
-  },
-  {
-    id: 'boolean-flag-maze',
-    title: 'Boolean flag maze',
-    summary:
-      'Booleans carry domain choices across function boundaries until call sites no longer explain themselves.',
-    impact:
-      'The reader has to remember what true and false mean in each position. As more flags appear, impossible combinations become representable and behavior changes hide inside argument order.',
-    signals: [
-      'Call sites pass true, false, false without local names.',
-      'Two or more booleans combine into a lifecycle or mode.',
-      'A third state appears as null, comments, or another flag.',
-      'Tests name the boolean arrangement instead of the behavior selected by that arrangement.',
-    ],
-    diagnosticQuestions: [
-      'What domain choice does this flag represent?',
-      'Would an enum, union, named options object, or constructor make the call readable?',
-      'Are these states mutually exclusive?',
-      'Can invalid combinations be made harder to express?',
-    ],
-    approach: [
-      'Replace boundary booleans with named choices when the flag selects behavior.',
-      'Keep local boolean facts when the name is visible beside the branch.',
-      'Move lifecycle choices into transition functions if the flag represents state movement.',
-      'Update tests to assert the behavior selected by the named choice.',
-    ],
-    relatedPatterns: [
-      'replace-boolean-flag-with-choice',
-      'make-state-transitions-explicit',
-      'make-invalid-states-hard-to-express',
-    ],
-    relatedConcepts: ['state-space', 'reader-locality'],
-  },
-  {
-    id: 'ambiguous-state-transitions',
-    title: 'Ambiguous state transitions',
-    summary:
-      'Lifecycle state changes happen through direct field writes, loose status strings, or scattered flag updates.',
-    impact:
-      'No single place owns the invariants of the transition. Callers can skip timestamps, events, validation, or cleanup because changing state looks like ordinary assignment.',
-    signals: [
-      'Several modules assign status fields directly.',
-      'A state change should emit an event or timestamp, but that side effect is optional at call sites.',
-      'Tests build impossible state combinations to reach common behavior.',
-      'The code has multiple booleans that describe one lifecycle.',
-    ],
-    diagnosticQuestions: [
-      'What states can this value occupy?',
-      'Which transitions are legal, and which should be rejected?',
-      'What side effects must happen with the transition?',
-      'Can the type system or a named transition function reject invalid movement?',
-    ],
-    approach: [
-      'Name lifecycle transitions and put invariant checks inside them.',
-      'Use enums, sealed variants, or typed constants for mutually exclusive states.',
-      'Keep transition side effects, timestamps, and events beside the state change.',
-      'Characterize current transition behavior before changing legacy lifecycles.',
-    ],
-    relatedPatterns: [
-      'make-state-transitions-explicit',
-      'make-invalid-states-hard-to-express',
-      'characterize-before-changing',
-    ],
-    relatedConcepts: ['state-space', 'temporal-coupling', 'observable-behavior'],
-  },
-  {
-    id: 'error-context-lost',
-    title: 'Error context lost',
-    summary:
-      'Failures cross a boundary as strings, generic exceptions, or dropped causes that callers cannot inspect.',
-    impact:
-      'Callers cannot recover, retry, report, or test failure behavior without parsing text or relying on logs. Error messages become accidental APIs while useful context disappears.',
-    signals: [
-      'Code checks error.message or string contents to choose behavior.',
-      'A low-level error is wrapped without the field, id, status, or retry hint that explains recovery.',
-      'Tests assert vague failure text instead of a stable error kind.',
-      'The UI cannot show useful feedback without duplicating parser logic.',
-    ],
-    diagnosticQuestions: [
-      'Which part of this error is stable program behavior?',
-      'Which context would help the caller recover or report the failure?',
-      'Does changing this error shape affect public behavior?',
-      'Can the human message remain separate from the machine-readable kind?',
-    ],
-    approach: [
-      'Return structured errors with stable kinds and recovery context.',
-      'Preserve causes when they matter for debugging, but do not force callers to parse cause text.',
-      'Test public error shape when callers depend on it.',
-      'Characterize legacy string errors before replacing them if callers may already parse them.',
-    ],
-    relatedPatterns: [
-      'return-structured-errors',
-      'observable-behavior-tests',
-      'characterize-before-changing',
-    ],
-    relatedConcepts: ['observable-behavior', 'boundary-trust'],
-  },
-  {
-    id: 'time-dependent-tests',
-    title: 'Time-dependent tests',
-    summary:
-      'Tests sleep, wait, or depend on the wall clock because time is hidden inside the code under test.',
-    impact:
-      'The suite becomes slow and flaky, and failures are hard to diagnose. The test is checking scheduler luck instead of the behavior that should change when time advances.',
-    signals: [
-      'Tests call sleep or use wide timing tolerances.',
-      'Business logic reads Date.now, Instant.now, time.Now, or random identifiers directly.',
-      'Expiration, retry, or ordering behavior cannot be tested without waiting.',
-      'A failure disappears when the timeout is increased.',
-    ],
-    diagnosticQuestions: [
-      'What time value or random source is part of the behavior?',
-      'Which boundary owns the policy that reads time?',
-      'Can the test pass a fixed clock or generated id?',
-      'Would a deterministic test catch the same regression without sleeping?',
-    ],
-    approach: [
-      'Pass time and randomness through the boundary that owns the policy.',
-      'Use fixed clocks, deterministic id generators, or explicit instants in tests.',
-      'Keep direct wall-clock access at edges that truly own scheduling.',
-      'Avoid sleeps as verification unless the behavior being tested is the scheduler itself.',
-    ],
-    relatedPatterns: [
-      'inject-time-and-randomness',
-      'make-side-effects-visible',
-      'smallest-trustworthy-verification',
-    ],
-    relatedConcepts: ['temporal-coupling', 'side-effect-visibility'],
-  },
-  {
-    id: 'unclear-async-ownership',
-    title: 'Unclear async ownership',
-    summary:
-      'Async work starts without a clear owner for ordering, cancellation, errors, or lifetime.',
-    impact:
-      'Work can outlive the request, fail silently, race with subsequent reads, or leak resources. Reviewers cannot tell whether returning from a function means the work finished or was only scheduled.',
-    signals: [
-      'Promises are created without awaits or returned handles.',
-      'Goroutines, tasks, callbacks, or subscriptions have no cancellation path.',
-      'Errors from background work are logged inconsistently or lost.',
-      'A caller reads state immediately after scheduling work and assumes it is complete.',
-    ],
-    diagnosticQuestions: [
-      'Who owns this async work after the current function returns?',
-      'What happens if the caller is cancelled or times out?',
-      'Where do errors go?',
-      'Does the caller need completion, scheduling, or a handle?',
-    ],
-    approach: [
-      'Make awaits, spawns, callbacks, and queues visible at the boundary that owns ordering.',
-      'Return a result, handle, or queued status when work continues after the current function.',
-      'Pass cancellation or context through detached work.',
-      'Test the observable ordering or cancellation behavior instead of only the happy path.',
-    ],
-    relatedPatterns: [
-      'keep-async-boundaries-explicit',
-      'make-side-effects-visible',
-      'observable-behavior-tests',
-    ],
-    relatedConcepts: ['temporal-coupling', 'side-effect-visibility'],
-  },
-  {
-    id: 'layer-language-leaks',
-    title: 'Layer language leaks',
-    summary:
-      'Database rows, API payloads, UI props, or framework objects become the shared language of unrelated layers.',
-    impact:
-      'A change in one layer forces distant code to change because the boundary never translated the shape. Readers must understand storage, transport, and UI details to review domain behavior.',
-    signals: [
-      'Domain logic depends on database column names or HTTP payload fields.',
-      'UI components receive persistence flags that should have been converted into view state.',
-      'A storage migration changes application logic that does not own persistence.',
-      'Mapping code exists, but it only copies fields without naming the contract change.',
-    ],
-    diagnosticQuestions: [
-      'Which layer owns this field name and shape?',
-      'What contract does the next layer need?',
-      'Does mapping change meaning or only mirror fields?',
-      'Would a named boundary type reduce future change radius?',
-    ],
-    approach: [
-      'Name the contract where data crosses layer language.',
-      'Map persistence, transport, domain, and UI shapes only when the next layer needs a different contract.',
-      'Keep raw external shape from leaking inward after the boundary has enough context to parse it.',
-      'Avoid empty DTO churn that mirrors fields without changing meaning.',
-    ],
-    relatedPatterns: [
-      'name-cross-layer-contracts',
-      'parse-dont-validate',
-      'cap-change-radius',
-    ],
-    relatedConcepts: ['boundary-trust', 'change-radius', 'reader-locality'],
-  },
-  {
-    id: 'configuration-drift',
-    title: 'Configuration drift',
-    summary:
-      'Defaults, feature flags, environment variables, and magic values are interpreted differently across callers.',
-    impact:
-      'The running system can behave differently depending on which path read the config. A small policy change becomes a search-and-edit task with hidden edge cases.',
-    signals: [
-      'Multiple modules read the same environment variable or feature flag directly.',
-      'Defaults are repeated as literals in business logic.',
-      'A config key is parsed in several places with different error handling.',
-      'Changing a timeout, retry count, or mode requires edits outside the config boundary.',
-    ],
-    diagnosticQuestions: [
-      'Which boundary owns this config value and its default?',
-      'What named policy should callers receive?',
-      'Are precedence rules documented in code or recreated at call sites?',
-      'Can the raw value be parsed once and passed inward as a precise type?',
-    ],
-    approach: [
-      'Parse raw config at one boundary and pass narrow policy values inward.',
-      'Name defaults and magic values by their domain role.',
-      'Keep framework-shaped config at the framework edge.',
-      'Test surprising precedence or default behavior as observable behavior.',
-    ],
-    relatedPatterns: [
-      'centralize-configuration-policy',
-      'parse-dont-validate',
-      'cap-change-radius',
-    ],
-    relatedConcepts: ['boundary-trust', 'change-radius'],
-  },
-  {
-    id: 'wide-change-radius',
-    title: 'Wide change radius',
-    summary:
-      'A small rule change spreads across files, tests, and callers that do not own the rule.',
-    impact:
-      'The review becomes larger than the behavior. More files mean more merge risk, more verification burden, and more chances for an agent to modify unrelated code.',
-    signals: [
-      'One condition is copied across views, handlers, tests, and helpers.',
-      'A small wording or policy change touches many unrelated files.',
-      'Reviewers cannot find the one file that owns the behavior.',
-      'A type or config change creates mechanical edits mixed with behavior edits.',
-    ],
-    diagnosticQuestions: [
-      'Which boundary should own this rule?',
-      'Which touched files are mechanical fallout?',
-      'Can structural changes be stacked before the behavior change?',
-      'Would a precise type or policy object reduce future edit sites?',
-    ],
-    approach: [
-      'Move the rule to the boundary that owns it before updating every caller.',
-      'Separate mechanical radius from behavior radius when both are needed.',
-      'Use targeted verification after each unit of the change.',
-      'Avoid centralizing unrelated rules only to reduce file count.',
-    ],
-    relatedPatterns: [
-      'cap-change-radius',
-      'separate-structure-from-behavior',
-      'smallest-trustworthy-verification',
-    ],
-    relatedConcepts: ['change-radius', 'structure-vs-behavior'],
-  },
-  {
-    id: 'silent-failure-paths',
-    title: 'Silent failure paths',
-    summary:
-      'The code swallows errors, returns empty results, or logs and continues when callers need to know work failed.',
-    impact:
-      'Failures become harder to diagnose and can corrupt downstream assumptions. The system appears to succeed while skipping behavior that callers or users depend on.',
-    signals: [
-      'Catch blocks log errors and return defaults without telling the caller.',
-      'A failed write or publish produces the same return shape as success.',
-      'Tests only cover the happy path and one generic failure.',
-      'Operational logs show errors that user-visible state never reports.',
-    ],
-    diagnosticQuestions: [
-      'Who needs to know that this work failed?',
-      'Is an empty result a valid domain outcome or a hidden error?',
-      'What context would help recovery or reporting?',
-      'Should the failure be represented as a structured error, event, or state transition?',
-    ],
-    approach: [
-      'Return structured failures when callers can recover or report them.',
-      'Use domain-specific empty states only when absence is valid behavior.',
-      'Test failure behavior at the boundary where callers observe it.',
-      'Keep logging as diagnostics, not as the only behavior signal.',
-    ],
-    relatedPatterns: [
-      'return-structured-errors',
-      'observable-behavior-tests',
-      'make-state-transitions-explicit',
-    ],
-    relatedConcepts: ['observable-behavior', 'boundary-trust'],
-  },
-  {
-    id: 'concurrency-assumptions-hidden',
-    title: 'Concurrency assumptions hidden',
-    summary:
-      'Shared state, ordering, locks, or idempotency assumptions are implicit in code that may run concurrently.',
-    impact:
-      'The code can pass local tests while failing under real scheduling. Reviewers cannot tell which data is protected, which operations can repeat, or which order must be preserved.',
-    signals: [
-      'Shared mutable state is updated without an obvious lock or ownership boundary.',
-      'Retry code is added without making the operation idempotent.',
-      'A background task reads data that another path mutates.',
-      'Tests rely on a single-threaded execution order that production does not guarantee.',
-    ],
-    diagnosticQuestions: [
-      'What owns this shared state?',
-      'Can this operation run twice or out of order?',
-      'Where is cancellation or retry handled?',
-      'What test or review evidence would catch the likely race?',
-    ],
-    approach: [
-      'Make ownership, locking, and async boundaries visible.',
-      'Name idempotency and transition rules where retries happen.',
-      'Keep mutation in one place when possible, and expose the effect in the return value or state transition.',
-      'Use focused tests for ordering-sensitive behavior, but do not pretend they prove all scheduler interleavings.',
-    ],
-    relatedPatterns: [
-      'make-side-effects-visible',
-      'keep-async-boundaries-explicit',
-      'make-state-transitions-explicit',
-    ],
-    relatedConcepts: ['temporal-coupling', 'side-effect-visibility', 'state-space'],
-  },
-  {
-    id: 'naming-drift',
-    title: 'Naming drift',
-    summary:
-      'Names keep their old words after behavior, ownership, or domain meaning changes.',
-    impact:
-      'Stale names mislead readers and agents. The code compiles, but every review requires reconciling what the name claims with what the implementation actually does.',
-    signals: [
-      'A helper name describes an old implementation instead of its current domain role.',
-      'Two names refer to the same concept with slightly different wording.',
-      'A variable called active, valid, enabled, or ready carries a narrower rule than its name suggests.',
-      'Tests repeat stale vocabulary and hide the new behavior.',
-    ],
-    diagnosticQuestions: [
-      'What domain fact should this name communicate now?',
-      'Does the name describe mechanics or meaning?',
-      'Are there nearby names for the same concept?',
-      'Would renaming be a structure-only change or part of a behavior change?',
-    ],
-    approach: [
-      'Rename to the current domain fact before changing behavior when the rename is behavior-preserving.',
-      'Use explaining variables for local decisions instead of generic condition names.',
-      'Keep terminology consistent across tests, examples, and user-facing errors when they describe the same contract.',
-      'Avoid broad vocabulary rewrites while a behavior change is in progress.',
-    ],
-    relatedPatterns: [
-      'explaining-variable',
-      'separate-structure-from-behavior',
-      'reader-locality',
-    ],
-    relatedConcepts: ['reader-locality', 'structure-vs-behavior', 'cognitive-burden'],
-  },
-  {
-    id: 'cache-invalidation-unclear',
-    title: 'Cache invalidation unclear',
-    summary:
-      'The code updates cached data without naming freshness rules, invalidation triggers, or stale-read behavior.',
-    impact:
-      'Readers cannot tell whether stale data is acceptable, whether writes update the cache, or which path owns invalidation. Bugs often appear as rare ordering problems rather than obvious logic errors.',
-    signals: [
-      'A write path updates storage but not the cache, with no stated freshness contract.',
-      'Several callers clear the same cache for different reasons.',
-      'Tests assert current values without covering stale-read policy.',
-      'A cache key is built from loose strings or partial request data.',
-    ],
-    diagnosticQuestions: [
-      'What freshness guarantee does this caller need?',
-      'Which operation owns invalidation?',
-      'Can the cache key be represented as a parsed value?',
-      'Is stale data a valid state or a failure?',
-    ],
-    approach: [
-      'Name the freshness policy and keep invalidation beside the write or transition that requires it.',
-      'Represent cache keys as precise values when loose strings cause drift.',
-      'Test the observable stale-read behavior at the boundary callers use.',
-      'Keep background refreshes and async invalidation explicit.',
-    ],
-    relatedPatterns: [
-      'make-state-transitions-explicit',
-      'parse-dont-validate',
-      'keep-async-boundaries-explicit',
-    ],
-    relatedConcepts: ['temporal-coupling', 'state-space', 'observable-behavior'],
-  },
-  {
-    id: 'data-migration-risk',
-    title: 'Data migration risk',
-    summary:
-      'A schema or data-shape change alters stored meaning without clear compatibility, fallback, or verification.',
-    impact:
-      'Data changes are hard to roll back and easy to under-test. The code may work for new records while old records, partial migrations, or mixed-version deployments fail.',
-    signals: [
-      'New code assumes every stored record already has the new shape.',
-      'Migration, parser, and behavior changes land in one patch.',
-      'Fallback behavior is implicit or differs by caller.',
-      'Tests only use newly constructed records.',
-    ],
-    diagnosticQuestions: [
-      'What old shapes can still exist when this code runs?',
-      'Is the migration compatible with mixed versions or rollback?',
-      'Which parser or boundary should normalize old and new data?',
-      'What behavior proves old records still work?',
-    ],
-    approach: [
-      'Parse stored data at a boundary that can normalize old and new shapes.',
-      'Separate migration mechanics from behavior changes when review would otherwise mix risks.',
-      'Characterize behavior with representative old records before changing the shape.',
-      'Return structured errors when incompatible data must be rejected.',
-    ],
-    relatedPatterns: [
-      'parse-dont-validate',
-      'characterize-before-changing',
-      'separate-structure-from-behavior',
-    ],
-    relatedConcepts: ['boundary-trust', 'observable-behavior', 'change-radius'],
-  },
-  {
-    id: 'observability-noise',
-    title: 'Observability noise',
-    summary:
-      'Logs, metrics, and events are emitted without a stable contract for what changed or who should act.',
-    impact:
-      'Noisy signals make real failures harder to find. They also become accidental behavior when downstream dashboards, alerts, or support workflows depend on unstable names and fields.',
-    signals: [
-      'Several code paths log similar failures with different field names.',
-      'Metrics count implementation branches rather than user-visible outcomes.',
-      'Events lack stable identifiers or failure context.',
-      'Tests ignore diagnostics even though callers or operators depend on them.',
-    ],
-    diagnosticQuestions: [
-      'Who consumes this signal?',
-      'Is the signal part of observable behavior or only local debugging?',
-      'Which fields are stable enough to rely on?',
-      'Does this signal identify the outcome, the cause, or both?',
-    ],
-    approach: [
-      'Name diagnostic events around observable outcomes and stable context.',
-      'Keep debug logs separate from signals that operators or callers depend on.',
-      'Treat relied-on logs, metrics, and events as observable contracts in tests.',
-      'Use structured errors and events instead of parsing message text downstream.',
-    ],
-    relatedPatterns: [
-      'return-structured-errors',
-      'observable-behavior-tests',
-      'make-side-effects-visible',
-    ],
-    relatedConcepts: ['observable-behavior', 'side-effect-visibility'],
-  },
-  {
-    id: 'cross-cutting-policy-scattered',
-    title: 'Cross-cutting policy scattered',
-    summary:
-      'Authorization, retries, rate limits, logging, validation, or formatting rules are copied across unrelated paths.',
-    impact:
-      'Each copy can drift. Reviewers must inspect every path to know whether the policy still applies consistently, and a small policy change turns into a wide edit.',
-    signals: [
-      'Several handlers repeat the same permission check or retry condition.',
-      'A policy change requires edits in many feature files.',
-      'Tests cover the policy in one path but not the copies.',
-      'A helper exists but has a weak name or lives far from the boundary that owns the policy.',
-    ],
-    diagnosticQuestions: [
-      'Which boundary should own this policy?',
-      'Is the repeated code a real shared concept or just similar mechanics?',
-      'What context must remain visible at each call site?',
-      'Would centralizing the policy reduce future change radius without hiding behavior?',
-    ],
-    approach: [
-      'Move real policies to the boundary that owns the decision.',
-      'Keep call sites explicit about the domain action being protected.',
-      'Avoid generic policy frameworks when one or two local helpers would explain the rule.',
-      'Test the policy through observable behavior on representative paths.',
-    ],
-    relatedPatterns: [
-      'cap-change-radius',
-      'reader-locality',
-      'avoid-premature-agent-architecture',
-    ],
-    relatedConcepts: ['change-radius', 'reader-locality', 'observable-behavior'],
-  },
-  {
-    id: 'tooling-contract-implicit',
-    title: 'Tooling contract implicit',
-    summary:
-      'Build, format, lint, generation, or release steps depend on unwritten local knowledge.',
-    impact:
-      'Humans and agents run the wrong checks, edit generated files by hand, or miss required regeneration. The repo becomes harder to change because the done signal is tribal knowledge.',
-    signals: [
-      'A change requires generated files, but the command is not documented near the workflow.',
-      'Agents run broad or irrelevant checks because the narrow verification path is unclear.',
-      'Formatting or lint rules differ between local edits and CI.',
-      'Release or build steps depend on environment assumptions not encoded in config.',
-    ],
-    diagnosticQuestions: [
-      'What command proves this kind of change is complete?',
-      'Where should that command be documented for humans and agents?',
-      'Are generated artifacts owned by source or by a build step?',
-      'Can repo-local instructions state the precedence and verification path?',
-    ],
-    approach: [
-      'Capture repo-local workflow in AGENTS, CONTRIBUTING, scripts, or config where agents and maintainers will look.',
-      'Prefer narrow commands that match the changed surface over broad unfocused checks.',
-      'Make generated-file ownership explicit.',
-      'Keep tooling guidance local to the repo instead of relying on general preferences.',
-    ],
-    relatedPatterns: [
-      'repo-local-instructions-win',
-      'smallest-trustworthy-verification',
-      'separate-structure-from-behavior',
-    ],
-    relatedConcepts: ['agent-guidance', 'structure-vs-behavior'],
-  },
-  {
-    id: 'domain-rule-buried-in-ui',
-    title: 'Domain rule buried in UI',
-    summary:
-      'A business rule lives inside component rendering or presentation code where other callers cannot reuse or verify it.',
-    impact:
-      'The rule becomes easy to miss and hard to test without rendering the UI. Other surfaces may implement a different version because the actual policy has no named boundary.',
-    signals: [
-      'A component filters, authorizes, validates, or prices data inline.',
-      'The same rule appears in an API handler and a UI component.',
-      'Tests need a browser or component harness to check a domain decision.',
-      'Changing UI layout risks changing business behavior.',
-    ],
-    diagnosticQuestions: [
-      'Is this branch a presentation choice or a domain decision?',
-      'Which non-UI caller also needs the rule?',
-      'Can the component receive a view model or policy result instead?',
-      'What observable behavior should protect the rule?',
-    ],
-    approach: [
-      'Move domain decisions to a policy, parser, or view-model boundary before rendering.',
-      'Keep presentation-specific formatting in the UI.',
-      'Test the rule at the boundary that owns it, then smoke test the rendered path if needed.',
-      'Name cross-layer contracts so the UI receives the shape it needs.',
-    ],
-    relatedPatterns: [
-      'name-cross-layer-contracts',
-      'cap-change-radius',
-      'observable-behavior-tests',
-    ],
-    relatedConcepts: ['boundary-trust', 'change-radius', 'observable-behavior'],
-  },
-  {
-    id: 'performance-fix-without-evidence',
-    title: 'Performance fix without evidence',
-    summary:
-      'A change adds caching, concurrency, allocation tricks, or broad rewrites without a measured bottleneck.',
-    impact:
-      'Performance work can add state, invalidation, timing, and concurrency risks. Without evidence, the code may get harder to change while the real bottleneck remains elsewhere.',
-    signals: [
-      'A patch adds caching or parallelism without a benchmark, profile, or production signal.',
-      'The optimization changes data shape or ownership before proving a bottleneck.',
-      'A micro-optimization obscures the main path.',
-      'Tests prove correctness but not the performance claim that justified the complexity.',
-    ],
-    diagnosticQuestions: [
-      'What measurement shows this path is the bottleneck?',
-      'What behavior or contract could the optimization change?',
-      'Can the performance-sensitive boundary be isolated?',
-      'What verification proves both correctness and the intended performance property?',
-    ],
-    approach: [
-      'Measure before adding complexity, and keep the measurement close to the claim.',
-      'Prefer local improvements that preserve reader locality before adding cache or concurrency state.',
-      'Treat cache, async, and allocation changes as behavior-risking when they alter ordering or ownership.',
-      'Keep the fallback or original behavior easy to compare during review.',
-    ],
-    relatedPatterns: [
-      'smallest-trustworthy-verification',
-      'make-side-effects-visible',
-      'cap-change-radius',
-    ],
-    relatedConcepts: ['side-effect-visibility', 'change-radius', 'cognitive-burden'],
-  },
-  {
-    id: 'review-comment-lacks-pattern-name',
-    title: 'Review comment lacks a pattern name',
-    summary:
-      'A reviewer can see a problem but cannot name the move clearly enough for the author or an agent to apply it.',
-    impact:
-      'Unnamed feedback becomes taste. Authors may make broad rewrites, agents may overbuild, and future reviews repeat the same explanation without a stable link or shared vocabulary.',
-    signals: [
-      'Comments say “this feels hard to read” without naming the change pressure.',
-      'The same review advice is rewritten differently in each pull request.',
-      'An agent receives vague feedback and changes more code than requested.',
-      'The author fixes one symptom but misses the underlying pattern.',
-    ],
-    diagnosticQuestions: [
-      'What source-change problem is visible in the diff?',
-      'Which small pattern would work the problem down?',
-      'What tradeoff should the author watch for?',
-      'Would a review snippet with a stable link reduce ambiguity?',
-    ],
-    approach: [
-      'Name the problem first, then link to the pattern that fits the local code.',
-      'Use the pattern’s review snippet when the comment should be concise and repeatable.',
-      'Avoid turning the comment into a broad rewrite request unless the scope is genuinely larger.',
-      'Point agents to the operational instruction, not only the human explanation.',
-    ],
-    relatedPatterns: [
-      'reader-locality',
-      'guard-clause',
-      'avoid-premature-agent-architecture',
-    ],
-    relatedConcepts: ['agent-guidance', 'cognitive-burden'],
-  },
-];
-
+export const problems: Problem[] = [];
 export const references = [
   {
     title: 'Laws of UX',

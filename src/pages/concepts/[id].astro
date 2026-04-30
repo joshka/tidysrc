@@ -26,7 +26,7 @@ const conceptMetrics = ['Cognitive load', 'Review time', 'Change radius'];
       </div>
       <div class="page-hero-side">
         <p class="lede">{concept.data.summary}</p>
-        <Chips items={concept.data.tags} />
+        <Chips items={concept.data.tags} status={concept.data.status} />
       </div>
     </div>
   </section>

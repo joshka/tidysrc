@@ -1,5 +1,7 @@
 import type { CollectionEntry } from 'astro:content';
 
+import { parseProblemContent } from './problemContent';
+
 export type PatternEntry = CollectionEntry<'patterns'>;
 export type ConceptEntry = CollectionEntry<'concepts'>;
 export type ProblemEntry = CollectionEntry<'problems'>;
@@ -31,12 +33,21 @@ export function sortedPatterns(patterns: PatternEntry[]): PatternEntry[] {
 }
 
 export function sortedProblems(problems: ProblemEntry[]): ProblemEntry[] {
-  return [...problems].sort((left, right) => left.data.title.localeCompare(right.data.title));
+  return [...problems].sort((left, right) => {
+    const statusWeight = statusRank(right.data.status) - statusRank(left.data.status);
+    if (statusWeight !== 0) {
+      return statusWeight;
+    }
+
+    return left.data.title.localeCompare(right.data.title);
+  });
 }
 
 export function statusRank(status: PatternEntry['data']['status']): number {
   switch (status) {
     case 'stable':
+      return 4;
+    case 'reviewed':
       return 3;
     case 'draft':
       return 2;
@@ -75,6 +86,10 @@ function languageRank(language: string): number {
   return languageOrder.get(language.toLowerCase()) ?? Number.MAX_SAFE_INTEGER;
 }
 
+export function isKnownLanguage(language: string): boolean {
+  return languageOrder.has(language.toLowerCase());
+}
+
 export function languageLabel(language: string): string {
   return languageNames.get(language.toLowerCase()) ?? language;
 }
@@ -98,6 +113,10 @@ export function allLanguages(patterns: PatternEntry[]): string[] {
   return sortedLanguageCodes([...new Set(patterns.flatMap((pattern) => pattern.data.languages))]);
 }
 
+export function allProblemCategories(problems: ProblemEntry[]): string[] {
+  return [...new Set(problems.map((problem) => problem.data.category))].sort();
+}
+
 export function patternSearchText(pattern: PatternEntry): string {
   return [
     pattern.data.title,
@@ -114,13 +133,18 @@ export function patternSearchText(pattern: PatternEntry): string {
 }
 
 export function problemSearchText(problem: ProblemEntry): string {
+  const parsed = parseProblemContent(problem.body ?? '', problem.id);
+
   return [
     problem.data.title,
     problem.data.summary,
-    problem.data.impact,
-    problem.data.signals.join(' '),
-    problem.data.diagnosticQuestions.join(' '),
-    problem.data.approach.join(' '),
+    problem.data.status,
+    problem.data.category,
+    problem.data.topics.join(' '),
+    parsed.impact,
+    parsed.signals.join(' '),
+    parsed.diagnosticQuestions.join(' '),
+    parsed.approach.join(' '),
     problem.data.relatedPatterns.join(' '),
     problem.data.relatedConcepts.join(' '),
   ]

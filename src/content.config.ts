@@ -1,7 +1,11 @@
 import { defineCollection } from 'astro:content';
+import { glob } from 'astro/loaders';
 import { z } from 'astro/zod';
 
 import { concepts, patterns, problems } from './data/catalog';
+import { validateCatalog } from './lib/validateCatalog';
+
+validateCatalog({ concepts, patterns, problems });
 
 const exampleSchema = z.object({
   title: z.string(),
@@ -16,7 +20,7 @@ const patternSchema = z.object({
   title: z.string(),
   summary: z.string(),
   narrative: z.string(),
-  status: z.enum(['seed', 'draft', 'stable']),
+  status: z.enum(['seed', 'draft', 'reviewed', 'stable']),
   tags: z.array(z.string()),
   audiences: z.array(z.enum(['reviewers', 'agents', 'learners'])),
   languages: z.array(z.string()),
@@ -35,6 +39,7 @@ const conceptSchema = z.object({
   id: z.string(),
   title: z.string(),
   summary: z.string(),
+  status: z.enum(['seed', 'draft', 'reviewed', 'stable']),
   tags: z.array(z.string()),
   relatedPatterns: z.array(z.string()),
   examples: z.array(exampleSchema).optional(),
@@ -47,13 +52,22 @@ const conceptSchema = z.object({
 });
 
 const problemSchema = z.object({
-  id: z.string(),
   title: z.string(),
   summary: z.string(),
-  impact: z.string(),
-  signals: z.array(z.string()),
-  diagnosticQuestions: z.array(z.string()),
-  approach: z.array(z.string()),
+  status: z.enum(['seed', 'draft', 'reviewed', 'stable']),
+  category: z.enum([
+    'agent-workflow',
+    'architecture',
+    'async',
+    'boundaries',
+    'change-risk',
+    'readability',
+    'side-effects',
+    'state',
+    'testing',
+    'tooling',
+  ]),
+  topics: z.array(z.string()),
   relatedPatterns: z.array(z.string()),
   relatedConcepts: z.array(z.string()),
 });
@@ -69,7 +83,7 @@ const conceptCollection = defineCollection({
 });
 
 const problemCollection = defineCollection({
-  loader: () => problems,
+  loader: glob({ pattern: '*.md', base: './src/content/problems' }),
   schema: problemSchema,
 });
 
