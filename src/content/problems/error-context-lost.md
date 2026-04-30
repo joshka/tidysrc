@@ -10,6 +10,7 @@ summary: >-
   Failures cross a boundary as strings, generic exceptions, or dropped causes that callers cannot
   inspect.
 relatedPatterns:
+  - preserve-error-context
   - return-structured-errors
   - observable-behavior-tests
   - characterize-before-changing

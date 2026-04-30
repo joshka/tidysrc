@@ -1,5 +1,6 @@
 import type { CollectionEntry } from 'astro:content';
 
+import { parsePatternContent } from './patternContent';
 import { parseProblemContent } from './problemContent';
 
 export type PatternEntry = CollectionEntry<'patterns'>;
@@ -134,6 +135,8 @@ export function allProblemCategories(problems: ProblemEntry[]): string[] {
 }
 
 export function patternSearchText(pattern: PatternEntry): string {
+  const parsed = parsePatternContent(pattern.body ?? '', pattern.id);
+
   return [
     pattern.data.title,
     pattern.data.summary,
@@ -143,6 +146,11 @@ export function patternSearchText(pattern: PatternEntry): string {
     pattern.data.languages.join(' '),
     pattern.data.problems.join(' '),
     pattern.data.concepts.join(' '),
+    parsed.narrative.join(' '),
+    parsed.useWhen.join(' '),
+    parsed.guidance.join(' '),
+    parsed.tradeoffs.join(' '),
+    parsed.examples.map((example) => `${example.title} ${example.note ?? ''}`).join(' '),
   ]
     .join(' ')
     .toLowerCase();

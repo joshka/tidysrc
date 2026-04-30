@@ -10,7 +10,7 @@
     "dev": "astro dev",
     "build": "astro check && astro build",
     "check": "astro check",
-    "check:site": "pnpm build && node scripts/check-site.mjs",
+    "check:site": "node scripts/check-content.mjs && pnpm build && node scripts/check-site.mjs",
     "preview": "astro preview",
     "astro": "astro"
   },

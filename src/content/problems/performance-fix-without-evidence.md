@@ -11,6 +11,7 @@ summary: >-
   A change adds caching, concurrency, allocation tricks, or broad rewrites without a measured
   bottleneck.
 relatedPatterns:
+  - measure-before-optimizing
   - smallest-trustworthy-verification
   - make-side-effects-visible
   - cap-change-radius

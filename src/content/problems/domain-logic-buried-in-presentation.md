@@ -10,6 +10,7 @@ summary: >-
   A business rule lives inside component rendering, presenters, serializers, or controllers where
   other callers cannot reuse or verify it.
 relatedPatterns:
+  - move-domain-rules-inward
   - name-cross-layer-contracts
   - cap-change-radius
   - observable-behavior-tests

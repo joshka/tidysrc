@@ -11,6 +11,7 @@ summary: >-
   The code updates cached data without naming freshness rules, invalidation triggers, or stale-read
   behavior.
 relatedPatterns:
+  - make-cache-ownership-explicit
   - make-state-transitions-explicit
   - parse-dont-validate
   - keep-async-boundaries-explicit

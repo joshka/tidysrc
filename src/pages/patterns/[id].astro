@@ -13,6 +13,7 @@ import {
   problemHref,
   sortedLanguageCodes,
 } from '../../lib/catalog';
+import { parsePatternContent } from '../../lib/patternContent';
 
 export async function getStaticPaths() {
   const patterns = await getCollection('patterns');
@@ -20,6 +21,7 @@ export async function getStaticPaths() {
 }
 
 const { pattern } = Astro.props;
+const patternContent = parsePatternContent(pattern.body ?? '', pattern.id);
 const patterns = await getCollection('patterns');
 const problems = await getCollection('problems');
 const patternById = new Map(patterns.map((entry) => [entry.id, entry]));
@@ -37,7 +39,7 @@ const referenceHref = (reference: string) =>
   referenceTargets.find(([label]) => reference.startsWith(label))?.[1];
 const isExternalReference = (href: string) => href.startsWith('http');
 const reviewProblem = pattern.data.problems[0] ?? relatedProblems[0]?.data.summary ?? pattern.data.summary;
-const reviewMove = pattern.data.guidance[0] ?? pattern.data.summary;
+const reviewMove = patternContent.guidance[0] ?? pattern.data.summary;
 const reviewMarkdownSnippet = [
   `Consider [${pattern.data.title}](__CURRENT_PAGE_URL__): ${reviewProblem}`,
   '',
@@ -71,28 +73,28 @@ const displayTags = pattern.data.tags.filter((tag) => {
     <article class="article">
       <section class="narrative-card" id="narrative">
         <h2>Core Idea</h2>
-        <p>{pattern.data.narrative}</p>
+        {patternContent.narrative.map((paragraph) => <p>{paragraph}</p>)}
       </section>
 
       <div class="bento-grid">
         <section class="bento-card" id="use-when">
           <h2>Use When</h2>
           <ul>
-            {pattern.data.useWhen.map((item) => <li>{item}</li>)}
+            {patternContent.useWhen.map((item) => <li>{item}</li>)}
           </ul>
         </section>
 
         <section class="bento-card muted" id="guidance">
           <h2>Guidance</h2>
           <ul>
-            {pattern.data.guidance.map((item) => <li>{item}</li>)}
+            {patternContent.guidance.map((item) => <li>{item}</li>)}
           </ul>
         </section>
 
         <section class="bento-card" id="tradeoffs">
           <h2>Tradeoffs</h2>
           <ul>
-            {pattern.data.tradeoffs.map((item) => <li>{item}</li>)}
+            {patternContent.tradeoffs.map((item) => <li>{item}</li>)}
           </ul>
         </section>
       </div>
@@ -103,13 +105,13 @@ const displayTags = pattern.data.tags.filter((tag) => {
           <span>{languageChoiceLabels.join(' / ')}</span>
         </div>
         <div class="implementation-tabs">
-          <CodeExamples examples={pattern.data.examples} />
+          <CodeExamples examples={patternContent.examples} />
         </div>
       </section>
 
       <section class="agent-panel" id="agents">
         <div class="agent-mark">Agent Instruction</div>
-        <CopyBox text={pattern.data.agentInstruction} />
+        <CopyBox text={patternContent.agentInstruction} />
       </section>
 
       <section class="agent-panel review-snippet" id="review-snippet">
@@ -157,7 +159,7 @@ const displayTags = pattern.data.tags.filter((tag) => {
         <h2 class="underlined">References</h2>
         <ul class="reference-list">
           {
-            pattern.data.references.map((reference) => {
+            patternContent.references.map((reference) => {
               const href = referenceHref(reference);
               return (
                 <li>

@@ -11,6 +11,7 @@ summary: >-
   The code swallows errors, returns empty results, or logs and continues when callers need to know
   work failed.
 relatedPatterns:
+  - make-failures-observable
   - return-structured-errors
   - observable-behavior-tests
   - make-state-transitions-explicit

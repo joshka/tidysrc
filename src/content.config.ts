@@ -2,10 +2,7 @@ import { defineCollection } from 'astro:content';
 import { glob } from 'astro/loaders';
 import { z } from 'astro/zod';
 
-import { concepts, patterns, problems } from './data/catalog';
-import { validateCatalog } from './lib/validateCatalog';
-
-validateCatalog({ concepts, patterns, problems });
+import { concepts } from './data/catalog';
 
 const exampleSchema = z.object({
   title: z.string(),
@@ -16,10 +13,8 @@ const exampleSchema = z.object({
 });
 
 const patternSchema = z.object({
-  id: z.string(),
   title: z.string(),
   summary: z.string(),
-  narrative: z.string(),
   status: z.enum(['seed', 'draft', 'reviewed', 'stable']),
   tags: z.array(z.string()),
   audiences: z.array(z.enum(['reviewers', 'agents', 'learners'])),
@@ -27,12 +22,6 @@ const patternSchema = z.object({
   problems: z.array(z.string()),
   concepts: z.array(z.string()),
   related: z.array(z.string()),
-  useWhen: z.array(z.string()),
-  guidance: z.array(z.string()),
-  tradeoffs: z.array(z.string()),
-  agentInstruction: z.string(),
-  examples: z.array(exampleSchema),
-  references: z.array(z.string()),
 });
 
 const conceptSchema = z.object({
@@ -73,7 +62,7 @@ const problemSchema = z.object({
 });
 
 const patternCollection = defineCollection({
-  loader: () => patterns,
+  loader: glob({ pattern: '*.md', base: './src/content/patterns' }),
   schema: patternSchema,
 });
 
