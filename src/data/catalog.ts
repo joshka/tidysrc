@@ -974,6 +974,674 @@ const href = patternHref(pattern.slug);
     ],
     references: [],
   },
+  {
+    id: 'make-side-effects-visible',
+    title: 'Make Side Effects Visible',
+    summary:
+      'Keep mutation, I/O, time, and external calls obvious at the point where a reader evaluates behavior.',
+    narrative:
+      'Hidden side effects make code look easier to reason about than it is. A function that reads like a pure calculation but writes state, sends events, mutates arguments, or reads time forces the reader to distrust every call. Make the effect visible in the name, return type, boundary, or surrounding statement shape.',
+    status: 'draft',
+    tags: ['correctness', 'readability', 'side-effects', 'review'],
+    audiences: ['reviewers', 'agents', 'learners'],
+    languages: ['go', 'rust', 'ts'],
+    problems: ['A call that looks like a calculation also mutates state, performs I/O, or depends on ambient time.'],
+    concepts: ['side-effect-visibility', 'cognitive-burden'],
+    related: ['chunk-statements', 'smallest-trustworthy-verification', 'reader-locality'],
+    useWhen: [
+      'A reader cannot tell whether a call mutates input, writes global state, sends a message, reads the clock, or touches storage.',
+      'A review depends on knowing when an external call happens, but that call is buried inside a helper or expression.',
+      'Tests need awkward setup because behavior depends on ambient process state instead of explicit inputs.',
+    ],
+    guidance: [
+      'Move side effects into their own statement or named boundary so the reader can see when the world changes.',
+      'Name effectful functions with verbs that reveal the effect, such as save, publish, refresh, persist, lock, or notify.',
+      'Pass clocks, random sources, clients, or stores explicitly when ambient access hides a behavior dependency.',
+    ],
+    tradeoffs: [
+      'Some frameworks hide effects behind callbacks or lifecycle hooks; follow the local idiom but keep the hook name and boundary clear.',
+      'Do not split every tiny assignment into ceremonial wrappers; the goal is to reveal behavior that changes review risk.',
+      'Rust ownership can make mutation visible through signatures, while JavaScript and Go often need naming and statement structure to carry the same signal.',
+    ],
+    agentInstruction:
+      'When a change adds mutation, I/O, time, randomness, or external calls, make the effect visible in the name, boundary, or statement shape. Do not hide it inside a pure-looking helper.',
+    examples: [
+      {
+        title: 'Name the effectful boundary',
+        path: 'src/session.ts',
+        language: 'ts',
+        note:
+          'The write is visible in the function name and isolated after the decision, so the reader can separate calculation from persistence.',
+        code: `export async function refreshSession(session: Session, store: SessionStore) {
+  const refreshed = session.extend(clock.now());
+
+  await store.saveSession(refreshed);
+
+  return refreshed;
+}`,
+      },
+      {
+        title: 'Rust return value exposes mutation',
+        path: 'src/cache.rs',
+        language: 'rust',
+        note:
+          'The mutable receiver and returned status make the cache update visible at the call boundary.',
+        code: `pub fn refresh_entry(&mut self, key: CacheKey, value: Value) -> RefreshStatus {
+    let replaced = self.entries.insert(key, value).is_some();
+
+    RefreshStatus { replaced }
+}`,
+      },
+      {
+        title: 'Go separates calculation from publish',
+        path: 'internal/orders/complete.go',
+        language: 'go',
+        note:
+          'The event publish is not hidden inside CompleteOrder, so retry and failure behavior are reviewable.',
+        code: `order := CompleteOrder(command, clock.Now())
+
+if err := repository.Save(ctx, order); err != nil {
+    return err
+}
+
+return events.Publish(ctx, OrderCompleted{ID: order.ID})`,
+      },
+    ],
+    references: [],
+  },
+  {
+    id: 'cap-change-radius',
+    title: 'Cap the Change Radius',
+    summary:
+      'Keep a change inside the smallest coherent set of files, calls, and concepts that can carry it.',
+    narrative:
+      'A change radius grows when a small rule forces edits across files, tests, builders, configs, and docs that do not own the behavior. Some radius is real coupling. Some is accidental shape. Before broadening a patch, ask which boundary should own the rule and which edits only exist because the current shape leaks it.',
+    status: 'draft',
+    tags: ['workflow', 'architecture', 'review'],
+    audiences: ['reviewers', 'agents', 'learners'],
+    languages: ['java', 'rust', 'ts'],
+    problems: ['A small behavior change requires touching many distant files that do not own the behavior.'],
+    concepts: ['change-radius', 'reader-locality'],
+    related: ['reader-locality', 'separate-structure-from-behavior', 'parse-dont-validate'],
+    useWhen: [
+      'One rule change touches several layers because the rule is represented as loose data or repeated conditionals.',
+      'A review has many mechanical edits that hide the file where the behavior actually lives.',
+      'A caller needs to know too many downstream implementation details before it can make a small change safely.',
+    ],
+    guidance: [
+      'Find the boundary that owns the rule and move the rule there before copying updates through callers.',
+      'Separate mechanical call-site changes from the behavior change when the radius cannot be avoided.',
+      'Use a precise type, policy object, or named helper only when it reduces the number of future edit sites.',
+    ],
+    tradeoffs: [
+      'Large radii can be legitimate for public API changes; make that compatibility cost explicit instead of hiding it as cleanup.',
+      'Do not create a central dumping ground just to reduce touched files; the new boundary must own the concept.',
+      'Rust often exposes radius through type changes, while dynamic languages can hide radius until runtime or tests execute the path.',
+    ],
+    agentInstruction:
+      'Before editing many files for one rule, identify the boundary that should own the rule. Keep the patch radius small or explain why the wider radius is a real contract change.',
+    examples: [
+      {
+        title: 'Move the rule to the policy boundary',
+        path: 'src/policy.ts',
+        language: 'ts',
+        note:
+          'Callers stop repeating the stable-status rule; future changes edit the policy instead of every catalog view.',
+        code: `export function canPublish(pattern: Pattern): boolean {
+  return pattern.status === 'stable' && pattern.examples.length > 0;
+}`,
+      },
+      {
+        title: 'Rust type carries the rule through callers',
+        path: 'src/publish.rs',
+        language: 'rust',
+        note:
+          'Callers that receive PublishablePattern no longer repeat the same readiness checks before publishing.',
+        code: `pub struct PublishablePattern(Pattern);
+
+impl TryFrom<Pattern> for PublishablePattern {
+    type Error = PublishError;
+
+    fn try_from(pattern: Pattern) -> Result<Self, Self::Error> {
+        pattern.ensure_ready()?;
+        Ok(Self(pattern))
+    }
+}`,
+      },
+      {
+        title: 'Java service narrows the edited surface',
+        path: 'PublishPolicy.java',
+        language: 'java',
+        note:
+          'Controllers ask the policy for the rule instead of repeating the same publish checks across endpoints.',
+        code: `final class PublishPolicy {
+    boolean canPublish(Pattern pattern) {
+        return pattern.status() == Status.STABLE && !pattern.examples().isEmpty();
+    }
+}`,
+      },
+    ],
+    references: [],
+  },
+  {
+    id: 'make-state-transitions-explicit',
+    title: 'Make State Transitions Explicit',
+    summary:
+      'Represent lifecycle changes as named transitions instead of scattered field writes and flag checks.',
+    narrative:
+      'State bugs often come from code that edits flags directly. A record can be draft, queued, published, archived, failed, and retried, but the allowed movement between those states is nowhere named. Explicit transitions give reviewers a place to check invariants, side effects, and invalid movements.',
+    status: 'draft',
+    tags: ['correctness', 'state', 'api-design'],
+    audiences: ['reviewers', 'agents', 'learners'],
+    languages: ['java', 'rust', 'ts'],
+    problems: ['Lifecycle state changes happen through scattered flags, nullable fields, or direct property writes.'],
+    concepts: ['state-space', 'observable-behavior'],
+    related: ['make-invalid-states-hard-to-express', 'observable-behavior-tests'],
+    useWhen: [
+      'A value has a lifecycle and only some transitions are valid.',
+      'Different callers update status fields directly and disagree about side effects or required timestamps.',
+      'Tests need to build impossible states to exercise ordinary behavior.',
+    ],
+    guidance: [
+      'Name transitions with verbs that describe the lifecycle move, such as submit, publish, archive, retry, or cancel.',
+      'Keep invariant checks, timestamps, and transition events inside the transition boundary.',
+      'Prefer enums or sealed variants over independent booleans when the states are mutually exclusive.',
+    ],
+    tradeoffs: [
+      'A tiny two-state value may only need a boolean if the states are obvious and no transition logic exists.',
+      'State machines can become ceremonial when the domain has no real transition rules; use them when they reduce impossible states.',
+      'Java and TypeScript often need discipline or sealed unions; Rust enums can encode invalid transitions more directly.',
+    ],
+    agentInstruction:
+      'When lifecycle state changes through scattered field writes, introduce a named transition boundary. Keep invariant checks and transition side effects together.',
+    examples: [
+      {
+        title: 'TypeScript transition owns timestamp and event',
+        path: 'src/patternStatus.ts',
+        language: 'ts',
+        note:
+          'Publishing is a named transition, so the status change, timestamp, and event stay together.',
+        code: `export function publish(pattern: DraftPattern, now: Date): PublishedPattern {
+  return {
+    ...pattern,
+    status: 'published',
+    publishedAt: now,
+    events: [...pattern.events, { type: 'published', at: now }],
+  };
+}`,
+      },
+      {
+        title: 'Rust enum rejects impossible states',
+        path: 'src/job.rs',
+        language: 'rust',
+        note:
+          'The retry transition exists only for failed jobs, so queued jobs cannot accidentally carry failure data.',
+        code: `pub enum JobState {
+    Queued,
+    Running,
+    Failed { reason: String },
+}
+
+impl JobState {
+    pub fn retry(self) -> Result<JobState, JobState> {
+        match self {
+            JobState::Failed { .. } => Ok(JobState::Queued),
+            other => Err(other),
+        }
+    }
+}`,
+      },
+      {
+        title: 'Java transition method owns the lifecycle move',
+        path: 'PatternStatus.java',
+        language: 'java',
+        note:
+          'Direct status assignment is replaced with a method that owns the allowed movement and timestamp.',
+        code: `Pattern publish(Clock clock) {
+    if (status != Status.DRAFT) {
+        throw new InvalidTransition(status, Status.PUBLISHED);
+    }
+
+    return withStatus(Status.PUBLISHED, clock.instant());
+}`,
+      },
+    ],
+    references: [],
+  },
+  {
+    id: 'replace-boolean-flag-with-choice',
+    title: 'Replace Boolean Flag With a Choice',
+    summary:
+      'Turn ambiguous boolean parameters and fields into named options when the two states carry domain meaning.',
+    narrative:
+      'A boolean is cheap until a reader has to remember what true means at each call site. When a flag selects behavior, encodes a lifecycle state, or travels across module boundaries, a named choice can make the call read in domain terms and make future states possible without boolean drift.',
+    status: 'draft',
+    tags: ['api-design', 'naming', 'readability'],
+    audiences: ['reviewers', 'agents', 'learners'],
+    languages: ['java', 'rust', 'ts'],
+    problems: ['Call sites pass true or false and the reader must inspect the function to know what behavior was selected.'],
+    concepts: ['state-space', 'reader-locality'],
+    related: ['make-invalid-states-hard-to-express', 'explaining-variable'],
+    useWhen: [
+      'The boolean crosses a function boundary and controls behavior rather than carrying a local fact.',
+      'Several booleans combine into states that should be named directly.',
+      'A third state is likely or already represented through null, comments, or another flag.',
+    ],
+    guidance: [
+      'Replace the flag with an enum, union, options object, or named constructor that exposes the behavior at the call site.',
+      'Keep local booleans when they name a nearby fact and do not leak into an API.',
+      'Update tests to assert the behavior selected by the named choice, not the implementation branch.',
+    ],
+    tradeoffs: [
+      'A local boolean condition can be clearer than a tiny enum when the name is visible and no API boundary is involved.',
+      'Public API changes require migration care; introduce overloads or adapters when callers cannot move at once.',
+      'Go lacks enums in the same shape as Rust or Java, so constants and small named types often carry this pattern.',
+    ],
+    agentInstruction:
+      'When a boolean parameter selects domain behavior, replace it with a named choice at the boundary. Keep local boolean facts only when the meaning is visible beside the branch.',
+    examples: [
+      {
+        title: 'TypeScript call site names the behavior',
+        path: 'src/render.ts',
+        language: 'ts',
+        note:
+          'The call no longer asks the reader to remember what true means for the second argument.',
+        code: `type RenderMode = 'preview' | 'publish';
+
+renderPattern(pattern, { mode: 'preview' });`,
+      },
+      {
+        title: 'Java enum replaces paired booleans',
+        path: 'NotificationMode.java',
+        language: 'java',
+        note:
+          'The mode names the delivery behavior directly instead of combining flags at each call site.',
+        code: `enum NotificationMode {
+    SILENT,
+    EMAIL,
+    EMAIL_AND_SMS
+}
+
+notifier.send(message, NotificationMode.EMAIL);`,
+      },
+      {
+        title: 'Rust enum names the render mode',
+        path: 'src/render.rs',
+        language: 'rust',
+        note:
+          'The call site chooses Preview or Publish explicitly instead of passing a boolean whose meaning lives in the callee.',
+        code: `pub enum RenderMode {
+    Preview,
+    Publish,
+}
+
+render_pattern(pattern, RenderMode::Preview);`,
+      },
+    ],
+    references: [],
+  },
+  {
+    id: 'return-structured-errors',
+    title: 'Return Structured Errors',
+    summary:
+      'Give callers error shape they can inspect instead of forcing them to parse strings or lose context.',
+    narrative:
+      'Errors are part of the observable contract when callers branch, retry, report, or recover from them. A string can explain a failure to a person, but it is weak program structure. Structured errors keep the stable kind, recoverable context, and human message in separate places.',
+    status: 'draft',
+    tags: ['errors', 'api-design', 'observable-behavior'],
+    audiences: ['reviewers', 'agents', 'learners'],
+    languages: ['go', 'rust', 'ts'],
+    problems: ['Callers branch on error text or lose the context needed to recover, retry, or report the failure.'],
+    concepts: ['observable-behavior', 'boundary-trust'],
+    related: ['observable-behavior-tests', 'parse-dont-validate'],
+    useWhen: [
+      'A caller needs to distinguish retryable, validation, authorization, not-found, or conflict failures.',
+      'Error messages contain data that tests or callers parse with string matching.',
+      'A boundary has to preserve enough context for logs, UI copy, or recovery decisions.',
+    ],
+    guidance: [
+      'Expose a stable error kind or variant for program behavior and keep human text separate.',
+      'Attach context that helps recovery, such as field names, resource ids, retry hints, or upstream status.',
+      'Test the stable error shape when it is part of the public contract.',
+    ],
+    tradeoffs: [
+      'Do not over-model errors that are logged and returned only as opaque internal failures.',
+      'Changing error shape can be a behavior change; characterize callers that depend on existing strings before replacing them.',
+      'Rust and Go can make error typing visible through return signatures; JavaScript often needs explicit discriminated objects.',
+    ],
+    agentInstruction:
+      'When callers need to inspect an error, return a structured kind and context instead of relying on message text. Preserve human messages as messages, not program control flow.',
+    examples: [
+      {
+        title: 'Rust error kind carries program behavior',
+        path: 'src/import_error.rs',
+        language: 'rust',
+        note:
+          'The caller can branch on the error kind without parsing the display message.',
+        code: `pub enum ImportError {
+    MissingField { field: &'static str },
+    DuplicateId { id: PatternId },
+}`,
+      },
+      {
+        title: 'TypeScript error object separates kind from message',
+        path: 'src/errors.ts',
+        language: 'ts',
+        note:
+          'The UI can render the message while retry logic uses the stable kind.',
+        code: `type CatalogError =
+  | { kind: 'not-found'; id: string; message: string }
+  | { kind: 'invalid-filter'; field: string; message: string };`,
+      },
+      {
+        title: 'Go typed error exposes retry behavior',
+        path: 'errors.go',
+        language: 'go',
+        note:
+          'The caller can inspect the error type for retry behavior while the message remains human-readable.',
+        code: `type RateLimitError struct {
+    RetryAfter time.Duration
+}
+
+func (e RateLimitError) Error() string {
+    return "rate limit exceeded"
+}`,
+      },
+    ],
+    references: [],
+  },
+  {
+    id: 'inject-time-and-randomness',
+    title: 'Inject Time and Randomness',
+    summary:
+      'Pass clocks, timers, and random sources through boundaries when ambient access makes behavior hard to test.',
+    narrative:
+      'Time and randomness are inputs even when the code reads them from globals. Hiding them makes tests flaky, makes retries hard to reason about, and makes behavior depend on process state. Pass them explicitly at the boundary that owns the policy.',
+    status: 'draft',
+    tags: ['testing', 'determinism', 'side-effects'],
+    audiences: ['reviewers', 'agents', 'learners'],
+    languages: ['go', 'java', 'rust'],
+    problems: ['Tests are flaky or awkward because code reads ambient time, timers, or randomness inside business logic.'],
+    concepts: ['side-effect-visibility', 'temporal-coupling'],
+    related: ['make-side-effects-visible', 'observable-behavior-tests'],
+    useWhen: [
+      'Business logic calls system time, sleeps, timers, UUID generation, or random number generators directly.',
+      'Tests need waits, sleeps, or broad timing tolerances to pass.',
+      'Retry, expiration, scheduling, or ordering behavior depends on time policy that should be visible.',
+    ],
+    guidance: [
+      'Pass a clock, random source, or id generator into the boundary that owns the time-dependent decision.',
+      'Keep framework-level time access at the edge and pass ordinary values inward when a full clock abstraction would be unnecessary.',
+      'Write tests with fixed clocks or deterministic generators to protect the behavior without sleeping.',
+    ],
+    tradeoffs: [
+      'Do not thread a clock through every function when only one boundary needs the current instant.',
+      'Very low-level performance code may need direct time reads; isolate the effect and benchmark the real path.',
+      'Go and Java commonly use interfaces for clocks; Rust can pass traits or concrete test clocks depending on ownership needs.',
+    ],
+    agentInstruction:
+      'If business behavior depends on time or randomness, make that dependency explicit at the boundary and test with deterministic inputs. Do not add sleeps as verification.',
+    examples: [
+      {
+        title: 'Go expiration check takes a clock',
+        path: 'session.go',
+        language: 'go',
+        note:
+          'Tests can pass a fixed clock instead of sleeping until a token expires.',
+        code: `func (s Session) IsExpired(clock Clock) bool {
+    return !clock.Now().Before(s.ExpiresAt)
+}`,
+      },
+      {
+        title: 'Java constructor receives the generated id',
+        path: 'OrderService.java',
+        language: 'java',
+        note:
+          'The service owns id generation policy, while Order construction stays deterministic.',
+        code: `var orderId = idGenerator.nextOrderId();
+var order = Order.create(orderId, request.items());`,
+      },
+      {
+        title: 'Rust fixed clock makes expiry deterministic',
+        path: 'src/session.rs',
+        language: 'rust',
+        note:
+          'The test passes the instant directly, so expiration behavior does not depend on wall-clock timing.',
+        code: `pub fn is_expired(&self, now: Instant) -> bool {
+    now >= self.expires_at
+}`,
+      },
+    ],
+    references: [],
+  },
+  {
+    id: 'keep-async-boundaries-explicit',
+    title: 'Keep Async Boundaries Explicit',
+    summary:
+      'Make awaits, tasks, callbacks, and cancellation points visible where ordering and ownership matter.',
+    narrative:
+      'Async code fails when a reader cannot tell what runs now, what runs later, and what can be cancelled. A hidden task spawn or callback can detach ownership from the caller. Make the boundary visible and name the ordering contract.',
+    status: 'draft',
+    tags: ['async', 'correctness', 'review'],
+    audiences: ['reviewers', 'agents', 'learners'],
+    languages: ['go', 'rust', 'ts'],
+    problems: ['A function starts background work or crosses an async boundary without making ordering, cancellation, or ownership clear.'],
+    concepts: ['temporal-coupling', 'side-effect-visibility'],
+    related: ['make-side-effects-visible', 'smallest-trustworthy-verification'],
+    useWhen: [
+      'A helper spawns background work, registers a callback, or starts a goroutine/task that outlives the caller.',
+      'The caller needs to know whether work is complete before reading state or returning a response.',
+      'Cancellation, timeout, or error propagation is part of the behavior being reviewed.',
+    ],
+    guidance: [
+      'Keep awaits and spawns visible at the call site that owns ordering.',
+      'Return handles, results, or cancellation paths when work outlives the current function.',
+      'Use names that reveal detached work, such as start, spawn, enqueue, subscribe, or schedule.',
+    ],
+    tradeoffs: [
+      'Framework handlers often impose async shape; keep the effect clear inside the handler even when the framework owns scheduling.',
+      'Over-wrapping async calls can hide the same boundary under another name; expose the contract the caller needs.',
+      'Rust forces more ownership choices at compile time, while JavaScript and Go need extra care around unawaited promises and goroutines.',
+    ],
+    agentInstruction:
+      'When adding async work, make the await, spawn, callback, cancellation, and error path visible. Do not hide detached work in a helper that looks synchronous.',
+    examples: [
+      {
+        title: 'TypeScript names the detached work',
+        path: 'src/reindex.ts',
+        language: 'ts',
+        note:
+          'The caller can see that indexing is scheduled, not completed, before the response returns.',
+        code: `await repository.save(pattern);
+
+await indexQueue.enqueueRebuild(pattern.id);
+
+return { status: 'queued' };`,
+      },
+      {
+        title: 'Go goroutine receives cancellation',
+        path: 'worker.go',
+        language: 'go',
+        note:
+          'The background worker is tied to context cancellation instead of leaking beyond the request lifecycle.',
+        code: `go func() {
+    if err := worker.Run(ctx, job); err != nil {
+        logger.Error("worker failed", "err", err)
+    }
+}()`,
+      },
+      {
+        title: 'Rust task returns a join handle',
+        path: 'src/indexer.rs',
+        language: 'rust',
+        note:
+          'The caller receives a handle, making detached work and error handling visible instead of hiding the spawn.',
+        code: `pub fn spawn_reindex(job: ReindexJob) -> JoinHandle<Result<(), IndexError>> {
+    tokio::spawn(async move {
+        reindex(job).await
+    })
+}`,
+      },
+    ],
+    references: [],
+  },
+  {
+    id: 'name-cross-layer-contracts',
+    title: 'Name Cross-Layer Contracts',
+    summary:
+      'Give data crossing layers a contract name instead of passing persistence, transport, or UI shapes everywhere.',
+    narrative:
+      'Layer leaks make every part of the system know about every other part. A database row travels to the UI, an HTTP payload becomes a domain object, or a component receives storage flags. Naming the contract at the boundary keeps the layer-specific shape from becoming everyone’s shared language.',
+    status: 'draft',
+    tags: ['architecture', 'api-design', 'boundaries'],
+    audiences: ['reviewers', 'agents', 'learners'],
+    languages: ['java', 'rust', 'ts'],
+    problems: ['Database rows, API payloads, UI props, or framework types leak across boundaries that should own their own language.'],
+    concepts: ['boundary-trust', 'reader-locality'],
+    related: ['parse-dont-validate', 'reader-locality', 'cap-change-radius'],
+    useWhen: [
+      'A persistence record, wire payload, or UI-specific type is used in logic that should not know that layer exists.',
+      'A field is named for storage mechanics rather than the domain decision the caller needs.',
+      'Changing one layer forces unrelated layers to change because they share the same shape.',
+    ],
+    guidance: [
+      'Create a boundary type or mapper where the layer changes language.',
+      'Keep layer-specific names inside their layer and pass domain or view contracts across the next boundary.',
+      'Map only when the contract changes; do not add translation objects that mirror fields without changing meaning.',
+    ],
+    tradeoffs: [
+      'Small applications can tolerate some shared shapes when the boundary has not earned its cost.',
+      'Public API and database compatibility may require separate shapes even when they look similar today.',
+      'Java often uses DTOs here, Rust often uses explicit conversion types, and TypeScript needs care not to let structural typing blur boundaries again.',
+    ],
+    agentInstruction:
+      'When data crosses persistence, transport, domain, or UI boundaries, name the contract at the boundary. Do not pass layer-specific shapes through unrelated code.',
+    examples: [
+      {
+        title: 'TypeScript maps wire data to a view contract',
+        path: 'src/patternView.ts',
+        language: 'ts',
+        note:
+          'The component receives the view contract instead of depending on API field names.',
+        code: `export function toPatternCard(pattern: PatternResponse): PatternCard {
+  return {
+    title: pattern.display_name,
+    summary: pattern.short_summary,
+    href: \`/patterns/\${pattern.slug}/\`,
+  };
+}`,
+      },
+      {
+        title: 'Rust conversion marks the boundary',
+        path: 'src/pattern.rs',
+        language: 'rust',
+        note:
+          'The database row stops at the conversion boundary; domain code receives Pattern.',
+        code: `impl TryFrom<PatternRow> for Pattern {
+    type Error = PatternError;
+
+    fn try_from(row: PatternRow) -> Result<Self, Self::Error> {
+        Ok(Self {
+            id: PatternId::parse(&row.slug)?,
+            title: row.title,
+        })
+    }
+}`,
+      },
+      {
+        title: 'Java DTO stops at the controller boundary',
+        path: 'PatternController.java',
+        language: 'java',
+        note:
+          'The controller translates transport shape into a command before domain code sees it.',
+        code: `CreatePattern command = new CreatePattern(
+    request.slug(),
+    request.displayName(),
+    request.summary()
+);
+
+service.create(command);`,
+      },
+    ],
+    references: [],
+  },
+  {
+    id: 'centralize-configuration-policy',
+    title: 'Centralize Configuration Policy',
+    summary:
+      'Parse and name configuration policy once so callers do not rediscover defaults, precedence, and magic values.',
+    narrative:
+      'Configuration drift happens when defaults, environment names, feature flags, and precedence rules spread through the code. A caller should receive the policy it needs, not a bag of raw config values plus unwritten rules about how to combine them.',
+    status: 'draft',
+    tags: ['configuration', 'correctness', 'boundaries'],
+    audiences: ['reviewers', 'agents', 'learners'],
+    languages: ['go', 'rust', 'ts'],
+    problems: ['Defaults, feature flags, environment variables, and magic values are interpreted differently across callers.'],
+    concepts: ['boundary-trust', 'change-radius'],
+    related: ['parse-dont-validate', 'cap-change-radius', 'make-invalid-states-hard-to-express'],
+    useWhen: [
+      'Several modules read the same environment variable, config key, or feature flag directly.',
+      'Callers apply defaults or precedence rules slightly differently.',
+      'A magic number or string appears in logic that should receive a named policy.',
+    ],
+    guidance: [
+      'Parse raw config once and pass named policy values inward.',
+      'Put defaults and precedence rules in the config boundary that has enough context to explain them.',
+      'Document surprising values with the domain reason, not only the value itself.',
+    ],
+    tradeoffs: [
+      'Do not create a global config object that every module can reach; pass the narrow policy each caller needs.',
+      'Some framework config must remain framework-shaped; adapt it at the edge before business code uses it.',
+      'Rust and Go make narrow config structs cheap; TypeScript needs care to avoid passing loosely typed config objects everywhere.',
+    ],
+    agentInstruction:
+      'When a change touches config, parse raw values at one boundary and pass narrow named policy inward. Do not scatter environment reads, defaults, or magic values across callers.',
+    examples: [
+      {
+        title: 'Rust config boundary names retry policy',
+        path: 'src/config.rs',
+        language: 'rust',
+        note:
+          'Business code receives RetryPolicy, not loose integers and strings from the environment.',
+        code: `pub struct AppConfig {
+    pub retry_policy: RetryPolicy,
+}
+
+pub fn load_config(env: &Env) -> Result<AppConfig, ConfigError> {
+    Ok(AppConfig {
+        retry_policy: RetryPolicy::from_env(env)?,
+    })
+}`,
+      },
+      {
+        title: 'Go passes narrow policy',
+        path: 'config.go',
+        language: 'go',
+        note:
+          'The worker receives only the timeout policy it needs, not the full raw configuration.',
+        code: `type WorkerPolicy struct {
+    Timeout time.Duration
+    Retries int
+}
+
+worker := NewWorker(config.WorkerPolicy)`,
+      },
+      {
+        title: 'TypeScript config parser owns defaults',
+        path: 'src/config.ts',
+        language: 'ts',
+        note:
+          'Callers receive a named retry policy instead of reading raw environment values and repeating defaults.',
+        code: `export function loadRetryPolicy(env: Env): RetryPolicy {
+  return {
+    attempts: Number(env.RETRY_ATTEMPTS ?? 3),
+    timeoutMs: Number(env.RETRY_TIMEOUT_MS ?? 500),
+  };
+}`,
+      },
+    ],
+    references: [],
+  },
 ];
 
 export const concepts: Concept[] = [
@@ -1127,6 +1795,139 @@ function isEligibleForApproval(user: User) {
         body: [
           'Ask whether the change reduces the number of live facts the next maintainer must remember. Line count matters less than the shape of that mental stack.',
           'An abstraction should remove facts from the reader’s head. If it adds a concept without removing burden, it does not pay rent.',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'change-radius',
+    title: 'Change Radius',
+    summary:
+      'The set of files, concepts, call sites, tests, and contracts that must move for one source change.',
+    tags: ['workflow', 'architecture', 'review'],
+    relatedPatterns: ['cap-change-radius', 'separate-structure-from-behavior', 'reader-locality'],
+    sections: [
+      {
+        title: 'What expands it',
+        body: [
+          'A change radius grows when one rule is copied across callers, when raw data leaks through boundaries, or when tests assert private shape. Some radius is real compatibility cost; some is accidental structure.',
+          'Large radius is not automatically wrong. It becomes a problem when many touched files do not own the behavior being changed.',
+        ],
+      },
+      {
+        title: 'How to reason about it',
+        body: [
+          'Find the boundary that should own the rule. If the radius is still large after that, split mechanical movement from behavior so review can isolate the risk.',
+          'In Rust, type changes often reveal the radius at compile time. In TypeScript, JavaScript, Go, and Java, tests and call-site search often reveal it later.',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'side-effect-visibility',
+    title: 'Side Effect Visibility',
+    summary:
+      'A reader should be able to see where code mutates state, touches I/O, reads time, or starts work.',
+    tags: ['side-effects', 'readability', 'testing'],
+    relatedPatterns: [
+      'make-side-effects-visible',
+      'inject-time-and-randomness',
+      'keep-async-boundaries-explicit',
+    ],
+    sections: [
+      {
+        title: 'Why it matters',
+        body: [
+          'Side effects change the review question. Pure calculation can be checked locally, while mutation, I/O, time, randomness, and background work require ordering and failure reasoning.',
+          'A pure-looking helper with hidden effects makes every caller suspicious. The reader has to inspect implementation before trusting the call.',
+        ],
+      },
+      {
+        title: 'Language pressure',
+        body: [
+          'Rust signatures expose some effects through ownership and mutability, but I/O, time, and task spawning still need clear boundaries. Go, Java, TypeScript, and JavaScript rely more on names, return types, and statement shape.',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'state-space',
+    title: 'State Space',
+    summary:
+      'The set of states a program can represent, including impossible combinations the code accidentally permits.',
+    tags: ['correctness', 'api-design', 'state'],
+    relatedPatterns: [
+      'make-state-transitions-explicit',
+      'replace-boolean-flag-with-choice',
+      'make-invalid-states-hard-to-express',
+    ],
+    sections: [
+      {
+        title: 'Review heuristic',
+        body: [
+          'Ask which states the code can represent, not only which states the developer intended. Invalid combinations are bugs waiting for the right call path.',
+          'Independent booleans, nullable fields, and loose strings expand the state space. Enums, variants, constructors, and transition functions can reduce it.',
+        ],
+      },
+      {
+        title: 'Language pressure',
+        body: [
+          'Rust enums can encode mutually exclusive states directly. TypeScript discriminated unions can do the same when callers preserve the tag. Java sealed types and enums help when the domain has named states. Go often uses small typed constants plus constructors.',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'boundary-trust',
+    title: 'Boundary Trust',
+    summary:
+      'A boundary earns trust when it converts uncertain external shape into data the next layer can rely on.',
+    tags: ['boundaries', 'api-design', 'correctness'],
+    relatedPatterns: [
+      'parse-dont-validate',
+      'return-structured-errors',
+      'name-cross-layer-contracts',
+      'centralize-configuration-policy',
+    ],
+    sections: [
+      {
+        title: 'Boundary job',
+        body: [
+          'A boundary should translate uncertainty into a contract. Raw request data, database rows, environment variables, and third-party responses should not keep their raw shape after code has enough context to parse them.',
+          'The next layer should receive a value it can trust or a structured error it can handle.',
+        ],
+      },
+      {
+        title: 'Failure mode',
+        body: [
+          'When boundaries only pass data through, validation, defaults, error handling, and layer vocabulary spread across callers. That creates drift and makes small rules expensive to change.',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'temporal-coupling',
+    title: 'Temporal Coupling',
+    summary:
+      'Code is temporally coupled when correctness depends on hidden ordering, timing, or lifecycle assumptions.',
+    tags: ['async', 'testing', 'state'],
+    relatedPatterns: [
+      'keep-async-boundaries-explicit',
+      'inject-time-and-randomness',
+      'make-state-transitions-explicit',
+    ],
+    sections: [
+      {
+        title: 'What to look for',
+        body: [
+          'Hidden ordering appears as unawaited promises, goroutines without cancellation, callbacks that outlive their owner, sleeps in tests, and state that must be written before another method is called.',
+          'Temporal coupling is hard to review because the relevant facts are often outside the lines being changed.',
+        ],
+      },
+      {
+        title: 'How to reduce it',
+        body: [
+          'Name lifecycle transitions, make async boundaries visible, pass clocks explicitly, and return handles or results when work continues after the current function.',
         ],
       },
     ],
@@ -1398,6 +2199,646 @@ export const problems: Problem[] = [
     ],
     relatedPatterns: ['make-invalid-states-hard-to-express', 'parse-dont-validate'],
     relatedConcepts: ['observable-behavior', 'reader-locality'],
+  },
+  {
+    id: 'hidden-side-effects',
+    title: 'Hidden side effects',
+    summary:
+      'A call reads like a calculation but mutates state, performs I/O, reads time, or starts external work.',
+    impact:
+      'Hidden effects make review depend on implementation inspection. A maintainer cannot judge ordering, retries, or failure behavior from the call site, and tests often become broad because the real input or output is invisible.',
+    signals: [
+      'A helper named like a formatter, mapper, or calculator writes to storage or mutates its arguments.',
+      'A code path reads the clock, random source, process environment, or global state from inside business logic.',
+      'A review comment asks whether a call is safe to move, repeat, or skip.',
+      'Tests need extensive setup because a pure-looking function depends on process state.',
+    ],
+    diagnosticQuestions: [
+      'What does this call change outside its return value?',
+      'Can the effect be seen from the function name, receiver, return type, or statement shape?',
+      'Should the effect be passed in as a dependency or moved to a boundary?',
+      'What verification would catch the effect happening at the wrong time?',
+    ],
+    approach: [
+      'Separate calculation from mutation or I/O when the ordering matters.',
+      'Rename or reshape effectful boundaries so the side effect is visible at the call site.',
+      'Pass time, randomness, clients, stores, or publishers explicitly when ambient access hides behavior.',
+      'Test the observable effect at the smallest boundary that can catch ordering or failure regressions.',
+    ],
+    relatedPatterns: [
+      'make-side-effects-visible',
+      'inject-time-and-randomness',
+      'keep-async-boundaries-explicit',
+    ],
+    relatedConcepts: ['side-effect-visibility', 'temporal-coupling', 'observable-behavior'],
+  },
+  {
+    id: 'boolean-flag-maze',
+    title: 'Boolean flag maze',
+    summary:
+      'Booleans carry domain choices across function boundaries until call sites no longer explain themselves.',
+    impact:
+      'The reader has to remember what true and false mean in each position. As more flags appear, impossible combinations become representable and behavior changes hide inside argument order.',
+    signals: [
+      'Call sites pass true, false, false without local names.',
+      'Two or more booleans combine into a lifecycle or mode.',
+      'A third state appears as null, comments, or another flag.',
+      'Tests name the boolean arrangement instead of the behavior selected by that arrangement.',
+    ],
+    diagnosticQuestions: [
+      'What domain choice does this flag represent?',
+      'Would an enum, union, named options object, or constructor make the call readable?',
+      'Are these states mutually exclusive?',
+      'Can invalid combinations be made harder to express?',
+    ],
+    approach: [
+      'Replace boundary booleans with named choices when the flag selects behavior.',
+      'Keep local boolean facts when the name is visible beside the branch.',
+      'Move lifecycle choices into transition functions if the flag represents state movement.',
+      'Update tests to assert the behavior selected by the named choice.',
+    ],
+    relatedPatterns: [
+      'replace-boolean-flag-with-choice',
+      'make-state-transitions-explicit',
+      'make-invalid-states-hard-to-express',
+    ],
+    relatedConcepts: ['state-space', 'reader-locality'],
+  },
+  {
+    id: 'ambiguous-state-transitions',
+    title: 'Ambiguous state transitions',
+    summary:
+      'Lifecycle state changes happen through direct field writes, loose status strings, or scattered flag updates.',
+    impact:
+      'No single place owns the invariants of the transition. Callers can skip timestamps, events, validation, or cleanup because changing state looks like ordinary assignment.',
+    signals: [
+      'Several modules assign status fields directly.',
+      'A state change should emit an event or timestamp, but that side effect is optional at call sites.',
+      'Tests build impossible state combinations to reach common behavior.',
+      'The code has multiple booleans that describe one lifecycle.',
+    ],
+    diagnosticQuestions: [
+      'What states can this value occupy?',
+      'Which transitions are legal, and which should be rejected?',
+      'What side effects must happen with the transition?',
+      'Can the type system or a named transition function reject invalid movement?',
+    ],
+    approach: [
+      'Name lifecycle transitions and put invariant checks inside them.',
+      'Use enums, sealed variants, or typed constants for mutually exclusive states.',
+      'Keep transition side effects, timestamps, and events beside the state change.',
+      'Characterize current transition behavior before changing legacy lifecycles.',
+    ],
+    relatedPatterns: [
+      'make-state-transitions-explicit',
+      'make-invalid-states-hard-to-express',
+      'characterize-before-changing',
+    ],
+    relatedConcepts: ['state-space', 'temporal-coupling', 'observable-behavior'],
+  },
+  {
+    id: 'error-context-lost',
+    title: 'Error context lost',
+    summary:
+      'Failures cross a boundary as strings, generic exceptions, or dropped causes that callers cannot inspect.',
+    impact:
+      'Callers cannot recover, retry, report, or test failure behavior without parsing text or relying on logs. Error messages become accidental APIs while useful context disappears.',
+    signals: [
+      'Code checks error.message or string contents to choose behavior.',
+      'A low-level error is wrapped without the field, id, status, or retry hint that explains recovery.',
+      'Tests assert vague failure text instead of a stable error kind.',
+      'The UI cannot show useful feedback without duplicating parser logic.',
+    ],
+    diagnosticQuestions: [
+      'Which part of this error is stable program behavior?',
+      'Which context would help the caller recover or report the failure?',
+      'Does changing this error shape affect public behavior?',
+      'Can the human message remain separate from the machine-readable kind?',
+    ],
+    approach: [
+      'Return structured errors with stable kinds and recovery context.',
+      'Preserve causes when they matter for debugging, but do not force callers to parse cause text.',
+      'Test public error shape when callers depend on it.',
+      'Characterize legacy string errors before replacing them if callers may already parse them.',
+    ],
+    relatedPatterns: [
+      'return-structured-errors',
+      'observable-behavior-tests',
+      'characterize-before-changing',
+    ],
+    relatedConcepts: ['observable-behavior', 'boundary-trust'],
+  },
+  {
+    id: 'time-dependent-tests',
+    title: 'Time-dependent tests',
+    summary:
+      'Tests sleep, wait, or depend on the wall clock because time is hidden inside the code under test.',
+    impact:
+      'The suite becomes slow and flaky, and failures are hard to diagnose. The test is checking scheduler luck instead of the behavior that should change when time advances.',
+    signals: [
+      'Tests call sleep or use wide timing tolerances.',
+      'Business logic reads Date.now, Instant.now, time.Now, or random identifiers directly.',
+      'Expiration, retry, or ordering behavior cannot be tested without waiting.',
+      'A failure disappears when the timeout is increased.',
+    ],
+    diagnosticQuestions: [
+      'What time value or random source is part of the behavior?',
+      'Which boundary owns the policy that reads time?',
+      'Can the test pass a fixed clock or generated id?',
+      'Would a deterministic test catch the same regression without sleeping?',
+    ],
+    approach: [
+      'Pass time and randomness through the boundary that owns the policy.',
+      'Use fixed clocks, deterministic id generators, or explicit instants in tests.',
+      'Keep direct wall-clock access at edges that truly own scheduling.',
+      'Avoid sleeps as verification unless the behavior being tested is the scheduler itself.',
+    ],
+    relatedPatterns: [
+      'inject-time-and-randomness',
+      'make-side-effects-visible',
+      'smallest-trustworthy-verification',
+    ],
+    relatedConcepts: ['temporal-coupling', 'side-effect-visibility'],
+  },
+  {
+    id: 'unclear-async-ownership',
+    title: 'Unclear async ownership',
+    summary:
+      'Async work starts without a clear owner for ordering, cancellation, errors, or lifetime.',
+    impact:
+      'Work can outlive the request, fail silently, race with subsequent reads, or leak resources. Reviewers cannot tell whether returning from a function means the work finished or was only scheduled.',
+    signals: [
+      'Promises are created without awaits or returned handles.',
+      'Goroutines, tasks, callbacks, or subscriptions have no cancellation path.',
+      'Errors from background work are logged inconsistently or lost.',
+      'A caller reads state immediately after scheduling work and assumes it is complete.',
+    ],
+    diagnosticQuestions: [
+      'Who owns this async work after the current function returns?',
+      'What happens if the caller is cancelled or times out?',
+      'Where do errors go?',
+      'Does the caller need completion, scheduling, or a handle?',
+    ],
+    approach: [
+      'Make awaits, spawns, callbacks, and queues visible at the boundary that owns ordering.',
+      'Return a result, handle, or queued status when work continues after the current function.',
+      'Pass cancellation or context through detached work.',
+      'Test the observable ordering or cancellation behavior instead of only the happy path.',
+    ],
+    relatedPatterns: [
+      'keep-async-boundaries-explicit',
+      'make-side-effects-visible',
+      'observable-behavior-tests',
+    ],
+    relatedConcepts: ['temporal-coupling', 'side-effect-visibility'],
+  },
+  {
+    id: 'layer-language-leaks',
+    title: 'Layer language leaks',
+    summary:
+      'Database rows, API payloads, UI props, or framework objects become the shared language of unrelated layers.',
+    impact:
+      'A change in one layer forces distant code to change because the boundary never translated the shape. Readers must understand storage, transport, and UI details to review domain behavior.',
+    signals: [
+      'Domain logic depends on database column names or HTTP payload fields.',
+      'UI components receive persistence flags that should have been converted into view state.',
+      'A storage migration changes application logic that does not own persistence.',
+      'Mapping code exists, but it only copies fields without naming the contract change.',
+    ],
+    diagnosticQuestions: [
+      'Which layer owns this field name and shape?',
+      'What contract does the next layer need?',
+      'Does mapping change meaning or only mirror fields?',
+      'Would a named boundary type reduce future change radius?',
+    ],
+    approach: [
+      'Name the contract where data crosses layer language.',
+      'Map persistence, transport, domain, and UI shapes only when the next layer needs a different contract.',
+      'Keep raw external shape from leaking inward after the boundary has enough context to parse it.',
+      'Avoid empty DTO churn that mirrors fields without changing meaning.',
+    ],
+    relatedPatterns: [
+      'name-cross-layer-contracts',
+      'parse-dont-validate',
+      'cap-change-radius',
+    ],
+    relatedConcepts: ['boundary-trust', 'change-radius', 'reader-locality'],
+  },
+  {
+    id: 'configuration-drift',
+    title: 'Configuration drift',
+    summary:
+      'Defaults, feature flags, environment variables, and magic values are interpreted differently across callers.',
+    impact:
+      'The running system can behave differently depending on which path read the config. A small policy change becomes a search-and-edit task with hidden edge cases.',
+    signals: [
+      'Multiple modules read the same environment variable or feature flag directly.',
+      'Defaults are repeated as literals in business logic.',
+      'A config key is parsed in several places with different error handling.',
+      'Changing a timeout, retry count, or mode requires edits outside the config boundary.',
+    ],
+    diagnosticQuestions: [
+      'Which boundary owns this config value and its default?',
+      'What named policy should callers receive?',
+      'Are precedence rules documented in code or recreated at call sites?',
+      'Can the raw value be parsed once and passed inward as a precise type?',
+    ],
+    approach: [
+      'Parse raw config at one boundary and pass narrow policy values inward.',
+      'Name defaults and magic values by their domain role.',
+      'Keep framework-shaped config at the framework edge.',
+      'Test surprising precedence or default behavior as observable behavior.',
+    ],
+    relatedPatterns: [
+      'centralize-configuration-policy',
+      'parse-dont-validate',
+      'cap-change-radius',
+    ],
+    relatedConcepts: ['boundary-trust', 'change-radius'],
+  },
+  {
+    id: 'wide-change-radius',
+    title: 'Wide change radius',
+    summary:
+      'A small rule change spreads across files, tests, and callers that do not own the rule.',
+    impact:
+      'The review becomes larger than the behavior. More files mean more merge risk, more verification burden, and more chances for an agent to modify unrelated code.',
+    signals: [
+      'One condition is copied across views, handlers, tests, and helpers.',
+      'A small wording or policy change touches many unrelated files.',
+      'Reviewers cannot find the one file that owns the behavior.',
+      'A type or config change creates mechanical edits mixed with behavior edits.',
+    ],
+    diagnosticQuestions: [
+      'Which boundary should own this rule?',
+      'Which touched files are mechanical fallout?',
+      'Can structural changes be stacked before the behavior change?',
+      'Would a precise type or policy object reduce future edit sites?',
+    ],
+    approach: [
+      'Move the rule to the boundary that owns it before updating every caller.',
+      'Separate mechanical radius from behavior radius when both are needed.',
+      'Use targeted verification after each unit of the change.',
+      'Avoid centralizing unrelated rules only to reduce file count.',
+    ],
+    relatedPatterns: [
+      'cap-change-radius',
+      'separate-structure-from-behavior',
+      'smallest-trustworthy-verification',
+    ],
+    relatedConcepts: ['change-radius', 'structure-vs-behavior'],
+  },
+  {
+    id: 'silent-failure-paths',
+    title: 'Silent failure paths',
+    summary:
+      'The code swallows errors, returns empty results, or logs and continues when callers need to know work failed.',
+    impact:
+      'Failures become harder to diagnose and can corrupt downstream assumptions. The system appears to succeed while skipping behavior that callers or users depend on.',
+    signals: [
+      'Catch blocks log errors and return defaults without telling the caller.',
+      'A failed write or publish produces the same return shape as success.',
+      'Tests only cover the happy path and one generic failure.',
+      'Operational logs show errors that user-visible state never reports.',
+    ],
+    diagnosticQuestions: [
+      'Who needs to know that this work failed?',
+      'Is an empty result a valid domain outcome or a hidden error?',
+      'What context would help recovery or reporting?',
+      'Should the failure be represented as a structured error, event, or state transition?',
+    ],
+    approach: [
+      'Return structured failures when callers can recover or report them.',
+      'Use domain-specific empty states only when absence is valid behavior.',
+      'Test failure behavior at the boundary where callers observe it.',
+      'Keep logging as diagnostics, not as the only behavior signal.',
+    ],
+    relatedPatterns: [
+      'return-structured-errors',
+      'observable-behavior-tests',
+      'make-state-transitions-explicit',
+    ],
+    relatedConcepts: ['observable-behavior', 'boundary-trust'],
+  },
+  {
+    id: 'concurrency-assumptions-hidden',
+    title: 'Concurrency assumptions hidden',
+    summary:
+      'Shared state, ordering, locks, or idempotency assumptions are implicit in code that may run concurrently.',
+    impact:
+      'The code can pass local tests while failing under real scheduling. Reviewers cannot tell which data is protected, which operations can repeat, or which order must be preserved.',
+    signals: [
+      'Shared mutable state is updated without an obvious lock or ownership boundary.',
+      'Retry code is added without making the operation idempotent.',
+      'A background task reads data that another path mutates.',
+      'Tests rely on a single-threaded execution order that production does not guarantee.',
+    ],
+    diagnosticQuestions: [
+      'What owns this shared state?',
+      'Can this operation run twice or out of order?',
+      'Where is cancellation or retry handled?',
+      'What test or review evidence would catch the likely race?',
+    ],
+    approach: [
+      'Make ownership, locking, and async boundaries visible.',
+      'Name idempotency and transition rules where retries happen.',
+      'Keep mutation in one place when possible, and expose the effect in the return value or state transition.',
+      'Use focused tests for ordering-sensitive behavior, but do not pretend they prove all scheduler interleavings.',
+    ],
+    relatedPatterns: [
+      'make-side-effects-visible',
+      'keep-async-boundaries-explicit',
+      'make-state-transitions-explicit',
+    ],
+    relatedConcepts: ['temporal-coupling', 'side-effect-visibility', 'state-space'],
+  },
+  {
+    id: 'naming-drift',
+    title: 'Naming drift',
+    summary:
+      'Names keep their old words after behavior, ownership, or domain meaning changes.',
+    impact:
+      'Stale names mislead readers and agents. The code compiles, but every review requires reconciling what the name claims with what the implementation actually does.',
+    signals: [
+      'A helper name describes an old implementation instead of its current domain role.',
+      'Two names refer to the same concept with slightly different wording.',
+      'A variable called active, valid, enabled, or ready carries a narrower rule than its name suggests.',
+      'Tests repeat stale vocabulary and hide the new behavior.',
+    ],
+    diagnosticQuestions: [
+      'What domain fact should this name communicate now?',
+      'Does the name describe mechanics or meaning?',
+      'Are there nearby names for the same concept?',
+      'Would renaming be a structure-only change or part of a behavior change?',
+    ],
+    approach: [
+      'Rename to the current domain fact before changing behavior when the rename is behavior-preserving.',
+      'Use explaining variables for local decisions instead of generic condition names.',
+      'Keep terminology consistent across tests, examples, and user-facing errors when they describe the same contract.',
+      'Avoid broad vocabulary rewrites while a behavior change is in progress.',
+    ],
+    relatedPatterns: [
+      'explaining-variable',
+      'separate-structure-from-behavior',
+      'reader-locality',
+    ],
+    relatedConcepts: ['reader-locality', 'structure-vs-behavior', 'cognitive-burden'],
+  },
+  {
+    id: 'cache-invalidation-unclear',
+    title: 'Cache invalidation unclear',
+    summary:
+      'The code updates cached data without naming freshness rules, invalidation triggers, or stale-read behavior.',
+    impact:
+      'Readers cannot tell whether stale data is acceptable, whether writes update the cache, or which path owns invalidation. Bugs often appear as rare ordering problems rather than obvious logic errors.',
+    signals: [
+      'A write path updates storage but not the cache, with no stated freshness contract.',
+      'Several callers clear the same cache for different reasons.',
+      'Tests assert current values without covering stale-read policy.',
+      'A cache key is built from loose strings or partial request data.',
+    ],
+    diagnosticQuestions: [
+      'What freshness guarantee does this caller need?',
+      'Which operation owns invalidation?',
+      'Can the cache key be represented as a parsed value?',
+      'Is stale data a valid state or a failure?',
+    ],
+    approach: [
+      'Name the freshness policy and keep invalidation beside the write or transition that requires it.',
+      'Represent cache keys as precise values when loose strings cause drift.',
+      'Test the observable stale-read behavior at the boundary callers use.',
+      'Keep background refreshes and async invalidation explicit.',
+    ],
+    relatedPatterns: [
+      'make-state-transitions-explicit',
+      'parse-dont-validate',
+      'keep-async-boundaries-explicit',
+    ],
+    relatedConcepts: ['temporal-coupling', 'state-space', 'observable-behavior'],
+  },
+  {
+    id: 'data-migration-risk',
+    title: 'Data migration risk',
+    summary:
+      'A schema or data-shape change alters stored meaning without clear compatibility, fallback, or verification.',
+    impact:
+      'Data changes are hard to roll back and easy to under-test. The code may work for new records while old records, partial migrations, or mixed-version deployments fail.',
+    signals: [
+      'New code assumes every stored record already has the new shape.',
+      'Migration, parser, and behavior changes land in one patch.',
+      'Fallback behavior is implicit or differs by caller.',
+      'Tests only use newly constructed records.',
+    ],
+    diagnosticQuestions: [
+      'What old shapes can still exist when this code runs?',
+      'Is the migration compatible with mixed versions or rollback?',
+      'Which parser or boundary should normalize old and new data?',
+      'What behavior proves old records still work?',
+    ],
+    approach: [
+      'Parse stored data at a boundary that can normalize old and new shapes.',
+      'Separate migration mechanics from behavior changes when review would otherwise mix risks.',
+      'Characterize behavior with representative old records before changing the shape.',
+      'Return structured errors when incompatible data must be rejected.',
+    ],
+    relatedPatterns: [
+      'parse-dont-validate',
+      'characterize-before-changing',
+      'separate-structure-from-behavior',
+    ],
+    relatedConcepts: ['boundary-trust', 'observable-behavior', 'change-radius'],
+  },
+  {
+    id: 'observability-noise',
+    title: 'Observability noise',
+    summary:
+      'Logs, metrics, and events are emitted without a stable contract for what changed or who should act.',
+    impact:
+      'Noisy signals make real failures harder to find. They also become accidental behavior when downstream dashboards, alerts, or support workflows depend on unstable names and fields.',
+    signals: [
+      'Several code paths log similar failures with different field names.',
+      'Metrics count implementation branches rather than user-visible outcomes.',
+      'Events lack stable identifiers or failure context.',
+      'Tests ignore diagnostics even though callers or operators depend on them.',
+    ],
+    diagnosticQuestions: [
+      'Who consumes this signal?',
+      'Is the signal part of observable behavior or only local debugging?',
+      'Which fields are stable enough to rely on?',
+      'Does this signal identify the outcome, the cause, or both?',
+    ],
+    approach: [
+      'Name diagnostic events around observable outcomes and stable context.',
+      'Keep debug logs separate from signals that operators or callers depend on.',
+      'Treat relied-on logs, metrics, and events as observable contracts in tests.',
+      'Use structured errors and events instead of parsing message text downstream.',
+    ],
+    relatedPatterns: [
+      'return-structured-errors',
+      'observable-behavior-tests',
+      'make-side-effects-visible',
+    ],
+    relatedConcepts: ['observable-behavior', 'side-effect-visibility'],
+  },
+  {
+    id: 'cross-cutting-policy-scattered',
+    title: 'Cross-cutting policy scattered',
+    summary:
+      'Authorization, retries, rate limits, logging, validation, or formatting rules are copied across unrelated paths.',
+    impact:
+      'Each copy can drift. Reviewers must inspect every path to know whether the policy still applies consistently, and a small policy change turns into a wide edit.',
+    signals: [
+      'Several handlers repeat the same permission check or retry condition.',
+      'A policy change requires edits in many feature files.',
+      'Tests cover the policy in one path but not the copies.',
+      'A helper exists but has a weak name or lives far from the boundary that owns the policy.',
+    ],
+    diagnosticQuestions: [
+      'Which boundary should own this policy?',
+      'Is the repeated code a real shared concept or just similar mechanics?',
+      'What context must remain visible at each call site?',
+      'Would centralizing the policy reduce future change radius without hiding behavior?',
+    ],
+    approach: [
+      'Move real policies to the boundary that owns the decision.',
+      'Keep call sites explicit about the domain action being protected.',
+      'Avoid generic policy frameworks when one or two local helpers would explain the rule.',
+      'Test the policy through observable behavior on representative paths.',
+    ],
+    relatedPatterns: [
+      'cap-change-radius',
+      'reader-locality',
+      'avoid-premature-agent-architecture',
+    ],
+    relatedConcepts: ['change-radius', 'reader-locality', 'observable-behavior'],
+  },
+  {
+    id: 'tooling-contract-implicit',
+    title: 'Tooling contract implicit',
+    summary:
+      'Build, format, lint, generation, or release steps depend on unwritten local knowledge.',
+    impact:
+      'Humans and agents run the wrong checks, edit generated files by hand, or miss required regeneration. The repo becomes harder to change because the done signal is tribal knowledge.',
+    signals: [
+      'A change requires generated files, but the command is not documented near the workflow.',
+      'Agents run broad or irrelevant checks because the narrow verification path is unclear.',
+      'Formatting or lint rules differ between local edits and CI.',
+      'Release or build steps depend on environment assumptions not encoded in config.',
+    ],
+    diagnosticQuestions: [
+      'What command proves this kind of change is complete?',
+      'Where should that command be documented for humans and agents?',
+      'Are generated artifacts owned by source or by a build step?',
+      'Can repo-local instructions state the precedence and verification path?',
+    ],
+    approach: [
+      'Capture repo-local workflow in AGENTS, CONTRIBUTING, scripts, or config where agents and maintainers will look.',
+      'Prefer narrow commands that match the changed surface over broad unfocused checks.',
+      'Make generated-file ownership explicit.',
+      'Keep tooling guidance local to the repo instead of relying on general preferences.',
+    ],
+    relatedPatterns: [
+      'repo-local-instructions-win',
+      'smallest-trustworthy-verification',
+      'separate-structure-from-behavior',
+    ],
+    relatedConcepts: ['agent-guidance', 'structure-vs-behavior'],
+  },
+  {
+    id: 'domain-rule-buried-in-ui',
+    title: 'Domain rule buried in UI',
+    summary:
+      'A business rule lives inside component rendering or presentation code where other callers cannot reuse or verify it.',
+    impact:
+      'The rule becomes easy to miss and hard to test without rendering the UI. Other surfaces may implement a different version because the actual policy has no named boundary.',
+    signals: [
+      'A component filters, authorizes, validates, or prices data inline.',
+      'The same rule appears in an API handler and a UI component.',
+      'Tests need a browser or component harness to check a domain decision.',
+      'Changing UI layout risks changing business behavior.',
+    ],
+    diagnosticQuestions: [
+      'Is this branch a presentation choice or a domain decision?',
+      'Which non-UI caller also needs the rule?',
+      'Can the component receive a view model or policy result instead?',
+      'What observable behavior should protect the rule?',
+    ],
+    approach: [
+      'Move domain decisions to a policy, parser, or view-model boundary before rendering.',
+      'Keep presentation-specific formatting in the UI.',
+      'Test the rule at the boundary that owns it, then smoke test the rendered path if needed.',
+      'Name cross-layer contracts so the UI receives the shape it needs.',
+    ],
+    relatedPatterns: [
+      'name-cross-layer-contracts',
+      'cap-change-radius',
+      'observable-behavior-tests',
+    ],
+    relatedConcepts: ['boundary-trust', 'change-radius', 'observable-behavior'],
+  },
+  {
+    id: 'performance-fix-without-evidence',
+    title: 'Performance fix without evidence',
+    summary:
+      'A change adds caching, concurrency, allocation tricks, or broad rewrites without a measured bottleneck.',
+    impact:
+      'Performance work can add state, invalidation, timing, and concurrency risks. Without evidence, the code may get harder to change while the real bottleneck remains elsewhere.',
+    signals: [
+      'A patch adds caching or parallelism without a benchmark, profile, or production signal.',
+      'The optimization changes data shape or ownership before proving a bottleneck.',
+      'A micro-optimization obscures the main path.',
+      'Tests prove correctness but not the performance claim that justified the complexity.',
+    ],
+    diagnosticQuestions: [
+      'What measurement shows this path is the bottleneck?',
+      'What behavior or contract could the optimization change?',
+      'Can the performance-sensitive boundary be isolated?',
+      'What verification proves both correctness and the intended performance property?',
+    ],
+    approach: [
+      'Measure before adding complexity, and keep the measurement close to the claim.',
+      'Prefer local improvements that preserve reader locality before adding cache or concurrency state.',
+      'Treat cache, async, and allocation changes as behavior-risking when they alter ordering or ownership.',
+      'Keep the fallback or original behavior easy to compare during review.',
+    ],
+    relatedPatterns: [
+      'smallest-trustworthy-verification',
+      'make-side-effects-visible',
+      'cap-change-radius',
+    ],
+    relatedConcepts: ['side-effect-visibility', 'change-radius', 'cognitive-burden'],
+  },
+  {
+    id: 'review-comment-lacks-pattern-name',
+    title: 'Review comment lacks a pattern name',
+    summary:
+      'A reviewer can see a problem but cannot name the move clearly enough for the author or an agent to apply it.',
+    impact:
+      'Unnamed feedback becomes taste. Authors may make broad rewrites, agents may overbuild, and future reviews repeat the same explanation without a stable link or shared vocabulary.',
+    signals: [
+      'Comments say “this feels hard to read” without naming the change pressure.',
+      'The same review advice is rewritten differently in each pull request.',
+      'An agent receives vague feedback and changes more code than requested.',
+      'The author fixes one symptom but misses the underlying pattern.',
+    ],
+    diagnosticQuestions: [
+      'What source-change problem is visible in the diff?',
+      'Which small pattern would work the problem down?',
+      'What tradeoff should the author watch for?',
+      'Would a review snippet with a stable link reduce ambiguity?',
+    ],
+    approach: [
+      'Name the problem first, then link to the pattern that fits the local code.',
+      'Use the pattern’s review snippet when the comment should be concise and repeatable.',
+      'Avoid turning the comment into a broad rewrite request unless the scope is genuinely larger.',
+      'Point agents to the operational instruction, not only the human explanation.',
+    ],
+    relatedPatterns: [
+      'reader-locality',
+      'guard-clause',
+      'avoid-premature-agent-architecture',
+    ],
+    relatedConcepts: ['agent-guidance', 'cognitive-burden'],
   },
 ];
 
