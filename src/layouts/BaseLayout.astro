@@ -10,7 +10,6 @@ const {
 } = Astro.props;
 
 const pageTitle = title === 'TidySrc' ? title : `${title} | TidySrc`;
-const authorUrl = 'https://www.joshka.net/about/';
 ---
 
 <!doctype html>
@@ -80,15 +79,14 @@ const authorUrl = 'https://www.joshka.net/about/';
       <div class="shell footer-grid">
         <div>
           <p>
-            TIDYSRC // patterns for everyday source change by
-            <a href={authorUrl}>Josh McKinney</a>
+            TIDYSRC // patterns for everyday source change.
           </p>
-          <p>Copyright Josh McKinney. All rights reserved.</p>
+          <p>
+            Copyright © Josh McKinney. All rights reserved.
+          </p>
         </div>
         <nav class="footer-links" aria-label="Footer">
-          <a href={authorUrl}>About Josh</a>
           <a href="https://www.joshka.net/">joshka.net</a>
-          <a href={authorUrl}>Work with Josh</a>
           <a href="/llms.txt">llms.txt</a>
         </nav>
       </div>

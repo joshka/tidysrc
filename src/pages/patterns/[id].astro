@@ -32,13 +32,9 @@ const isExternalReference = (href: string) => href.startsWith('http');
 const reviewProblem = pattern.data.problems[0] ?? relatedProblems[0]?.data.summary ?? pattern.data.summary;
 const reviewMove = pattern.data.guidance[0] ?? pattern.data.summary;
 const reviewMarkdownSnippet = [
-  `Consider applying [${pattern.data.title}](__CURRENT_PAGE_URL__).`,
+  `Consider [${pattern.data.title}](__CURRENT_PAGE_URL__): ${reviewProblem}`,
   '',
-  `Problem: ${reviewProblem}`,
-  '',
-  `Pattern move: ${pattern.data.summary}`,
-  '',
-  `Review note: ${reviewMove}`,
+  `Suggested move: ${reviewMove}`,
 ].join('\n');
 ---
 
@@ -60,7 +56,7 @@ const reviewMarkdownSnippet = [
   <section class="section-tight shell">
     <article class="article">
       <section class="narrative-card" id="narrative">
-        <p class="eyebrow">Pattern narrative</p>
+        <h2>Core Idea</h2>
         <p>{pattern.data.narrative}</p>
       </section>
 
@@ -99,20 +95,12 @@ const reviewMarkdownSnippet = [
 
       <section class="agent-panel" id="agents">
         <div class="agent-mark">Agent Instruction</div>
-        <CopyBox label="Copyable prompt" text={pattern.data.agentInstruction} />
+        <CopyBox text={pattern.data.agentInstruction} />
       </section>
 
-      <section class="review-snippet" id="review-snippet">
-        <div>
-          <p class="eyebrow">Review snippet</p>
-          <h2>Copy a Markdown review note</h2>
-          <p>
-            Use this when a review comment should name the pattern, explain the problem, and link
-            back to the page for context.
-          </p>
-        </div>
+      <section class="agent-panel review-snippet" id="review-snippet">
+        <div class="agent-mark">Review Snippet</div>
         <CopyBox
-          label="Markdown snippet"
           resolveCurrentUrl
           text={reviewMarkdownSnippet}
         />
@@ -241,6 +229,13 @@ const reviewMarkdownSnippet = [
     padding: clamp(1.25rem, 3vw, 2rem);
   }
 
+  .narrative-card h2 {
+    border-bottom: 2px solid var(--border);
+    margin-bottom: 1rem;
+    padding-bottom: 0.4rem;
+    text-transform: uppercase;
+  }
+
   .narrative-card p:last-child {
     max-width: 900px;
     font-size: clamp(1.05rem, 2vw, 1.25rem);
@@ -354,7 +349,6 @@ const reviewMarkdownSnippet = [
     grid-template-columns: minmax(220px, 0.28fr) minmax(0, 1fr);
     border: 2px solid var(--border);
     background: var(--surface);
-    min-height: 260px;
   }
 
   .agent-mark {
@@ -378,37 +372,7 @@ const reviewMarkdownSnippet = [
     padding: clamp(1.25rem, 3vw, 2rem);
   }
 
-  .review-snippet {
-    display: grid;
-    grid-template-columns: minmax(240px, 0.35fr) minmax(0, 1fr);
-    border: 2px solid var(--border);
-    background: var(--surface);
-  }
-
-  .review-snippet > div:first-child {
-    border-right: 2px solid var(--border);
-    background: var(--surface-muted);
-    padding: clamp(1.25rem, 3vw, 2rem);
-  }
-
-  .review-snippet h2 {
-    margin-bottom: 0.5rem;
-    text-transform: uppercase;
-  }
-
-  .review-snippet p:last-child {
-    color: var(--muted);
-    margin-bottom: 0;
-  }
-
   .review-snippet :global(.copy-box) {
-    border: 0;
-    padding: clamp(1.25rem, 3vw, 2rem);
-  }
-
-  .review-snippet :global(.copy-box pre) {
-    font-size: clamp(0.86rem, 1.4vw, 1rem);
-    line-height: 1.55;
     white-space: pre-wrap;
   }
 
@@ -450,7 +414,7 @@ const reviewMarkdownSnippet = [
     .hero-title,
     .bento-card + .bento-card,
     .agent-mark,
-    .review-snippet > div:first-child {
+    .review-snippet .agent-mark {
       border-right: 0;
       border-left: 0;
     }
