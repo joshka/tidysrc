@@ -624,11 +624,39 @@ const authorUrl = 'https://www.joshka.net/about/';
   }
 
   :root[data-theme='light'] .expressive-code .ec-line :where(span[style^='--']:not([class])) {
-    color: var(--0, inherit);
+    color: var(--text);
     background-color: var(--0bg, transparent);
     font-style: var(--0fs, inherit);
     font-weight: var(--0fw, inherit);
     text-decoration: var(--0td, inherit);
+  }
+
+  :root[data-theme='light'] .expressive-code .ec-line span[style*='--0:#BF3441'] {
+    color: #8f1d2b;
+  }
+
+  :root[data-theme='light'] .expressive-code .ec-line span[style*='--0:#6F42C1'] {
+    color: #56319b;
+  }
+
+  :root[data-theme='light'] .expressive-code .ec-line span[style*='--0:#005CC5'] {
+    color: #004f9e;
+  }
+
+  :root[data-theme='light'] .expressive-code .ec-line span[style*='--0:#032F62'] {
+    color: #07315f;
+  }
+
+  :root[data-theme='light'] .expressive-code .ec-line span[style*='--0:#AE4B07'] {
+    color: #833600;
+  }
+
+  :root[data-theme='light'] .expressive-code .ec-line span[style*='--0:#22863A'] {
+    color: #17662d;
+  }
+
+  :root[data-theme='light'] .expressive-code .ec-line span[style*='--0:#6A737D'] {
+    color: #4f565e;
   }
 
   :root[data-theme='dark'] .expressive-code .ec-line :where(span[style^='--']:not([class])) {
