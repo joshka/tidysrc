@@ -34,15 +34,6 @@ const slug = (value: string) =>
             <a href={reference.href}>{reference.title}</a>
           </h2>
           <p>{reference.note}</p>
-          {reference.links ? (
-            <ul>
-              {reference.links.map((link) => (
-                <li>
-                  <a href={link.href}>{link.label}</a>
-                </li>
-              ))}
-            </ul>
-          ) : null}
           <a class="reference-url" href={reference.href}>{reference.href}</a>
         </article>
       ))
@@ -73,21 +64,6 @@ const slug = (value: string) =>
   .reference p,
   .reference-url {
     color: var(--muted);
-  }
-
-  .reference ul {
-    display: grid;
-    gap: 0.2rem;
-    list-style: none;
-    margin: 0.3rem 0 0;
-    padding: 0;
-  }
-
-  .reference li a {
-    color: var(--text);
-    font-size: 0.82rem;
-    font-weight: 700;
-    text-transform: uppercase;
   }
 
   .reference-url {

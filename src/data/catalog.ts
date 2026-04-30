@@ -125,7 +125,7 @@ fn summarize_rows(rows: &[Row]) -> Totals {
       },
     ],
     references: [
-      'Ed Page (epage): Rust maintainer practice of putting the central item first and ordering helpers caller-before-callee.',
+      'Ed Page’s Rust Style: put the central item first and order helpers caller-before-callee.',
     ],
   },
   {
@@ -1301,28 +1301,10 @@ export const references = [
     note: 'Human-centered UX principles presented as concise laws with examples and references.',
   },
   {
-    title: 'Ed Page (epage)',
-    href: 'https://www.rust-lang.org/governance/people/epage/',
+    title: 'Ed Page’s Rust Style',
+    href: 'https://epage.github.io/dev/rust-style/',
     note:
-      'Rust project contributor, Cargo team member, CLI working group lead, and maintainer across widely used Rust ecosystem crates. Useful context for Rust-oriented source organization and maintainer-oriented style guidance.',
-    links: [
-      {
-        label: 'Rust project profile',
-        href: 'https://www.rust-lang.org/governance/people/epage/',
-      },
-      {
-        label: 'Blog',
-        href: 'https://epage.github.io/blog/',
-      },
-      {
-        label: 'crates.io maintainer index',
-        href: 'https://packages.ecosyste.ms/registries/crates.io/maintainers/epage',
-      },
-      {
-        label: 'Rustacean Station interview',
-        href: 'https://rustacean-station.org/episode/065-ed-page/',
-      },
-    ],
+      'Rust style notes from Ed Page (epage), including item ordering and caller-before-callee organization.',
   },
   {
     title: 'Laws of Software Engineering',
