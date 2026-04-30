@@ -3,6 +3,9 @@ dist/
 # generated types
 .astro/
 
+# generated review session state
+.review/
+
 # dependencies
 node_modules/
 

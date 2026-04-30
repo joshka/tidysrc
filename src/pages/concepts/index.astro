@@ -12,28 +12,28 @@ const conceptGroups = [
     id: 'reader-model',
     title: 'Reader Model',
     summary:
-      'These concepts explain how TidySrc pages think about attention: what readers can keep in working memory, what review comments need to name, and when a compact card still needs enough prose.',
+      'Readable code keeps the main decision, the evidence, and the review vocabulary close enough for a reader to hold at once.',
     concepts: ['cognitive-burden', 'reader-locality', 'observable-behavior', 'review-batch-size'],
   },
   {
     id: 'boundaries-and-shape',
     title: 'Boundaries and Shape',
     summary:
-      'Use this group when the question is where a responsibility belongs, how far a change travels, and whether a module has one coherent reason to exist.',
+      'Boundaries decide where responsibility lives, how far a change travels, and whether a module still has one coherent reason to exist.',
     concepts: ['boundary-trust', 'coupling', 'cohesion', 'change-radius'],
   },
   {
     id: 'change-workflow',
     title: 'Change Workflow',
     summary:
-      'These concepts cover the economics of changing code in small, reviewable steps: separating structure from behavior, preserving reversibility, and choosing a batch size.',
+      'Good change workflow separates movement from behavior, keeps decisions reversible, and limits each review to a shape people can reason about.',
     concepts: ['structure-vs-behavior', 'reversibility', 'change-economics'],
   },
   {
     id: 'effects-state-time',
     title: 'Effects, State, and Time',
     summary:
-      'Use this group when behavior depends on mutation, order, background work, context, or state transitions that are easy to imply and hard to review.',
+      'Mutation, ordering, background work, context, and state transitions need visible ownership before reviewers can trust the behavior.',
     concepts: [
       'side-effect-visibility',
       'state-space',
@@ -50,12 +50,12 @@ const conceptGroups = [
     <div class="page-hero">
       <div class="page-hero-main">
         <p class="eyebrow">Concepts</p>
-        <h1>Deeper ideas behind the concise pattern entries.</h1>
+        <h1>Source-change concepts for reviewable code.</h1>
       </div>
       <div class="page-hero-side">
         <p class="lede">
-          Concepts carry the explanation that would overload pattern pages: reader burden,
-          behavior contracts, structure changes, and agent guidance.
+          Reader burden, behavior contracts, structure changes, and agent context shape whether a
+          change stays understandable after the diff grows.
         </p>
       </div>
     </div>
@@ -84,7 +84,7 @@ const conceptGroups = [
         return (
           <section class="concept-group panel" id={group.id}>
             <div class="concept-group-head">
-              <div>
+              <div class="concept-group-title">
                 <p class="eyebrow">Concept group</p>
                 <h2>{group.title}</h2>
               </div>
@@ -156,11 +156,22 @@ const conceptGroups = [
 
   .concept-group-head {
     display: grid;
+    align-items: start;
     grid-template-columns: minmax(0, 0.42fr) minmax(0, 0.58fr);
     gap: 1rem;
     border-bottom: 2px solid var(--border);
     background: var(--surface-muted);
     padding: 1rem;
+  }
+
+  .concept-group-title {
+    display: grid;
+    gap: 0.45rem;
+  }
+
+  .concept-group-head .eyebrow,
+  .concept-group-head h2 {
+    margin: 0;
   }
 
   .concept-group-head h2 {
@@ -169,7 +180,9 @@ const conceptGroups = [
   }
 
   .concept-group-head p:last-child {
+    align-self: center;
     color: var(--muted);
+    margin: 0;
   }
 
   .concept-card-grid {
