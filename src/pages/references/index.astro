@@ -29,11 +29,22 @@ const slug = (value: string) =>
   <section class="section-tight shell grid">
     {
       references.map((reference) => (
-        <a class="panel reference" href={reference.href} id={slug(reference.title)}>
-          <h2>{reference.title}</h2>
+        <article class="panel reference" id={slug(reference.title)}>
+          <h2>
+            <a href={reference.href}>{reference.title}</a>
+          </h2>
           <p>{reference.note}</p>
-          <span>{reference.href}</span>
-        </a>
+          {reference.links ? (
+            <ul>
+              {reference.links.map((link) => (
+                <li>
+                  <a href={link.href}>{link.label}</a>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+          <a class="reference-url" href={reference.href}>{reference.href}</a>
+        </article>
       ))
     }
   </section>
@@ -44,19 +55,42 @@ const slug = (value: string) =>
     display: grid;
     gap: 0.35rem;
     color: inherit;
-    text-decoration: none;
   }
 
   .reference h2 {
     font-size: 1.1rem;
   }
 
+  .reference h2 a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .reference h2 a:hover {
+    color: var(--accent-strong);
+  }
+
   .reference p,
-  .reference span {
+  .reference-url {
     color: var(--muted);
   }
 
-  .reference span {
+  .reference ul {
+    display: grid;
+    gap: 0.2rem;
+    list-style: none;
+    margin: 0.3rem 0 0;
+    padding: 0;
+  }
+
+  .reference li a {
+    color: var(--text);
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  .reference-url {
     overflow-wrap: anywhere;
     font-family: var(--font-mono);
     font-size: 0.84rem;

@@ -125,7 +125,7 @@ fn summarize_rows(rows: &[Row]) -> Totals {
       },
     ],
     references: [
-      'epage Rust Style: central item first and caller-before-callee ordering.',
+      'Ed Page (epage): Rust maintainer practice of putting the central item first and ordering helpers caller-before-callee.',
     ],
   },
   {
@@ -1301,14 +1301,28 @@ export const references = [
     note: 'Human-centered UX principles presented as concise laws with examples and references.',
   },
   {
-    title: 'Hacker News: Tidy First?',
-    href: 'https://news.ycombinator.com/item?id=38942400',
-    note: 'Discussion around tidying, guard clauses, early returns, and behavior-preserving change.',
-  },
-  {
-    title: 'Hacker News: Software design gets worse before it gets better',
-    href: 'https://news.ycombinator.com/item?id=40728714',
-    note: 'Discussion about software design tradeoffs, temporary worsening, and evolutionary change.',
+    title: 'Ed Page (epage)',
+    href: 'https://www.rust-lang.org/governance/people/epage/',
+    note:
+      'Rust project contributor, Cargo team member, CLI working group lead, and maintainer across widely used Rust ecosystem crates. Useful context for Rust-oriented source organization and maintainer-oriented style guidance.',
+    links: [
+      {
+        label: 'Rust project profile',
+        href: 'https://www.rust-lang.org/governance/people/epage/',
+      },
+      {
+        label: 'Blog',
+        href: 'https://epage.github.io/blog/',
+      },
+      {
+        label: 'crates.io maintainer index',
+        href: 'https://packages.ecosyste.ms/registries/crates.io/maintainers/epage',
+      },
+      {
+        label: 'Rustacean Station interview',
+        href: 'https://rustacean-station.org/episode/065-ed-page/',
+      },
+    ],
   },
   {
     title: 'Laws of Software Engineering',
