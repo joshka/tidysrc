@@ -1297,39 +1297,69 @@ export const problems: Problem[] = [
 
 export const references = [
   {
+    title: 'Laws of UX',
+    href: 'https://lawsofux.com/',
+    note: 'Human-centered UX principles presented as concise laws with examples and references.',
+  },
+  {
+    title: 'Hacker News: Tidy First?',
+    href: 'https://news.ycombinator.com/item?id=38942400',
+    note: 'Discussion around tidying, guard clauses, early returns, and behavior-preserving change.',
+  },
+  {
+    title: 'Hacker News: Software design gets worse before it gets better',
+    href: 'https://news.ycombinator.com/item?id=40728714',
+    note: 'Discussion about software design tradeoffs, temporary worsening, and evolutionary change.',
+  },
+  {
+    title: 'Laws of Software Engineering',
+    href: 'https://lawsofsoftwareengineering.com/',
+    note: 'A compact law-style framing of software engineering heuristics and tradeoffs.',
+  },
+  {
+    title: 'Refactoring.com',
+    href: 'https://refactoring.com/',
+    note: 'Martin Fowler’s refactoring home base, including articles and catalog links.',
+  },
+  {
     title: 'Refactoring.com Catalog',
     href: 'https://refactoring.com/catalog/',
     note: 'Compact refactoring entries with durable names and stable links.',
   },
   {
-    title: 'Enterprise Integration Patterns',
-    href: 'https://www.enterpriseintegrationpatterns.com/patterns/messaging/toc.html',
-    note: 'Classic pattern language structure with problem-oriented entries.',
+    title: 'Refactoring Guru Catalog',
+    href: 'https://refactoring.guru/refactoring/catalog',
+    note: 'Illustrated refactoring catalog with mechanics, motivation, and before-after examples.',
   },
   {
-    title: 'Microservices.io Patterns',
-    href: 'https://microservices.io/patterns/index.html',
-    note: 'Pattern groups framed by architecture problems and forces.',
+    title: 'SourceMaking Code Smells',
+    href: 'https://sourcemaking.com/refactoring/smells',
+    note: 'Code smell catalog organized around symptoms that often point to refactoring moves.',
   },
   {
-    title: 'Rust API Guidelines Checklist',
-    href: 'https://rust-lang.github.io/api-guidelines/checklist.html',
-    note: 'Rust API naming, trait, conversion, and interoperability checklist.',
+    title: 'Patterns.dev',
+    href: 'https://www.patterns.dev/',
+    note: 'Modern web development pattern catalog with practical examples and visual explanations.',
   },
   {
-    title: 'Microsoft Pragmatic Rust Guidelines',
-    href: 'https://microsoft.github.io/rust-guidelines/guidelines/checklist/index.html',
-    note: 'Pragmatic Rust checklist emphasizing static verification and maintainability.',
+    title: 'Interface Refactoring Catalog',
+    href: 'https://interface-refactoring.github.io/',
+    note: 'Catalog focused on interface-level refactorings and API design improvements.',
   },
   {
-    title: 'epage Rust Style',
-    href: 'https://epage.github.io/dev/rust-style/',
-    note: 'Reader-oriented Rust style guidance including caller-before-callee and central item first.',
+    title: 'Hillside Patterns',
+    href: 'https://hillside.net/patterns',
+    note: 'Pattern language archive and community hub for pattern-writing traditions.',
   },
   {
-    title: 'Rust Style Guide',
-    href: 'https://doc.rust-lang.org/style-guide/',
-    note: 'Default Rust formatting principles focused on readability and diff friendliness.',
+    title: 'Portland Pattern Repository',
+    href: 'https://c2.com/ppr/wiki/',
+    note: 'Early wiki archive for pattern language, design patterns, and adjacent software design writing.',
+  },
+  {
+    title: 'Understand Legacy Code Articles',
+    href: 'https://understandlegacycode.com/all-articles/',
+    note: 'Legacy-code articles focused on characterization, refactoring, and practical change tactics.',
   },
 ];
 
