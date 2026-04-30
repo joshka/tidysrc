@@ -126,26 +126,26 @@ const pageTitle = title === 'TidySrc' ? title : `${title} | TidySrc`;
 
 <style is:global>
   :root {
-    --background: #f7f3ea;
-    --surface: #ffffff;
-    --surface-muted: #eee8dc;
-    --surface-strong: #111111;
+    --background: #f8f3ea;
+    --surface: #fffaf1;
+    --surface-muted: #eee4d5;
+    --surface-strong: #17120c;
     --strong-text: #ffffff;
-    --text: #171717;
-    --muted: #5e615b;
-    --border: #171717;
-    --border-strong: #171717;
-    --accent: #1f9ed6;
-    --accent-text: #111111;
-    --accent-strong: #006f9f;
-    --accent-soft: #d9f1fb;
+    --text: #181513;
+    --muted: #665642;
+    --border: #2d2218;
+    --border-strong: #181513;
+    --accent: #d97706;
+    --accent-text: #1b1004;
+    --accent-strong: #7c4300;
+    --accent-soft: #f7dfba;
     --warning-soft: #fff0c7;
-    --stable-soft: #dff5dc;
-    --stable-text: #245a28;
-    --draft-soft: #e5e8ff;
-    --draft-text: #303b79;
-    --seed-soft: #eee8dc;
-    --seed-text: #6c5843;
+    --stable-soft: #e4edd8;
+    --stable-text: #334d1f;
+    --draft-soft: #eee0c8;
+    --draft-text: #68430c;
+    --seed-soft: #eadfd1;
+    --seed-text: #67523a;
     --font-sans:
       "Space Grotesk", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
       sans-serif;
@@ -154,26 +154,26 @@ const pageTitle = title === 'TidySrc' ? title : `${title} | TidySrc`;
   }
 
   :root[data-theme='dark'] {
-    --background: #081425;
-    --surface: #152031;
-    --surface-muted: #111c2d;
-    --surface-strong: #040e1f;
-    --strong-text: #d8e3fb;
-    --text: #d8e3fb;
-    --muted: #bdc8d1;
-    --border: #87929a;
-    --border-strong: #e2e2e2;
-    --accent: #38bdf8;
-    --accent-text: #040e1f;
-    --accent-strong: #8ed5ff;
-    --accent-soft: #0c3047;
-    --warning-soft: #332717;
-    --stable-soft: #183423;
-    --stable-text: #8ef0ad;
-    --draft-soft: #242c55;
-    --draft-text: #bec6e0;
-    --seed-soft: #2a3548;
-    --seed-text: #c6c6c7;
+    --background: #0c0f0e;
+    --surface: #1d201f;
+    --surface-muted: #191c1b;
+    --surface-strong: #0c0f0e;
+    --strong-text: #e1e3e1;
+    --text: #e1e3e1;
+    --muted: #d8c3ad;
+    --border: #534434;
+    --border-strong: #a08e7a;
+    --accent: #f59e0b;
+    --accent-text: #2a1700;
+    --accent-strong: #ffc174;
+    --accent-soft: #2b2419;
+    --warning-soft: #322616;
+    --stable-soft: #302613;
+    --stable-text: #ffc174;
+    --draft-soft: #282b29;
+    --draft-text: #cbcccc;
+    --seed-soft: #323534;
+    --seed-text: #c6c6c6;
   }
 
   * {
@@ -278,7 +278,7 @@ const pageTitle = title === 'TidySrc' ? title : `${title} | TidySrc`;
 
   .nav-links a:hover {
     background: var(--accent);
-    color: var(--surface-strong);
+    color: var(--accent-text);
   }
 
   .theme-toggle {
@@ -298,7 +298,7 @@ const pageTitle = title === 'TidySrc' ? title : `${title} | TidySrc`;
 
   .theme-toggle:hover {
     background: var(--accent);
-    color: var(--surface-strong);
+    color: var(--accent-text);
   }
 
   .section {
