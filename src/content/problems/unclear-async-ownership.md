@@ -10,6 +10,7 @@ topics:
 summary: >-
   Async work starts without a clear owner for ordering, cancellation, errors, or lifetime.
 relatedPatterns:
+  - name-async-ownership
   - keep-async-boundaries-explicit
   - make-side-effects-visible
   - observable-behavior-tests

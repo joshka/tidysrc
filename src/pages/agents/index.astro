@@ -2,11 +2,56 @@
 import { getCollection } from 'astro:content';
 
 import CopyBox from '../../components/CopyBox.astro';
-import PatternList from '../../components/PatternList.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import { patternHref } from '../../lib/catalog';
 
 const patterns = await getCollection('patterns');
 const agentPatterns = patterns.filter((pattern) => pattern.data.tags.includes('agent-guidance'));
+const patternById = new Map(agentPatterns.map((pattern) => [pattern.id, pattern]));
+const workflowGroups = [
+  {
+    title: 'Prepare',
+    summary:
+      'Give the agent the local rules, context sources, commands, and workspace state that should constrain the work.',
+    patterns: ['repo-local-instructions-win', 'pin-authoritative-context', 'prepare-the-workspace'],
+  },
+  {
+    title: 'Constrain',
+    summary:
+      'Name the edit surface, requirements, non-goals, and stop conditions before the work widens itself.',
+    patterns: [
+      'state-requirements-before-solutions',
+      'constrain-agent-edit-surface',
+      'make-stop-conditions-explicit',
+    ],
+  },
+  {
+    title: 'Explore',
+    summary:
+      'Separate discovery from editing so the first patch reflects the repository, not the first plausible guess.',
+    patterns: ['separate-exploration-from-editing', 'debug-from-evidence', 'stop-and-reframe'],
+  },
+  {
+    title: 'Edit',
+    summary:
+      'Keep generated code local, readable, and aligned with existing project shape.',
+    patterns: [
+      'avoid-premature-agent-architecture',
+      'preserve-human-changes',
+      'review-generated-code-normally',
+    ],
+  },
+  {
+    title: 'Verify and Handoff',
+    summary:
+      'Report evidence honestly and keep the next reader from inheriting stale task facts.',
+    patterns: [
+      'smallest-trustworthy-verification',
+      'report-verification-honestly',
+      'keep-agent-handoff-current',
+    ],
+  },
+];
 const baselineInstruction = `Follow the repository's local instructions first.
 
 When the project is silent, prefer small source changes that reduce reader burden,
@@ -46,8 +91,33 @@ trustworthy verification before claiming the work is done.`;
       </section>
 
       <section>
-        <h2>Agent-Relevant Patterns</h2>
-        <PatternList patterns={agentPatterns} />
+        <div class="section-heading">
+          <p class="eyebrow">Workflow map</p>
+          <h2>Agent-relevant patterns by phase</h2>
+        </div>
+        <div class="workflow-groups">
+          {
+            workflowGroups.map((group) => (
+              <section class="panel workflow-group">
+                <div>
+                  <h3>{group.title}</h3>
+                  <p>{group.summary}</p>
+                </div>
+                <div class="workflow-links">
+                  {group.patterns.map((id) => {
+                    const pattern = patternById.get(id);
+                    return pattern ? (
+                      <a href={patternHref(pattern)}>
+                        <strong>{pattern.data.title}</strong>
+                        <span>{pattern.data.summary}</span>
+                      </a>
+                    ) : null;
+                  })}
+                </div>
+              </section>
+            ))
+          }
+        </div>
       </section>
     </div>
 
@@ -74,8 +144,63 @@ trustworthy verification before claiming the work is done.`;
     gap: 1.5rem;
   }
 
+  .section-heading {
+    display: grid;
+    gap: 0.35rem;
+    margin-bottom: 1rem;
+  }
+
+  .section-heading h2 {
+    font-size: clamp(1.45rem, 2.5vw, 2.2rem);
+    text-transform: uppercase;
+  }
+
+  .workflow-groups {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .workflow-group {
+    display: grid;
+    grid-template-columns: minmax(0, 0.34fr) minmax(0, 0.66fr);
+    gap: 1rem;
+  }
+
+  .workflow-group h3 {
+    text-transform: uppercase;
+  }
+
+  .workflow-group p {
+    color: var(--muted);
+  }
+
+  .workflow-links {
+    display: grid;
+    gap: 0.6rem;
+  }
+
+  .workflow-links a {
+    display: grid;
+    gap: 0.25rem;
+    border: 2px solid var(--border);
+    background: var(--surface);
+    color: inherit;
+    padding: 0.75rem;
+    text-decoration: none;
+  }
+
+  .workflow-links a:hover {
+    background: var(--accent-soft);
+  }
+
+  .workflow-links span {
+    color: var(--muted);
+    font-size: 0.92rem;
+  }
+
   @media (max-width: 820px) {
-    .agent-grid {
+    .agent-grid,
+    .workflow-group {
       grid-template-columns: 1fr;
     }
   }

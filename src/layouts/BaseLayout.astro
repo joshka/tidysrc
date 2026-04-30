@@ -215,6 +215,13 @@ const pageTitle = title === 'TidySrc' ? title : `${title} | TidySrc`;
     line-height: 1.55;
   }
 
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+  }
+
   a {
     color: var(--accent-strong);
     text-decoration-thickness: 0.08em;
@@ -649,6 +656,8 @@ const pageTitle = title === 'TidySrc' ? title : `${title} | TidySrc`;
 
   .expressive-code .copy button {
     border-radius: 0;
+    font: inherit;
+    font-family: var(--font-sans);
   }
 
   .expressive-code .ec-line span[style] {

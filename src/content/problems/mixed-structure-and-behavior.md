@@ -10,6 +10,8 @@ summary: >-
   A single change mixes formatting, movement, renaming, behavior, tests, and cleanup until review
   cannot isolate the risk.
 relatedPatterns:
+  - choose-change-batch-size
+  - untangle-before-changing
   - separate-structure-from-behavior
   - smallest-trustworthy-verification
   - characterize-before-changing

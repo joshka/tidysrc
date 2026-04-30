@@ -10,6 +10,7 @@ topics:
 summary: >-
   Names keep their old words after behavior, ownership, or domain meaning changes.
 relatedPatterns:
+  - keep-name-current
   - explaining-variable
   - separate-structure-from-behavior
   - reader-locality

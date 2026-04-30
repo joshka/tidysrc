@@ -11,6 +11,7 @@ summary: >-
   Logs, metrics, and events are emitted without a stable contract for what changed or who should
   act.
 relatedPatterns:
+  - contain-observability-policy
   - return-structured-errors
   - observable-behavior-tests
   - make-side-effects-visible

@@ -10,6 +10,7 @@ topics:
 summary: >-
   Multiple callers repeat the same rules because the valid domain shape is not represented once.
 relatedPatterns:
+  - make-validation-policy-explicit
   - make-invalid-states-hard-to-express
   - parse-dont-validate
 relatedConcepts:

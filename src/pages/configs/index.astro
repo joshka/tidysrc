@@ -28,6 +28,35 @@ multiple-versions = "allow"
 unknown-registry = "deny"
 unknown-git = "warn"
 allow-registry = ["https://github.com/rust-lang/crates.io-index"]`;
+const agentHandoff = `Goal:
+- <name the behavior or source shape to change>
+
+Allowed edits:
+- <file or directory>
+
+Out of scope:
+- <nearby cleanup that should not happen>
+- <public contracts that must not change>
+
+Stop and ask if:
+- the edit surface grows
+- tests pass only after weakening assertions
+- generated or user-owned files need changes
+
+Verification:
+- <command that proves the changed behavior>`;
+const verificationHandoff = `Verification run:
+- <command>: passed
+
+Not run:
+- <check that still needs a person or environment>
+
+Remaining risk:
+- <specific behavior, browser state, or integration not covered>`;
+const repoLocalInstruction = `Follow this repository's instructions first.
+
+When the repository is silent, prefer small source changes that reduce reader burden, protect
+observable behavior, avoid premature architecture, and report only verification that actually ran.`;
 ---
 
 <BaseLayout title="Configs" description="Reusable TidySrc config defaults.">
@@ -82,6 +111,33 @@ allow-registry = ["https://github.com/rust-lang/crates.io-index"]`;
         characters, with tables exempted so they can remain aligned.
       </p>
       <Code code={markdownlintYaml} lang="yaml" meta={'title=".markdownlint-cli2.yaml"'} />
+    </article>
+
+    <article class="config-card">
+      <h2>agent-handoff.md</h2>
+      <p>
+        Use this shape when an agent or teammate needs a bounded task. It names the edit surface,
+        stop conditions, and verification before work starts.
+      </p>
+      <Code code={agentHandoff} lang="md" meta={'title="agent-handoff.md"'} />
+    </article>
+
+    <article class="config-card">
+      <h2>verification-handoff.md</h2>
+      <p>
+        Use this after a change so the next reader can distinguish checks that ran from checks that
+        are still recommendations.
+      </p>
+      <Code code={verificationHandoff} lang="md" meta={'title="verification-handoff.md"'} />
+    </article>
+
+    <article class="config-card">
+      <h2>repo-local-agent-rule.md</h2>
+      <p>
+        Use this as a small AGENTS.md-style baseline when a repository has no stronger local
+        instructions yet.
+      </p>
+      <Code code={repoLocalInstruction} lang="md" meta={'title="repo-local-agent-rule.md"'} />
     </article>
   </section>
 </BaseLayout>

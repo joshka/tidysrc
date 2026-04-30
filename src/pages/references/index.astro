@@ -4,9 +4,45 @@ import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 
 const references = await getCollection('references');
-const sortedReferences = references.sort((left, right) =>
-  left.data.title.localeCompare(right.data.title),
-);
+const referenceById = new Map(references.map((reference) => [reference.id, reference]));
+const referenceGroups = [
+  {
+    title: 'Refactoring Catalogs',
+    summary:
+      'Use these when TidySrc needs a durable refactoring name, before-after mechanics, or a known code-smell vocabulary.',
+    references: ['refactoring-com', 'refactoring-com-catalog', 'refactoring-guru-catalog'],
+  },
+  {
+    title: 'Pattern-Language Sources',
+    summary:
+      'Use these for catalog structure, naming discipline, and the older pattern-language tradition behind compact linked entries.',
+    references: ['portland-pattern-repository', 'hillside-patterns', 'patterns-dev'],
+  },
+  {
+    title: 'Legacy-Code Practice',
+    summary:
+      'Use these for characterization, seams, incremental change tactics, and maintenance-shaped examples.',
+    references: ['understand-legacy-code-articles', 'sourcemaking-code-smells'],
+  },
+  {
+    title: 'Source-Change Economics',
+    summary:
+      'Use these for small tidying moves, reversibility, cohesion, coupling, and reviewable change batch size.',
+    references: ['tidy-first', 'laws-of-software-engineering', 'ed-page-s-rust-style'],
+  },
+  {
+    title: 'Interfaces and User Burden',
+    summary:
+      'Use these when the pattern touches API shape, interface refactoring, reader burden, or human-centered heuristics.',
+    references: ['interface-refactoring-catalog', 'laws-of-ux'],
+  },
+  {
+    title: 'Agent Tooling and Failure Modes',
+    summary:
+      'Use these for agent workflow, context hygiene, stop conditions, and verification expectations around AI-assisted edits.',
+    references: ['ai-blindspots'],
+  },
+];
 ---
 
 <BaseLayout title="References" description="Influences and adjacent sources for TidySrc.">
@@ -26,38 +62,94 @@ const sortedReferences = references.sort((left, right) =>
     </div>
   </section>
 
-  <section class="section-tight shell grid">
+  <section class="section-tight shell reference-groups">
     {
-      sortedReferences.map((reference) => (
-        <article class="panel reference" id={reference.id}>
-          <h2>
-            <a href={reference.data.href}>{reference.data.title}</a>
-          </h2>
-          <p>{reference.body}</p>
-          <a class="reference-url" href={reference.data.href}>{reference.data.href}</a>
-        </article>
+      referenceGroups.map((group) => (
+        <section class="panel reference-group">
+          <div class="reference-group-head">
+            <div>
+              <p class="eyebrow">Reference group</p>
+              <h2>{group.title}</h2>
+            </div>
+            <p>{group.summary}</p>
+          </div>
+          <div class="reference-grid">
+            {group.references.map((id) => {
+              const reference = referenceById.get(id);
+              return reference ? (
+                <article class="reference" id={reference.id}>
+                  <h3>
+                    <a href={reference.data.href}>{reference.data.title}</a>
+                  </h3>
+                  <p>{reference.body}</p>
+                  <a class="reference-url" href={reference.data.href}>{reference.data.href}</a>
+                </article>
+              ) : null;
+            })}
+          </div>
+        </section>
       ))
     }
   </section>
 </BaseLayout>
 
 <style>
+  .reference-groups {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .reference-group {
+    display: grid;
+    gap: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  .reference-group-head {
+    display: grid;
+    grid-template-columns: minmax(0, 0.38fr) minmax(0, 0.62fr);
+    gap: 1rem;
+    border-bottom: 2px solid var(--border);
+    background: var(--surface-muted);
+    padding: 1rem;
+  }
+
+  .reference-group-head h2 {
+    font-size: clamp(1.3rem, 2.4vw, 2rem);
+    text-transform: uppercase;
+  }
+
+  .reference-group-head p:last-child {
+    color: var(--muted);
+  }
+
+  .reference-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
   .reference {
     display: grid;
     gap: 0.35rem;
+    align-content: start;
+    min-height: 190px;
+    border-right: 2px solid var(--border);
+    border-bottom: 2px solid var(--border);
+    padding: 1rem;
     color: inherit;
   }
 
-  .reference h2 {
+  .reference h3 {
     font-size: 1.1rem;
   }
 
-  .reference h2 a {
+  .reference h3 a {
     color: inherit;
     text-decoration: none;
   }
 
-  .reference h2 a:hover {
+  .reference h3 a:hover {
     color: var(--accent-strong);
   }
 
@@ -70,5 +162,17 @@ const sortedReferences = references.sort((left, right) =>
     overflow-wrap: anywhere;
     font-family: var(--font-mono);
     font-size: 0.84rem;
+  }
+
+  @media (max-width: 900px) {
+    .reference-group-head,
+    .reference-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .reference {
+      border-right: 0;
+      min-height: auto;
+    }
   }
 </style>

@@ -78,6 +78,7 @@ const { label, text, resolveCurrentUrl = false } = Astro.props;
 
   .copy-box pre {
     flex: 1;
+    font-family: var(--font-mono);
     font-size: clamp(1rem, 1.8vw, 1.35rem);
     line-height: 1.55;
     margin: 0;
@@ -87,6 +88,8 @@ const { label, text, resolveCurrentUrl = false } = Astro.props;
   }
 
   .copy-box code {
+    font-family: inherit;
+    font-size: inherit;
     overflow-wrap: anywhere;
     white-space: inherit;
   }

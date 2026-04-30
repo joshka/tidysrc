@@ -11,6 +11,11 @@ tags:
 relatedPatterns:
   - "repo-local-instructions-win"
   - "avoid-premature-agent-architecture"
+  - "constrain-agent-edit-surface"
+  - "separate-exploration-from-editing"
+  - "report-verification-honestly"
+  - "preserve-human-changes"
+  - "make-stop-conditions-explicit"
 ---
 ## Default posture
 

@@ -11,6 +11,7 @@ summary: >-
   A helper, provider, strategy, registry, or module boundary makes readers jump without carrying
   enough meaning.
 relatedPatterns:
+  - extract-helper-after-locality
   - reader-locality
   - avoid-premature-agent-architecture
 relatedConcepts:

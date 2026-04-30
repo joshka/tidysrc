@@ -10,6 +10,7 @@ topics:
 summary: >-
   A small rule change spreads across files, tests, and callers that do not own the rule.
 relatedPatterns:
+  - name-coupling
   - cap-change-radius
   - separate-structure-from-behavior
   - smallest-trustworthy-verification

@@ -13,6 +13,10 @@ is a queue for human review, not a publication checklist.
   markdown body.
 - `Cognitive Burden` received a second explanatory section because it was too thin to carry the
   site's reader model.
+- Seed concepts now capture theory-level gaps surfaced by the pattern additions:
+  `coupling`, `cohesion`, `change-economics`, `reversibility`, and `review-batch-size`.
+- `context-hygiene` was added as a seed concept from AI Blindspots. It should stay framed as
+  human-and-agent task context, not as an AI-only concern.
 
 ## Cross-Catalog Notes
 
@@ -42,10 +46,31 @@ becoming trusted domain values or structured boundary errors.
 Strong and central. It needs examples showing a small conceptual rule that touches many files, then
 a boundary move that shrinks future radius.
 
+### Change Economics
+
+Seed. Added from the Tidy First theory themes. It should explain why some structure work is worth
+doing now and some should remain optional until evidence improves.
+
 ### Cognitive Burden
 
 Important reader-model concept. It now has enough prose to avoid being just a glossary item, but it
 still needs concrete examples that distinguish line count from live facts.
+
+### Cohesion
+
+Seed. Added to support `strengthen-cohesion`. Needs examples showing related data and behavior
+moving together without turning modules into large buckets.
+
+### Context Hygiene
+
+Seed. Added from AI Blindspots themes around stale context, mementos, and task state. Needs concrete
+examples showing how long human or agent sessions drift from newer instructions, tool output, or
+verification results.
+
+### Coupling
+
+Seed. Added to support `name-coupling`. Needs examples showing beneficial visible coupling versus
+accidental hidden coupling.
 
 ### Observable Behavior
 
@@ -56,6 +81,16 @@ caller-visible outputs, errors, state, or effects.
 
 Currently the strongest concept page because it already has contrast examples. Review whether the
 examples should cover more than TypeScript before launch.
+
+### Reversibility
+
+Seed. Added to support `keep-structure-reversible`. Needs examples that distinguish local reversible
+tidies from public API, data, and migration decisions.
+
+### Review Batch Size
+
+Seed. Added to support `choose-change-batch-size`. Needs examples showing why a broad mechanical
+rename can be reviewable while a small semantic change may need a tight batch.
 
 ### Side Effect Visibility
 

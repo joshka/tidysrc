@@ -13,6 +13,14 @@ markdown files. It is a queue for human review, not a claim that the pattern set
 - Five seed patterns were added because the problem catalog exposed likely pattern gaps:
   `make-cache-ownership-explicit`, `make-failures-observable`, `measure-before-optimizing`,
   `move-domain-rules-inward`, and `preserve-error-context`.
+- Additional seed patterns now capture missing review handles from the problem review and Tidy
+  First-shaped gaps: dead code, symmetry, declaration/init locality, explicit parameters, helper
+  extraction, comments, batch size, untangling, reversibility, coupling, cohesion, naming drift,
+  async ownership, observability policy, and validation policy.
+- AI Blindspots is now represented as a small seed cluster: preserve the spec, stop and reframe,
+  state requirements before solutions, debug from evidence, prepare the workspace, and let tools
+  handle mechanics. These are framed as human-and-agent failure modes; agent wording should support
+  the general problem rather than replace it.
 
 ## Cross-Catalog Notes
 
@@ -160,6 +168,35 @@ Useful for agent workflow, but less like a code pattern than most entries. Consi
 belongs under agents rather than the main pattern catalog, or keep it as stable because it is central
 to how TidySrc should be used.
 
+### New Seed Patterns From Tidy First Themes
+
+These entries are intentionally `seed`: `delete-dead-code`, `normalize-symmetries`,
+`move-declaration-and-initialization-together`, `make-parameters-explicit`,
+`extract-helper-after-locality`, `write-explaining-comments`, `delete-redundant-comments`,
+`choose-change-batch-size`, `untangle-before-changing`, `keep-structure-reversible`,
+`name-coupling`, and `strengthen-cohesion`.
+
+They should be reviewed against TidySrc's own voice and examples before promotion. The O'Reilly
+chapter list is useful as a checklist of themes, but these pages should not become a paraphrase of
+Tidy First.
+
+### New Seed Patterns From Problem Review
+
+These entries close direct problem-page gaps: `keep-name-current`, `name-async-ownership`,
+`contain-observability-policy`, and `make-validation-policy-explicit`.
+
+They need deeper examples before promotion, especially across Python, C#, Java, Rust, and
+TypeScript.
+
+### New Seed Patterns From AI Blindspots
+
+These entries are intentionally `seed`: `preserve-the-spec`, `stop-and-reframe`,
+`state-requirements-before-solutions`, `debug-from-evidence`, `prepare-the-workspace`, and
+`let-tools-handle-mechanics`.
+
+They distill AI Blindspots posts into TidySrc names. Review them as general source-change problems
+that also show up in agent workflows, not as AI-only rules.
+
 ### Return Structured Errors
 
 Strong pattern. Review overlap with `Preserve Error Context`; one may be the general representation
@@ -177,13 +214,11 @@ coverage"; the point is matching the check to the risk.
 
 ## Missing Or Deferred Pattern Ideas
 
-- Make duplicated validation policy explicit. This is still seed-level because it overlaps with
-  parse-don't-validate and invalid states.
-- Name async ownership. This may become a split from Keep Async Boundaries Explicit if cancellation
-  examples grow.
-- Keep naming current with responsibility. Naming drift has a problem page but not a direct pattern
-  yet.
-- Contain observability policy. Observability noise has a problem page but may need a pattern that
-  names useful telemetry boundaries.
+- Make duplicated validation policy explicit. Status: seeded as
+  `make-validation-policy-explicit`; still overlaps with parse-don't-validate and invalid states.
+- Name async ownership. Status: seeded as `name-async-ownership`; may become a split from Keep Async
+  Boundaries Explicit if cancellation examples grow.
+- Keep naming current with responsibility. Status: seeded as `keep-name-current`.
+- Contain observability policy. Status: seeded as `contain-observability-policy`.
 - Keep examples close to real maintenance stories. This is more of an examples policy than a pattern,
   but it should shape future content.
