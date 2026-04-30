@@ -18,6 +18,16 @@ type Props = {
 const { examples } = Astro.props;
 const languages = sortedLanguageCodes([...new Set(examples.map((example) => example.language))]);
 const hasTabs = languages.length > 1;
+const exampleTone = (title: string) => {
+  if (title.toLowerCase().startsWith('problem:')) {
+    return 'problem';
+  }
+  if (title.toLowerCase().startsWith('better:')) {
+    return 'better';
+  }
+  return undefined;
+};
+const exampleTitle = (title: string) => title.replace(/^(Problem|Better):\s+/i, '');
 const tabId = `code-tabs-${examples
   .map((example) => `${example.language}-${example.title}`)
   .join('-')
@@ -55,32 +65,44 @@ const tabId = `code-tabs-${examples
           <div class="examples">
             {examples
               .filter((example) => example.language === language)
-              .map((example) => (
-                <article class="example">
-                  <div class="example-header">
-                    <h3>{example.title}</h3>
-                    <span>{example.path}</span>
-                  </div>
-                  {example.note && <p class="example-note">{example.note}</p>}
-                  <Code code={example.code} lang={example.language} meta={`title="${example.path}"`} />
-                </article>
-              ))}
+              .map((example) => {
+                const tone = exampleTone(example.title);
+                return (
+                  <article class={`example ${tone ? `example-${tone}` : ''}`}>
+                    <div class="example-header">
+                      <div class="example-title">
+                        {tone && <span class="example-tone">{tone}</span>}
+                        <h3>{exampleTitle(example.title)}</h3>
+                      </div>
+                      <span>{example.path}</span>
+                    </div>
+                    {example.note && <p class="example-note">{example.note}</p>}
+                    <Code code={example.code} lang={example.language} meta={`title="${example.path}"`} />
+                  </article>
+                );
+              })}
           </div>
         </div>
       ))}
     </div>
   ) : (
     <div class="examples">
-      {examples.map((example) => (
-        <article class="example">
-          <div class="example-header">
-            <h3>{example.title}</h3>
-            <span>{example.path}</span>
-          </div>
-          {example.note && <p class="example-note">{example.note}</p>}
-          <Code code={example.code} lang={example.language} meta={`title="${example.path}"`} />
-        </article>
-      ))}
+      {examples.map((example) => {
+        const tone = exampleTone(example.title);
+        return (
+          <article class={`example ${tone ? `example-${tone}` : ''}`}>
+            <div class="example-header">
+              <div class="example-title">
+                {tone && <span class="example-tone">{tone}</span>}
+                <h3>{exampleTitle(example.title)}</h3>
+              </div>
+              <span>{example.path}</span>
+            </div>
+            {example.note && <p class="example-note">{example.note}</p>}
+            <Code code={example.code} lang={example.language} meta={`title="${example.path}"`} />
+          </article>
+        );
+      })}
     </div>
   )
 }
@@ -151,6 +173,16 @@ const tabId = `code-tabs-${examples
     display: grid;
     gap: 0.75rem;
     min-width: 0;
+    border-left: 4px solid transparent;
+    padding-left: 0.75rem;
+  }
+
+  .example-problem {
+    border-left-color: #b42318;
+  }
+
+  .example-better {
+    border-left-color: #2f6f3e;
   }
 
   .example-header {
@@ -163,6 +195,37 @@ const tabId = `code-tabs-${examples
   .example-header h3 {
     margin: 0;
     min-width: 0;
+  }
+
+  .example-title {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+  }
+
+  .example-tone {
+    border: 2px solid currentColor;
+    color: var(--muted);
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    line-height: 1;
+    padding: 0.25rem 0.35rem;
+    text-transform: uppercase;
+  }
+
+  .example-problem .example-tone {
+    background: #b42318;
+    border-color: #b42318;
+    color: #fffaf1;
+  }
+
+  .example-better .example-tone {
+    background: #2f6f3e;
+    border-color: #2f6f3e;
+    color: #fffaf1;
   }
 
   .example-header span {

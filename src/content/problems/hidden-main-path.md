@@ -54,7 +54,82 @@ These examples show the problem shape, not the finished refactor. In each case, 
 present, but the reader has to dig through validation, branching, or dense expressions before they
 can see it.
 
-### Validation wraps the publish path
+### Problem: C cleanup checks hide the socket read
+
+The behavior is to read a frame, but the real path is buried under resource checks and manual
+cleanup concerns.
+
+```c title="src/session.c"
+int read_session_frame(struct session *session, struct frame *out) {
+    if (session != NULL) {
+        if (session->socket >= 0) {
+            if (out != NULL) {
+                int bytes = socket_read(session->socket, out->buffer, FRAME_SIZE);
+                if (bytes > 0) {
+                    out->length = bytes;
+                    session_touch(session);
+                    return 0;
+                }
+                return ERR_EMPTY_READ;
+            }
+            return ERR_MISSING_OUTPUT;
+        }
+        return ERR_CLOSED_SOCKET;
+    }
+    return ERR_MISSING_SESSION;
+}
+```
+
+### Problem: C# request checks bury the handler result
+
+The handler should clearly publish the invoice command, but the success path sits inside request,
+customer, and authorization checks.
+
+```csharp title="Billing/InvoiceHandler.cs"
+public async Task<Result> PublishInvoice(Request request, User user)
+{
+    if (request is not null)
+    {
+        if (request.CustomerId is not null)
+        {
+            if (user.CanPublishInvoices)
+            {
+                var command = new PublishInvoiceCommand(request.CustomerId.Value);
+                await bus.Send(command);
+                return Result.Accepted(command.Id);
+            }
+            return Result.Denied("missing invoice permission");
+        }
+        return Result.Denied("missing customer id");
+    }
+    return Result.Denied("missing request");
+}
+```
+
+### Problem: C++ setup branches obscure the export
+
+The export operation is the only domain action, but option checks and repository lookup take over
+the function's visual shape.
+
+```cpp title="src/export_report.cpp"
+ExportResult export_report(const Request& request, Repository& repository) {
+    if (request.report_id.has_value()) {
+        auto report = repository.find_report(*request.report_id);
+        if (report.has_value()) {
+            if (report->is_ready()) {
+                auto file = render_report(*report, request.format);
+                repository.record_export(report->id(), file.path());
+                return ExportResult::ok(file.path());
+            }
+            return ExportResult::failed("report is not ready");
+        }
+        return ExportResult::failed("report not found");
+    }
+    return ExportResult::failed("missing report id");
+}
+```
+
+### Problem: Validation wraps the publish path
 
 The report publish path is the behavior worth reviewing, but every precondition controls another
 level of indentation before the reader reaches it.
@@ -75,7 +150,7 @@ func PublishReport(ctx context.Context, report *Report, user User) error {
 }
 ```
 
-### The normal approval is hidden behind preconditions
+### Problem: The normal approval is hidden behind preconditions
 
 The successful approval is one line, but it is visually less important than the checks around it.
 
@@ -96,7 +171,7 @@ final class ApprovalService {
 }
 ```
 
-### Defensive DOM checks own the function shape
+### Problem: Defensive DOM checks own the function shape
 
 The event binding is the normal work, but the function makes the reader enter the defensive branch
 before they can see it.
@@ -113,7 +188,28 @@ export function attachSearch(input, results) {
 }
 ```
 
-### Option handling hides the command execution
+### Problem: Import validation hides the Python ingestion path
+
+The ingestion step is ordinary work, but file validation, schema lookup, and permission checks make
+the reader trace the failure tree before seeing the job creation.
+
+```python title="jobs/import_customers.py"
+def import_customers(upload, user, schemas):
+    if upload is not None:
+        if upload.filename.endswith(".csv"):
+            schema = schemas.get("customers")
+            if schema is not None:
+                if user.can_import_customers:
+                    rows = parse_csv(upload.stream, schema)
+                    job = enqueue_customer_import(rows, user.id)
+                    return ImportResult.accepted(job.id)
+                return ImportResult.rejected("missing import permission")
+            return ImportResult.rejected("missing customer schema")
+        return ImportResult.rejected("unsupported file type")
+    return ImportResult.rejected("missing upload")
+```
+
+### Problem: Option handling hides the command execution
 
 The command dispatch is the main path, but the missing-command and authorization cases make the
 reader carry context through nested branches first.
@@ -133,7 +229,7 @@ pub fn run_command(user: &User, command: Option<Command>) -> Result<Output, Erro
 }
 ```
 
-### Dense filtering hides the rule being applied
+### Problem: Dense filtering hides the rule being applied
 
 The intended rule is "show reviewed public entries first", but the expression mixes visibility,
 maturity, sorting, mapping, and fallback behavior in one visual block.

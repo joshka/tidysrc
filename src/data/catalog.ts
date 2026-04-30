@@ -1138,7 +1138,7 @@ impl TryFrom<Pattern> for PublishablePattern {
     summary:
       'Represent lifecycle changes as named transitions instead of scattered field writes and flag checks.',
     narrative:
-      'State bugs often come from code that edits flags directly. A record can be draft, queued, published, archived, failed, and retried, but the allowed movement between those states is nowhere named. Explicit transitions give reviewers a place to check invariants, side effects, and invalid movements.',
+      'State bugs often come from code that edits flags directly or spreads one lifecycle across several ordinary fields. A record can be draft, queued, published, archived, failed, and retried, but the allowed movement between those states is nowhere named. Explicit transitions give reviewers a place to check invariants, side effects, and invalid movements. When field combinations secretly control later behavior, name the state machine instead of making every reader reconstruct it.',
     status: 'draft',
     tags: ['correctness', 'state', 'api-design'],
     audiences: ['reviewers', 'agents', 'learners'],
@@ -1149,11 +1149,13 @@ impl TryFrom<Pattern> for PublishablePattern {
     useWhen: [
       'A value has a lifecycle and only some transitions are valid.',
       'Different callers update status fields directly and disagree about side effects or required timestamps.',
+      'A struct or object has several fields whose combinations determine future behavior.',
       'Tests need to build impossible states to exercise ordinary behavior.',
     ],
     guidance: [
       'Name transitions with verbs that describe the lifecycle move, such as submit, publish, archive, retry, or cancel.',
       'Keep invariant checks, timestamps, and transition events inside the transition boundary.',
+      'Replace field combinations that act like states with explicit variants, typed states, or named transition functions.',
       'Prefer enums or sealed variants over independent booleans when the states are mutually exclusive.',
     ],
     tradeoffs: [
