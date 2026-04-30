@@ -130,6 +130,7 @@ const pageTitle = title === 'TidySrc' ? title : `${title} | TidySrc`;
     --surface: #fffaf1;
     --surface-muted: #eee4d5;
     --surface-strong: #17120c;
+    --code-surface: #f0e5d4;
     --strong-text: #ffffff;
     --text: #181513;
     --muted: #665642;
@@ -146,6 +147,7 @@ const pageTitle = title === 'TidySrc' ? title : `${title} | TidySrc`;
     --draft-text: #68430c;
     --seed-soft: #eadfd1;
     --seed-text: #67523a;
+    --grid-line: #eee4d5;
     --font-sans:
       "Space Grotesk", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
       sans-serif;
@@ -154,26 +156,28 @@ const pageTitle = title === 'TidySrc' ? title : `${title} | TidySrc`;
   }
 
   :root[data-theme='dark'] {
-    --background: #0c0f0e;
-    --surface: #1d201f;
-    --surface-muted: #191c1b;
-    --surface-strong: #0c0f0e;
-    --strong-text: #e1e3e1;
-    --text: #e1e3e1;
-    --muted: #d8c3ad;
-    --border: #534434;
-    --border-strong: #a08e7a;
+    --background: #080a09;
+    --surface: #181b19;
+    --surface-muted: #20231f;
+    --surface-strong: #050606;
+    --code-surface: #181b19;
+    --strong-text: #f1eee6;
+    --text: #e7e5df;
+    --muted: #a89c8b;
+    --border: #6f746d;
+    --border-strong: #d0cac0;
     --accent: #f59e0b;
     --accent-text: #2a1700;
     --accent-strong: #ffc174;
-    --accent-soft: #2b2419;
-    --warning-soft: #322616;
-    --stable-soft: #302613;
+    --accent-soft: #2a2114;
+    --warning-soft: #261b0e;
+    --stable-soft: #24200f;
     --stable-text: #ffc174;
-    --draft-soft: #282b29;
-    --draft-text: #cbcccc;
-    --seed-soft: #323534;
-    --seed-text: #c6c6c6;
+    --draft-soft: #252925;
+    --draft-text: #d5d1c8;
+    --seed-soft: #1f2321;
+    --seed-text: #a89c8b;
+    --grid-line: rgba(231, 229, 223, 0.055);
   }
 
   * {
@@ -183,8 +187,8 @@ const pageTitle = title === 'TidySrc' ? title : `${title} | TidySrc`;
   body {
     margin: 0;
     background:
-      linear-gradient(var(--surface-muted) 1px, transparent 1px),
-      linear-gradient(90deg, var(--surface-muted) 1px, transparent 1px),
+      linear-gradient(var(--grid-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px),
       var(--background);
     background-size: 24px 24px;
     color: var(--text);
@@ -541,7 +545,7 @@ const pageTitle = title === 'TidySrc' ? title : `${title} | TidySrc`;
     --ec-brdRad: 0;
     --ec-brdWd: 2px;
     --ec-brdCol: var(--border);
-    --ec-codeBg: var(--surface);
+    --ec-codeBg: var(--code-surface);
     --ec-codeFg: var(--text);
     --ec-codeFontFml: var(--font-mono);
     --ec-codeFontSize: 0.88rem;
@@ -552,16 +556,16 @@ const pageTitle = title === 'TidySrc' ? title : `${title} | TidySrc`;
     --ec-sbThumbCol: color-mix(in srgb, var(--muted), transparent 60%);
     --ec-sbThumbHoverCol: var(--muted);
     --ec-frm-frameBoxShdCssVal: none;
-    --ec-frm-edActTabBg: var(--surface);
+    --ec-frm-edActTabBg: var(--code-surface);
     --ec-frm-edActTabFg: var(--text);
     --ec-frm-edActTabBrdCol: var(--border);
     --ec-frm-edActTabIndTopCol: var(--accent);
-    --ec-frm-edActTabIndBtmCol: var(--surface);
+    --ec-frm-edActTabIndBtmCol: var(--code-surface);
     --ec-frm-edTabBrdRad: 0;
     --ec-frm-edTabBarBg: var(--surface-muted);
     --ec-frm-edTabBarBrdCol: var(--border);
     --ec-frm-edTabBarBrdBtmCol: var(--border);
-    --ec-frm-edBg: var(--surface);
+    --ec-frm-edBg: var(--code-surface);
     --ec-frm-inlBtnFg: var(--text);
     --ec-frm-inlBtnBg: var(--text);
     --ec-frm-inlBtnBrd: var(--border);
