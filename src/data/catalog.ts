@@ -59,7 +59,7 @@ export const patterns: Pattern[] = [
     id: 'reader-locality',
     title: 'Reader Locality',
     summary:
-      'Keep the next useful concept close to the code that needs it, especially when the abstraction is weak.',
+      'Keep related concepts close to the code that needs them, especially when the abstraction is weak.',
     narrative:
       'Reader Locality is about reducing the number of jumps a maintainer must make to understand one change. A helper, type, or module earns distance only when its name and contract carry enough meaning on their own. When an abstraction is weak, keeping it near the caller is often clearer than moving it into a shared layer that forces every reader to reconstruct the context.',
     status: 'stable',
@@ -70,14 +70,14 @@ export const patterns: Pattern[] = [
     concepts: ['reader-locality', 'cognitive-burden'],
     related: ['chunk-statements', 'explaining-variable', 'avoid-premature-agent-architecture'],
     useWhen: [
-      'A helper, type, or module only makes sense beside one caller, and moving it away would make the caller harder to read rather than more focused.',
+      'A helper, type, or module only makes sense beside one caller, and moving it away would make the caller harder to read.',
       'A review requires jumping across files to understand one local behavior, especially when the destination file does not expose a durable domain concept.',
       'A proposed extraction reduces line count but increases the reader’s live mental stack by adding names, files, or ordering rules they must remember.',
     ],
     guidance: [
       'Put the central item first, then place weak helpers near the caller that gives them meaning so the reader can follow the workflow top to bottom.',
       'Extract only concepts that have semantic coherence and can be understood locally from their name, inputs, outputs, and surrounding module.',
-      'Prefer a little repetition over a distant abstraction when the repetition is easier to verify than a new indirection path.',
+      'Keep small repetition when it leaves less review work than a distant abstraction.',
     ],
     tradeoffs: [
       'Strong reusable concepts can live farther away if their contract is clear enough that callers do not need to inspect the implementation.',
@@ -113,7 +113,7 @@ fn summarize_rows(rows: &[Row]) -> Totals {
         path: 'src/patterns/format.ts',
         language: 'ts',
         note:
-          'The search text formatter is specific to this page, so keeping it local avoids sending readers to a generic utility for a one-use behavior.',
+          'The search text formatter belongs to the catalog page, so keeping it local avoids a generic utility for one behavior.',
         code: `export function patternSearchText(pattern: Pattern): string {
   return [
     pattern.title,
@@ -146,17 +146,17 @@ fn summarize_rows(rows: &[Row]) -> Totals {
     useWhen: [
       'The branch handles an empty case, invalid input, unsupported mode, or no-op that is less important than the behavior that follows.',
       'Continuing would make the main path more indented than the edge case, forcing readers to carry a condition while reading the real work.',
-      'The early return does not skip meaningful cleanup or later behavior; ownership, locks, transactions, and deferred work are still explicit.',
+      'The early return does not skip cleanup or required behavior; ownership, locks, transactions, and deferred work are still explicit.',
     ],
     guidance: [
       'Put boring preconditions at the top of the function in the order a reader must rule them out before trusting the main path.',
       'Keep the main behavior visually prominent after the guards so the function reads as “reject invalid cases, then do the work.”',
-      'Use domain-specific return values or errors rather than vague booleans, because the guard is also documentation for why execution stops.',
+      'Use domain-specific return values or errors so the guard states why execution stops.',
     ],
     tradeoffs: [
       'Too many guards can hide a missing input type or parser; repeated validation may belong at a construction boundary instead.',
       'In languages with manual cleanup, make cleanup ownership explicit before returning so the tidy does not introduce lifetime or resource bugs.',
-      'A meaningful alternative path may deserve a named branch rather than a guard if both paths carry domain behavior a reader must compare.',
+      'A domain-relevant alternative path may deserve a named branch if both paths carry behavior a reader must compare.',
     ],
     agentInstruction:
       'Use a guard clause when an empty case, validation failure, unsupported mode, or no-op would otherwise indent the main path. Keep the normal behavior visually prominent.',
@@ -166,7 +166,7 @@ fn summarize_rows(rows: &[Row]) -> Totals {
         path: 'src/parser.rs',
         language: 'rust',
         note:
-          'The parser rejects blank input before constructing a name, leaving the valid parsing path flat and easy to inspect.',
+          'The parser rejects blank input before constructing a name, leaving the valid parsing path flat.',
         code: `pub fn parse_name(input: &str) -> Option<Name> {
     let trimmed = input.trim();
     if trimmed.is_empty() {
@@ -214,9 +214,9 @@ fn summarize_rows(rows: &[Row]) -> Totals {
     id: 'chunk-statements',
     title: 'Chunk Statements',
     summary:
-      'Group nearby statements into visible logic paragraphs so each phase of the workflow is easy to scan.',
+      'Group nearby statements into visible logic paragraphs so each workflow phase is visible.',
     narrative:
-      'Chunking statements uses whitespace to show the shape of a small algorithm. It is not decoration; each blank line should mark a change in intent such as setup, filtering, mutation, verification, or return assembly. Good chunks let a reviewer skim the function as a sequence of phases before reading each line closely.',
+      'Chunking statements uses whitespace to show the shape of a small algorithm. Each blank line should mark a change in intent such as setup, filtering, mutation, verification, or return assembly. A reviewer can read the function as a sequence of phases before reading each line closely.',
     status: 'draft',
     tags: ['readability', 'formatting', 'review'],
     audiences: ['reviewers', 'agents', 'learners'],
@@ -232,12 +232,12 @@ fn summarize_rows(rows: &[Row]) -> Totals {
     guidance: [
       'Use blank lines as algorithm paragraphs, with each paragraph answering one local question for the reader.',
       'Keep each paragraph focused on one phase or side effect so mutation, validation, and return construction do not blur together.',
-      'Name intermediate values when the next paragraph depends on them, because the name becomes the bridge between phases.',
+      'Name intermediate values when a following paragraph depends on them; the name becomes the bridge between phases.',
     ],
     tradeoffs: [
       'Blank lines should reveal structure, not decorate every statement; too much whitespace makes the function feel fragmented.',
       'If every paragraph needs a heading comment, a function or concept may be missing and the code may need a stronger extraction.',
-      'Do not split a dense expression if a single idiom is clearer to the local audience and the expression already reads as one thought.',
+      'Do not split a dense expression when the local idiom already reads as one thought.',
     ],
     agentInstruction:
       'When a function is correct but hard to scan, group statements into logic paragraphs. Use blank lines only where the reader crosses a real phase boundary.',
@@ -287,7 +287,7 @@ fn summarize_rows(rows: &[Row]) -> Totals {
     summary:
       'Name an intermediate value when it lowers the reader’s burden more than another inline expression would.',
     narrative:
-      'An explaining variable turns an operation into a domain fact. It is most useful when the reader needs to understand why a value matters before they care how it is computed. The goal is not to add names everywhere, but to spend one local name when that name makes the next branch, call, or return read naturally.',
+      'An explaining variable turns an operation into a domain fact. It helps when the reader needs to know why a value matters before they care how it is computed. Spend a local name when that name makes the following branch, call, or return read in domain terms.',
     status: 'draft',
     tags: ['readability', 'naming', 'refactoring'],
     audiences: ['reviewers', 'agents', 'learners'],
@@ -301,17 +301,17 @@ fn summarize_rows(rows: &[Row]) -> Totals {
       'The name can express intent better than the operations alone, especially when the operations are generic but the result has domain meaning.',
     ],
     guidance: [
-      'Name the domain fact, not the implementation detail, so the next line reads in terms of the behavior being decided.',
-      'Prefer a local variable over a helper when the value is only meaningful here and extraction would create a weak distant abstraction.',
+      'Name the domain fact, not the implementation detail, so the following line reads in terms of the behavior being decided.',
+      'Prefer a local variable over a helper when the value belongs only to this caller and extraction would create a weak distant abstraction.',
       'Keep the named value close to its use so the reader does not have to remember the definition across unrelated work.',
     ],
     tradeoffs: [
-      'Do not introduce a name that merely repeats the expression; the variable should add intent, grouping, or a meaningful review handle.',
+      'Do not introduce a name that repeats the expression; the variable should add intent, grouping, or a review handle.',
       'If the same concept appears in many places, promote it to a real API instead of copying local names with subtly different meanings.',
       'Avoid stale names when the expression changes, because an inaccurate explaining variable is worse than an inline expression.',
     ],
     agentInstruction:
-      'Introduce an explaining variable when a local name makes the next line easier to read. Do not extract a helper unless the concept has meaning beyond this local use.',
+      'Introduce an explaining variable when a local name makes the following line easier to read. Do not extract a helper unless the concept has meaning beyond this local use.',
     examples: [
       {
         title: 'Name the local condition',
@@ -362,7 +362,7 @@ return Decision.from(matchingRules);`,
     summary:
       'Keep tidying changes separate from behavior changes when mixing them would make review or rollback harder.',
     narrative:
-      'Structure and behavior fail in different ways. A rename, move, extraction, or formatting pass should usually be reviewable as behavior-preserving, while a behavior change should make the new rule obvious. Keeping those units separate gives reviewers a cleaner diff, gives tests a clearer job, and makes rollback less dangerous.',
+      'Structure and behavior fail in different ways. A rename, move, extraction, or formatting pass should be reviewable as behavior-preserving when no output, error, or side effect changes. A behavior change should expose the new rule. Separate units give reviewers a smaller diff, tests a clearer job, and rollback a narrower target.',
     status: 'stable',
     tags: ['workflow', 'review', 'refactoring', 'legacy-code'],
     audiences: ['reviewers', 'agents', 'learners'],
@@ -373,16 +373,16 @@ return Decision.from(matchingRules);`,
     useWhen: [
       'The structural change can be verified independently, such as a rename, move, extraction, or formatting change that should preserve behavior.',
       'The behavior change is easier to review after a small tidy because the tidy removes incidental noise around the real rule.',
-      'Rollback would be risky if cleanup and logic are fused, especially when a bug fix might need to be reverted without losing useful structure.',
+      'Rollback would be risky if cleanup and logic are fused, especially when a bug fix might need to be reverted without losing valuable structure.',
     ],
     guidance: [
       'Make pure structure changes first when they lower risk for the behavior change and can be checked without understanding the new behavior.',
-      'Keep the behavior-preserving change mechanically reviewable by avoiding opportunistic edits outside the path needed for the next step.',
+      'Keep the behavior-preserving change mechanically reviewable by avoiding opportunistic edits outside the changed path.',
       'Run the smallest trustworthy check after each unit so accidental behavior movement is caught before the behavioral diff starts.',
     ],
     tradeoffs: [
       'Tiny local cleanups can stay with behavior if separation would add process noise and the cleanup is plainly inseparable from the changed lines.',
-      'Do not tidy unrelated areas just because a behavior change is nearby; that expands review scope without lowering risk.',
+      'Do not tidy unrelated areas because a behavior change is nearby; that expands review scope without lowering risk.',
       'Legacy code may need characterization tests before either change is safe, because “structure-only” is hard to prove without a behavior signal.',
     ],
     agentInstruction:
@@ -406,10 +406,10 @@ const activePatterns = patterns.filter((pattern) => pattern.status === 'stable')
         language: 'rust',
         note:
           'Moving parsing behind a named function is one change; adding the new validation rule is a separate behavior change.',
-        code: `// First change: move parsing into parse_record without changing behavior.
+        code: `// Change 1: move parsing into parse_record without changing behavior.
 let record = parse_record(line)?;
 
-// Later change: add the new validation rule.
+// Change 2: add the new validation rule.
 record.validate_required_fields()?;`,
       },
     ],
@@ -437,12 +437,12 @@ record.validate_required_fields()?;`,
     guidance: [
       'Write tests around inputs and outputs that callers can observe, not around private helper calls that the refactor is allowed to change.',
       'Name the test after the behavior, not the implementation, so future readers understand what contract is being protected.',
-      'After behavior is pinned, make the smallest change that improves the situation and rerun the characterization test to separate discovery from change.',
+      'Pin the behavior, make one focused change, and rerun the characterization test to separate discovery from change.',
     ],
     tradeoffs: [
       'Characterization tests can preserve bugs; mark suspicious behavior clearly so the test records today’s contract without declaring it desirable.',
       'Do not overfit tests to private helper calls or exact formatting unless that detail is truly part of the external contract.',
-      'For tiny obvious changes, a cheaper check may be enough, but risky legacy areas deserve a behavior pin before structure starts moving.',
+      'Tiny obvious changes may only need a narrow check; risky legacy areas need a behavior pin before structure moves.',
     ],
     agentInstruction:
       'Before changing risky legacy code, add or identify a behavior-level test that would fail if callers see a different result. Preserve suspicious behavior first, then change it deliberately.',
@@ -465,7 +465,7 @@ void keepsBlankDiscountCodeAsZeroDiscount() {
         path: 'tests/parser.rs',
         language: 'rust',
         note:
-          'The test captures the parser’s current empty-field output so a later parser refactor cannot silently change that boundary.',
+          'The test captures the parser’s current empty-field output so a parser refactor cannot silently change that boundary.',
         code: `#[test]
 fn preserves_legacy_empty_field_behavior() {
     let record = parse_record("name,,active").unwrap();
@@ -491,19 +491,19 @@ fn preserves_legacy_empty_field_behavior() {
     concepts: ['observable-behavior'],
     related: ['characterize-before-changing', 'smallest-trustworthy-verification'],
     useWhen: [
-      'A test exists mainly to protect behavior through future refactors, so it should describe the stable boundary rather than the current implementation path.',
+      'A test exists mainly to protect behavior through future refactors, so it should describe the stable boundary instead of the current implementation path.',
       'Private helper assertions make safe structure changes expensive by failing when a call graph changes even though callers see the same result.',
       'The API or user-visible output is the real contract, including errors, events, files, network calls, persistence, and generated UI.',
     ],
     guidance: [
       'Assert outputs, persisted state, events, errors, and side effects the caller can observe at the cheapest boundary that still catches likely regressions.',
       'Use fixtures, snapshots, or golden files when the observable result is structured, but keep them focused enough that intentional changes remain reviewable.',
-      'Keep private helper tests only when the helper is a real concept with its own contract rather than a temporary decomposition detail.',
+      'Keep private helper tests only when the helper is a real concept with its own contract, not a temporary decomposition detail.',
     ],
     tradeoffs: [
       'Some low-level algorithms need direct tests for edge cases because the algorithm itself is the contract being maintained.',
       'Observable tests can be broader and slower; choose the cheapest trustworthy boundary instead of defaulting to end-to-end coverage.',
-      'Do not ignore important error context just because it is not user-facing UI; logs, diagnostics, and API errors can be observable contracts too.',
+      'Treat logs, diagnostics, and API errors as observable contracts when callers depend on them.',
     ],
     agentInstruction:
       'When adding or updating tests, prefer assertions against observable behavior. Avoid tests that only prove a private helper was called unless that helper owns a real contract.',
@@ -538,7 +538,7 @@ fn finds_pattern_by_problem_terms() {
         path: 'search_test.go',
         language: 'go',
         note:
-          'The test checks the returned pattern slugs rather than asserting how the search implementation walks its data.',
+          'The test checks the returned pattern slugs instead of asserting how the search implementation walks its data.',
         code: `func TestSearchFindsProblemTerms(t *testing.T) {
     results := Search(patterns, "mutation inside expressions")
 
@@ -554,7 +554,7 @@ fn finds_pattern_by_problem_terms() {
     summary:
       'Move checks into types, constructors, or parsing boundaries so the rest of the code handles valid states.',
     narrative:
-      'This pattern moves repeated “remember to check” work into a representation that carries the invariant. A precise type, constructor, or parser can make invalid values difficult or impossible to pass downstream. The payoff is highest when many callers currently repeat the same defensive checks or when one missed check would create a meaningful bug.',
+      'This pattern moves repeated “remember to check” work into a representation that carries the invariant. A precise type, constructor, or parser can make invalid values difficult or impossible to pass downstream. The payoff is highest when many callers repeat the same defensive checks or when one missed check can create a bug.',
     status: 'draft',
     tags: ['correctness', 'api-design', 'rust', 'testing'],
     audiences: ['reviewers', 'agents', 'learners'],
@@ -565,11 +565,11 @@ fn finds_pattern_by_problem_terms() {
     useWhen: [
       'The same invalid case is checked repeatedly, and each caller has to remember the rule before using the value safely.',
       'A function accepts values that make no sense for its operation, such as empty identifiers, unparsed URLs, or states that violate the domain model.',
-      'The type system can carry a useful invariant without excessive ceremony, making valid code easier to write than invalid code.',
+      'The type system can carry an invariant without excessive ceremony, making valid code shorter than invalid code.',
     ],
     guidance: [
       'Create a more precise type at the boundary where uncertainty enters so downstream code receives a value it can trust.',
-      'Expose constructors that validate once and return a useful error, preserving enough context for the caller to report or recover.',
+      'Expose constructors that validate once and return an actionable error with enough context for the caller to report or recover.',
       'Make downstream functions accept the precise type, not raw input, so the invariant is visible in signatures instead of comments.',
     ],
     tradeoffs: [
@@ -603,7 +603,7 @@ impl Email {
         path: 'src/email.ts',
         language: 'ts',
         note:
-          'The parser converts an uncertain string into a branded Email so later APIs can ask for the precise value.',
+          'The parser converts an uncertain string into a branded Email so downstream APIs can ask for the precise value.',
         code: `type Email = string & { readonly kind: unique symbol };
 
 export function parseEmail(input: string): Email | null {
@@ -622,7 +622,7 @@ export function parseEmail(input: string): Email | null {
     summary:
       'Convert uncertain input into a precise representation once, then pass the precise value onward.',
     narrative:
-      'Parsing is validation plus a change in representation. Instead of checking raw input and then continuing to pass raw strings, maps, or untyped values around, parse the input into a shape that encodes what is now known. This reduces repeated checks and makes later code read as if it operates on trusted domain values.',
+      'Parsing is validation plus a change in representation. Check raw input once, then convert it into a shape that encodes what is now known. This reduces repeated checks and makes downstream code read as if it operates on trusted domain values.',
     status: 'draft',
     tags: ['correctness', 'api-design', 'rust'],
     audiences: ['reviewers', 'agents', 'learners'],
@@ -632,18 +632,18 @@ export function parseEmail(input: string): Email | null {
     related: ['make-invalid-states-hard-to-express', 'guard-clause', 'explaining-variable'],
     useWhen: [
       'A value crosses a trust boundary such as user input, config, environment variables, files, or wire data.',
-      'Later code needs a stronger promise than raw strings or maps can provide, and that promise should be visible in the type or data shape.',
+      'Downstream code needs a stronger promise than raw strings or maps can provide, and that promise should be visible in the type or data shape.',
       'Validation and use are separated far enough that the reader must remember the check or wonder whether it already happened.',
     ],
     guidance: [
       'Parse at the boundary and return either a precise value or an actionable error, keeping uncertain input from leaking inward.',
-      'Pass the parsed value through downstream APIs so later code does not need to repeat defensive validation.',
+      'Pass the parsed value through downstream APIs so callers do not need to repeat defensive validation.',
       'Preserve enough error context for the caller to act, especially when input came from users, config, or external systems.',
     ],
     tradeoffs: [
-      'Do not introduce a parser for a one-off local condition when a guard clause or explaining variable would communicate the rule more directly.',
+      'Do not introduce a parser for a one-off local condition when a guard clause or explaining variable communicates the rule directly.',
       'Parsing can reveal behavior changes; characterize risky legacy input first if callers may depend on loose acceptance.',
-      'Keep parser errors intentional rather than leaking low-level implementation details that make the boundary harder to evolve.',
+      'Keep parser errors intentional; low-level implementation details make the boundary harder to evolve.',
     ],
     agentInstruction:
       'When raw input is validated and then reused, prefer parsing it into a precise type at the boundary. Downstream code should accept the parsed representation.',
@@ -699,7 +699,7 @@ export function parseEmail(input: string): Email | null {
     summary:
       'Run the cheapest check that can catch the likely failure before claiming the change is done.',
     narrative:
-      'Verification should match the risk of the change. A focused unit test, typecheck, build, route smoke test, or visual check can be more useful than either running nothing or running an expensive suite that does not cover the changed surface. The key is to choose a check that could actually fail for the mistake you are likely to have made.',
+      'Verification should match the risk of the change. A focused unit test, typecheck, build, route smoke test, or visual check can catch the changed surface better than an expensive suite that misses it. Choose a check that could fail for the mistake the change is likely to introduce.',
     status: 'stable',
     tags: ['workflow', 'testing', 'agents', 'review'],
     audiences: ['reviewers', 'agents', 'learners'],
@@ -709,7 +709,7 @@ export function parseEmail(input: string): Email | null {
     related: ['observable-behavior-tests', 'separate-structure-from-behavior'],
     useWhen: [
       'The likely failure mode is narrower than the full test suite, such as a parser edge case, route render, type error, or formatting regression.',
-      'A fast local check can prove the changed surface still works and gives quicker feedback than waiting for broad CI.',
+      'A local check can prove the changed surface still works before broad CI runs.',
       'An agent or reviewer needs a credible completion signal that distinguishes checked work from plausible but unverified edits.',
     ],
     guidance: [
@@ -718,7 +718,7 @@ export function parseEmail(input: string): Email | null {
       'Report exactly what passed and what was not run so the next person can judge residual risk without decoding your workflow.',
     ],
     tradeoffs: [
-      'The cheapest check is not always trustworthy; if it would pass despite the likely bug, it is just a ritual.',
+      'A cheap check is not trustworthy when it would pass despite the likely bug.',
       'Broad refactors may need full suites even when local tests pass because the risk is distributed across many callers.',
       'Manual visual checks matter for UI work after automated checks pass, because layout, contrast, and interaction can fail outside type systems.',
     ],
@@ -730,7 +730,7 @@ export function parseEmail(input: string): Email | null {
         path: 'justfile',
         language: 'bash',
         note:
-          'The commands start with the focused parser test and then add formatting and lint checks that match the likely failure modes.',
+          'The commands run the focused parser test, then formatting and lint checks that match the likely failure modes.',
         code: `cargo test parser::tests::finds_problem_terms
 cargo fmt --check
 cargo clippy --workspace --all-targets -- -D warnings`,
@@ -755,7 +755,7 @@ cargo clippy --workspace --all-targets -- -D warnings`,
     summary:
       'Apply local project instructions before general preferences, pattern catalogs, or agent defaults.',
     narrative:
-      'General guidance is useful only after the local project has had its say. Repository instructions, existing helpers, naming schemes, test workflows, and maintainer preferences carry context that a generic pattern catalog cannot know. This pattern keeps agents and reviewers from replacing deliberate local coherence with abstract best practices.',
+      'Repository instructions, existing helpers, naming schemes, test workflows, and maintainer preferences carry context that a generic pattern catalog cannot know. Agents and reviewers should preserve deliberate local coherence instead of replacing it with generic guidance.',
     status: 'stable',
     tags: ['agent-guidance', 'workflow', 'review'],
     audiences: ['reviewers', 'agents', 'learners'],
@@ -765,7 +765,7 @@ cargo clippy --workspace --all-targets -- -D warnings`,
     related: ['avoid-premature-agent-architecture', 'smallest-trustworthy-verification'],
     useWhen: [
       'A repo has AGENTS.md, CONTRIBUTING, local style docs, or established patterns that define how work should be done there.',
-      'A general best practice conflicts with local compatibility, release constraints, or maintainer preference.',
+      'General guidance conflicts with local compatibility, release constraints, or maintainer preference.',
       'An agent is about to apply global defaults to an unfamiliar codebase without first checking the repo’s own conventions.',
     ],
     guidance: [
@@ -776,7 +776,7 @@ cargo clippy --workspace --all-targets -- -D warnings`,
     tradeoffs: [
       'Local style can be stale; do not preserve broken patterns blindly when they conflict with correctness or clear maintainability.',
       'Security, correctness, and explicit user requests can override local taste, but the reason should be visible in the change or handoff.',
-      'When guidance conflicts, name the conflict rather than silently choosing so the maintainer can correct the rule or approve the exception.',
+      'When guidance conflicts, name the conflict so the maintainer can correct the rule or approve the exception.',
     ],
     agentInstruction:
       'Follow repo-local instructions first. Use TidySrc only when the project is silent or when a local pattern matches the same guidance.',
@@ -797,7 +797,7 @@ and source code that reduces the reader's live mental stack.`,
         path: 'src/url.ts',
         language: 'ts',
         note:
-          'The route builder already encodes local URL conventions, so using it is clearer than adding a generic helper.',
+          'The route builder already encodes local URL conventions, so it avoids another generic helper.',
         code: `// Prefer the local route builder so generated URLs match the app.
 const href = patternHref(pattern.slug);
 
@@ -812,7 +812,7 @@ const href = patternHref(pattern.slug);
     summary:
       'Do not introduce broad architecture from one or two local examples, especially in agent-written code.',
     narrative:
-      'Premature architecture often looks tidy in isolation: providers, registries, strategies, factories, and extension points can make a small change appear organized. The cost shows up later when readers must understand concepts that do not yet pay for themselves. Prefer direct code until repetition is real, semantic, and clearly reduces the number of facts a maintainer must hold.',
+      'Premature architecture often looks tidy in isolation: providers, registries, strategies, factories, and extension points can make a small change appear organized. Readers pay the cost when they must understand concepts that do not yet carry their weight. Use direct code until repetition is real, semantic, and reduces the number of facts a maintainer must hold.',
     status: 'draft',
     tags: ['agent-guidance', 'architecture', 'review'],
     audiences: ['reviewers', 'agents', 'learners'],
@@ -823,16 +823,16 @@ const href = patternHref(pattern.slug);
     useWhen: [
       'A proposed abstraction has only one caller or two weakly similar callers, so the shared concept is not yet proven.',
       'The abstraction hides mutation, ordering, or ownership that reviewers need to see to judge correctness.',
-      'The change adds broad extension points without a concrete near-term user, making future flexibility more speculative than useful.',
+      'The change adds broad extension points without a concrete near-term user.',
     ],
     guidance: [
       'Implement the local behavior directly first so the real shape of the problem is visible before naming a framework around it.',
-      'Extract only when duplication is real, semantic, and lowering reader burden rather than merely reducing line count.',
+      'Extract only when duplication is real, semantic, and lowers reader burden instead of only reducing line count.',
       'Prefer boring names and local helpers over architecture vocabulary until the codebase has enough examples to justify stronger concepts.',
     ],
     tradeoffs: [
       'Some frameworks require early structure; follow the framework when it is the local idiom and readers expect that shape.',
-      'Public APIs may need more deliberate shape before release because compatibility costs can make later extraction harder.',
+      'Public APIs may need a deliberate shape before release because compatibility costs can make future extraction harder.',
       'Do not use this pattern to reject all abstraction; reject abstractions that do not pay rent in clarity, safety, or changeability.',
     ],
     agentInstruction:
@@ -855,7 +855,7 @@ const href = patternHref(pattern.slug);
         path: 'src/language.rs',
         language: 'rust',
         note:
-          'A direct match makes the supported labels obvious; a trait hierarchy would hide a tiny mapping behind premature extension points.',
+          'A direct match exposes the supported labels; a trait hierarchy would hide a tiny mapping behind extension points.',
         code: `pub fn language_label(language: &str) -> &str {
     match language {
         "ts" => "TypeScript",
@@ -875,7 +875,7 @@ export const concepts: Concept[] = [
     id: 'reader-locality',
     title: 'Reader Locality',
     summary:
-      'Put the next useful idea where the reader needs it, especially when the abstraction is weak.',
+      'Put related ideas where the reader needs them, especially when the abstraction is weak.',
     tags: ['readability', 'organization'],
     relatedPatterns: ['reader-locality', 'chunk-statements', 'explaining-variable'],
     examples: [
@@ -949,14 +949,14 @@ function isEligibleForApproval(user: User) {
       {
         title: 'Why it matters',
         body: [
-          'Refactors should be able to change private shape without breaking tests. Behavior tests should fail when callers would see a meaningful difference.',
-          'In legacy code, characterization tests first document what happens today. Later changes can decide which quirks to preserve or intentionally change.',
+          'Refactors should be able to change private shape without breaking tests. Behavior tests should fail when callers would see a different result, error, event, or side effect.',
+          'In legacy code, characterization tests document what happens today. Follow-up changes can decide which quirks to preserve or intentionally change.',
         ],
       },
       {
         title: 'What counts',
         body: [
-          'Useful observable surfaces include return values, errors, logs at boundaries, events, files, network calls, persisted records, generated HTML, and public API behavior.',
+          'Observable surfaces include return values, errors, logs at boundaries, events, files, network calls, persisted records, generated HTML, and public API behavior.',
           'Private helper calls are observable only when the helper is itself a contract or integration seam.',
         ],
       },
@@ -1020,7 +1020,7 @@ function isEligibleForApproval(user: User) {
         title: 'Review heuristic',
         body: [
           'Ask whether the change reduces the number of live facts the next maintainer must remember. Line count matters less than the shape of that mental stack.',
-          'A good abstraction should remove facts from the reader’s head. If it adds a concept without removing burden, it probably is not paying rent.',
+          'An abstraction should remove facts from the reader’s head. If it adds a concept without removing burden, it does not pay rent.',
         ],
       },
     ],
@@ -1048,10 +1048,10 @@ export const problems: Problem[] = [
       'Would naming one intermediate value remove a mental calculation from the reader?',
     ],
     approach: [
-      'Start by making the main path visible. Use guard clauses for boring preconditions and keep the valid behavior unindented.',
+      'Make the main path visible. Use guard clauses for boring preconditions and keep the valid behavior unindented.',
       'Chunk nearby statements into logic paragraphs so phase changes are visible before a reader studies each line.',
       'Name intermediate decisions when the name carries domain meaning or removes repeated expression parsing.',
-      'Stop before extracting broad architecture; the first move is often just a clearer local shape.',
+      'Stop before extracting broad architecture; a clearer local shape often solves the problem.',
     ],
     relatedPatterns: ['guard-clause', 'chunk-statements', 'explaining-variable'],
     relatedConcepts: ['reader-locality', 'cognitive-burden'],
@@ -1065,7 +1065,7 @@ export const problems: Problem[] = [
       'The code looks more organized but is harder to understand locally. Each extra name and file adds a live fact the reader must remember, and agents often multiply these abstractions when repo-local guidance is absent.',
     signals: [
       'A helper is used once and only makes sense beside its caller.',
-      'The name describes mechanics rather than a durable domain concept.',
+      'The name describes mechanics, not a durable domain concept.',
       'A review requires opening several files to understand one small behavior.',
       'A proposed extraction reduces line count while increasing navigation and indirection.',
     ],
@@ -1077,7 +1077,7 @@ export const problems: Problem[] = [
     ],
     approach: [
       'Keep weak helpers near the caller that gives them meaning.',
-      'Promote code only when the extracted concept has a clear contract and more than mechanical reuse.',
+      'Promote code only when the extracted concept has a clear contract beyond mechanical reuse.',
       'Prefer a small amount of repetition over a premature shared layer when the repetition is easier to read and test.',
       'For agent work, state the boundary explicitly: do not add framework-shaped architecture unless the current change needs it.',
     ],
@@ -1088,14 +1088,14 @@ export const problems: Problem[] = [
     id: 'risky-legacy-change',
     title: 'Risky legacy change',
     summary:
-      'The existing behavior is unclear, under-tested, or coupled to callers that are easy to break accidentally.',
+      'The existing behavior is unclear, under-tested, or coupled to callers that a small edit can break.',
     impact:
-      'The danger is not that the edit is large; it is that nobody can tell which behavior is intentional. Without characterization, a tidy can silently become a product change.',
+      'The danger comes from uncertainty about intentional behavior. Without characterization, a tidy can silently become a product change.',
     signals: [
       'The code has few tests or tests that only cover internal helpers.',
       'A small edit changes parsing, error handling, ordering, or public output at the same time.',
       'Callers rely on behavior that is not written down anywhere.',
-      'The safest reviewer question is “what changed?” and the diff does not make that easy to answer.',
+      'The reviewer needs to ask “what changed?” and the diff does not make that question answerable.',
     ],
     diagnosticQuestions: [
       'What observable behavior would prove the current system still works?',
@@ -1106,7 +1106,7 @@ export const problems: Problem[] = [
     approach: [
       'Characterize the current behavior before changing it, especially around edge cases and public boundaries.',
       'Separate structural cleanup from behavior changes so review can answer one question at a time.',
-      'Protect observable behavior rather than private implementation shape.',
+      'Protect observable behavior instead of private implementation shape.',
       'Use the smallest trustworthy verification loop before broadening tests or refactoring further.',
     ],
     relatedPatterns: [
@@ -1179,7 +1179,7 @@ export const problems: Problem[] = [
     summary:
       'A single change mixes formatting, movement, renaming, behavior, tests, and cleanup until review cannot isolate the risk.',
     impact:
-      'Mixed diffs make reviewers compare too many possible causes at once. Even when the final code is better, the route there hides behavioral changes and makes regressions harder to blame.',
+      'Mixed diffs make reviewers compare too many possible causes at once. Even when the final code is better, the diff hides behavioral changes and makes regressions harder to blame.',
     signals: [
       'A diff contains both pure movement and changed conditionals.',
       'Formatting churn surrounds a small behavior change.',
@@ -1196,7 +1196,7 @@ export const problems: Problem[] = [
       'Make behavior-preserving structure changes separately from behavior changes.',
       'Keep renames, movement, and formatting narrow enough that review can recognize them as neutral.',
       'Run focused verification after the structural step before changing behavior.',
-      'Use source control to keep the stack honest rather than relying on a reviewer to mentally split the diff.',
+      'Use source control to keep the stack honest instead of asking a reviewer to mentally split the diff.',
     ],
     relatedPatterns: [
       'separate-structure-from-behavior',
@@ -1211,24 +1211,24 @@ export const problems: Problem[] = [
     summary:
       'Agent-written code adds broad architecture, generic frameworks, or non-local conventions for a narrow request.',
     impact:
-      'The output may look polished while increasing maintenance cost. Extra files, providers, registries, and abstractions make later human changes slower and can conflict with the repo’s existing design language.',
+      'The output may look polished while increasing maintenance cost. Extra files, providers, registries, and abstractions make human changes slower and can conflict with the repo’s existing design language.',
     signals: [
       'A small feature introduces a new architecture vocabulary.',
-      'The implementation is organized around generic patterns rather than local code shape.',
+      'The implementation is organized around generic patterns instead of local code shape.',
       'The agent ignores nearby examples or repo-specific instructions.',
       'Verification proves the happy path but not the actual risk introduced by the abstraction.',
     ],
     diagnosticQuestions: [
       'What is the smallest local change that satisfies the request?',
       'Which existing repo pattern should the implementation imitate?',
-      'Does the abstraction reduce concepts for the next reader or add them?',
+      'Does the abstraction reduce concepts for the reader or add them?',
       'What instruction would prevent the agent from widening scope again?',
     ],
     approach: [
-      'Start with repo-local instructions and nearby code before applying general best practices.',
+      'Read repo-local instructions and nearby code before applying generic guidance.',
       'Constrain the agent to the narrow behavior and explicit non-goals.',
       'Reject architecture whose main benefit is hypothetical future reuse.',
-      'Ask for verification tied to the risk of the change, not just a broad test run.',
+      'Ask for verification tied to the risk of the change, not only a broad test run.',
     ],
     relatedPatterns: [
       'repo-local-instructions-win',
@@ -1243,7 +1243,7 @@ export const problems: Problem[] = [
     summary:
       'The change is considered complete without evidence that the relevant behavior still works.',
     impact:
-      'A passing command is useful only when it exercises the risk. Without a clear done signal, teams either over-test everything or accept shallow verification that misses the bug the change could realistically introduce.',
+      'A passing command matters only when it exercises the risk. Without a clear done signal, teams either over-test everything or accept shallow verification that misses the bug the change could realistically introduce.',
     signals: [
       'The final note says tests passed but does not say what behavior they protect.',
       'A broad suite is run because nobody knows the smallest relevant check.',
@@ -1271,7 +1271,7 @@ export const problems: Problem[] = [
     summary:
       'Multiple callers repeat the same rules because the valid domain shape is not represented once.',
     impact:
-      'Repeated validation looks defensive but usually means the domain boundary is weak. Over time the rules drift, edge cases differ, and callers can pass values that should never exist inside the system.',
+      'Repeated validation looks defensive but often marks a weak domain boundary. Over time the rules drift, edge cases differ, and callers can pass values that should never exist inside the system.',
     signals: [
       'Several functions check the same string format, range, enum value, or nullability.',
       'Validation happens after data has already crossed multiple module boundaries.',
@@ -1339,7 +1339,7 @@ export const references = [
   {
     title: 'Patterns.dev',
     href: 'https://www.patterns.dev/',
-    note: 'Modern web development pattern catalog with practical examples and visual explanations.',
+    note: 'Web development pattern catalog with examples and visual explanations.',
   },
   {
     title: 'Interface Refactoring Catalog',
@@ -1359,7 +1359,7 @@ export const references = [
   {
     title: 'Understand Legacy Code Articles',
     href: 'https://understandlegacycode.com/all-articles/',
-    note: 'Legacy-code articles focused on characterization, refactoring, and practical change tactics.',
+    note: 'Legacy-code articles focused on characterization, refactoring, and concrete change tactics.',
   },
 ];
 

@@ -29,8 +29,8 @@ const isPatternEntry = (pattern: PatternEntry | undefined): pattern is PatternEn
       </div>
       <div class="page-hero-side">
         <p class="lede">
-          Problems connect symptoms to patterns. Use this index when the review comment starts as
-          “this feels risky” or “this is hard to read” before you know the right pattern name.
+          Problems connect review symptoms to patterns. A vague concern such as “this feels risky”
+          or “this is hard to read” can become a concrete refactoring move.
         </p>
       </div>
     </div>
@@ -80,7 +80,7 @@ const isPatternEntry = (pattern: PatternEntry | undefined): pattern is PatternEn
                 </div>
               </div>
               <div class="problem-card-side">
-                <h3>Useful patterns</h3>
+                <h3>Related patterns</h3>
                 <div class="related-links">
                   {relatedPatterns.map((pattern) => (
                     <a href={patternHref(pattern)}>{pattern?.data.title}</a>

@@ -39,8 +39,8 @@ allow-registry = ["https://github.com/rust-lang/crates.io-index"]`;
       </div>
       <div class="page-hero-side">
         <p class="lede">
-          These examples are practical starting points, not universal law. Copy them when they fit
-          the project, and prefer repo-local conventions when they are deliberate.
+          These examples encode review-friendly defaults. Copy them when the project has no local
+          rule, and preserve repo-local conventions when they are deliberate.
         </p>
       </div>
     </div>
@@ -68,8 +68,9 @@ allow-registry = ["https://github.com/rust-lang/crates.io-index"]`;
     <article class="config-card">
       <h2>deny.toml</h2>
       <p>
-        A conservative license and source-policy starting point. Pull this in deliberately rather
-        than blindly; projects may need different license rules.
+        This license and source policy blocks unknown registries, allows common permissive
+        licenses, and leaves version duplication to project review. Projects with stricter legal
+        requirements should replace the allow list.
       </p>
       <Code code={denyToml} lang="toml" meta={'title="deny.toml"'} />
     </article>
