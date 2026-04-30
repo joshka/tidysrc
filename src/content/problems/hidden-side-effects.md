@@ -49,3 +49,120 @@ or output is invisible.
   behavior.
 - Test the observable effect at the smallest boundary that can catch ordering or failure
   regressions.
+
+## Examples
+
+### Problem: C# formatter writes audit state
+
+The call reads like formatting, but it mutates shared audit data.
+
+```csharp title="Invoices/InvoiceFormatter.cs"
+public string FormatInvoice(Invoice invoice)
+{
+    audit.RecordViewed(invoice.Id);
+    return $"{invoice.Number}: {invoice.Total:C}";
+}
+```
+
+### Better: C# effect is named before formatting
+
+The caller can review the mutation and formatting as separate steps.
+
+```csharp title="Invoices/InvoiceService.cs"
+public string ViewInvoice(Invoice invoice)
+{
+    audit.RecordViewed(invoice.Id);
+    return invoiceFormatter.Format(invoice);
+}
+```
+
+### Problem: A mapper mutates its input
+
+The name reads like a pure transformation, but the call changes shared state.
+
+```java title="src/main/java/example/InvoiceMapper.java"
+InvoiceView toView(Invoice invoice) {
+    invoice.markViewed();
+    return new InvoiceView(invoice.id(), invoice.total());
+}
+```
+
+### Better: Mutation is named at the call site
+
+The effect happens through an operation whose name prepares the reader for state change.
+
+```java title="src/main/java/example/InvoiceService.java"
+InvoiceView markViewedAndLoadView(Invoice invoice) {
+    invoice.markViewed();
+    return invoiceViews.from(invoice);
+}
+```
+
+### Problem: Python helper reads ambient time
+
+The function looks deterministic, but tests depend on the wall clock.
+
+```python title="billing/invoices.py"
+def invoice_status(invoice):
+    if invoice.due_at < datetime.now():
+        return "overdue"
+    return "open"
+```
+
+### Better: Python caller passes the time dependency
+
+The hidden input becomes part of the behavior under review.
+
+```python title="billing/invoices.py"
+def invoice_status(invoice, now):
+    if invoice.due_at < now:
+        return "overdue"
+    return "open"
+```
+
+### Problem: Rust conversion publishes an event
+
+The function name suggests a pure conversion, but it performs I/O.
+
+```rust title="src/invoices.rs"
+pub fn to_view(invoice: &Invoice, bus: &EventBus) -> InvoiceView {
+    bus.publish(Event::InvoiceViewed(invoice.id));
+    InvoiceView::from(invoice)
+}
+```
+
+### Better: Rust effectful operation names the event
+
+The event is visible before the pure conversion.
+
+```rust title="src/invoices.rs"
+pub fn record_view_and_convert(invoice: &Invoice, bus: &EventBus) -> InvoiceView {
+    bus.publish(Event::InvoiceViewed(invoice.id));
+    InvoiceView::from(invoice)
+}
+```
+
+### Problem: TypeScript selector writes to storage
+
+The name reads like a query, but the call changes browser state.
+
+```ts title="src/preferences/selectTheme.ts"
+export function selectedTheme(user: User) {
+  localStorage.setItem('lastThemeLookup', user.id);
+  return user.theme ?? 'system';
+}
+```
+
+### Better: TypeScript effect is split from selection
+
+The write and the calculation have separate names.
+
+```ts title="src/preferences/selectTheme.ts"
+export function rememberThemeLookup(user: User) {
+  localStorage.setItem('lastThemeLookup', user.id);
+}
+
+export function selectedTheme(user: User) {
+  return user.theme ?? 'system';
+}
+```

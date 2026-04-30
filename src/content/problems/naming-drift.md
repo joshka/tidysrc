@@ -45,3 +45,105 @@ what the name claims with what the implementation actually does.
 - Keep terminology consistent across tests, examples, and user-facing errors when they describe the
   same contract.
 - Avoid broad vocabulary rewrites while a behavior change is in progress.
+
+## Examples
+
+### Problem: C# name preserves an old implementation
+
+The helper now checks eligibility, but the name still talks about the old role flag.
+
+```csharp title="Billing/Discounts.cs"
+bool IsVip(Customer customer)
+{
+    return customer.Tier == Tier.Gold && customer.AccountAge.TotalDays > 365;
+}
+```
+
+### Better: C# name says the current domain fact
+
+The reviewer can discuss eligibility without remembering the old implementation.
+
+```csharp title="Billing/Discounts.cs"
+bool IsEligibleForLoyaltyDiscount(Customer customer)
+{
+    return customer.Tier == Tier.Gold && customer.AccountAge.TotalDays > 365;
+}
+```
+
+### Problem: Java name describes mechanics
+
+The method name says how the value used to be stored, not what it means.
+
+```java title="src/main/java/example/AccountRules.java"
+boolean hasFlag(Account account) {
+    return account.tier() == Tier.GOLD && account.ageInDays() > 365;
+}
+```
+
+### Better: Java name describes domain meaning
+
+The name carries the rule's role at the call site.
+
+```java title="src/main/java/example/AccountRules.java"
+boolean qualifiesForLoyaltyDiscount(Account account) {
+    return account.tier() == Tier.GOLD && account.ageInDays() > 365;
+}
+```
+
+### Problem: Python name keeps stale vocabulary
+
+The rule no longer means only VIP status.
+
+```python title="billing/discounts.py"
+def is_vip(customer):
+    return customer.tier == "gold" and customer.account_age.days > 365
+```
+
+### Better: Python name follows current behavior
+
+Tests and callers can use the same vocabulary.
+
+```python title="billing/discounts.py"
+def is_eligible_for_loyalty_discount(customer):
+    return customer.tier == "gold" and customer.account_age.days > 365
+```
+
+### Problem: Rust name hides the domain decision
+
+The predicate name is too broad for the rule it carries.
+
+```rust title="src/billing.rs"
+pub fn is_active(customer: &Customer) -> bool {
+    customer.tier == Tier::Gold && customer.account_age_days > 365
+}
+```
+
+### Better: Rust name narrows the meaning
+
+The predicate says what future branches are deciding.
+
+```rust title="src/billing.rs"
+pub fn qualifies_for_loyalty_discount(customer: &Customer) -> bool {
+    customer.tier == Tier::Gold && customer.account_age_days > 365
+}
+```
+
+### Problem: TypeScript name keeps old terminology
+
+The name says VIP, but the rule now includes account age.
+
+```ts title="src/billing/discounts.ts"
+export function isVip(customer: Customer) {
+  return customer.tier === 'gold' && customer.accountAgeDays > 365;
+}
+```
+
+### Better: TypeScript name matches the rule
+
+The call site can talk about the actual domain decision.
+
+```ts title="src/billing/discounts.ts"
+export function isEligibleForLoyaltyDiscount(customer: Customer) {
+  return customer.tier === 'gold' && customer.accountAgeDays > 365;
+}
+```

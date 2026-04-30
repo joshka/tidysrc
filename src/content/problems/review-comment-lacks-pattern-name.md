@@ -1,7 +1,7 @@
 ---
 title: >-
   Review comment lacks a pattern name
-status: draft
+status: seed
 category: agent-workflow
 topics:
   - review

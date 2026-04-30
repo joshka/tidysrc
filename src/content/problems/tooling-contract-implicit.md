@@ -1,7 +1,7 @@
 ---
 title: >-
   Tooling contract implicit
-status: draft
+status: seed
 category: tooling
 topics:
   - workflow

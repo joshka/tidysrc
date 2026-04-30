@@ -56,6 +56,81 @@ These examples show two ways the problem appears. A human may generalize from ta
 future requirements. An agent may do the same thing because the prompt omitted local constraints or
 because it copied the wrong pattern from the repository.
 
+### Problem: C# one-off rule becomes a strategy set
+
+The code has one discount rule, but the change creates architecture for many.
+
+```csharp title="Billing/Discounts.cs"
+public interface IDiscountStrategy
+{
+    bool Applies(Order order);
+    decimal Amount(Order order);
+}
+```
+
+### Better: C# keep the rule local until pressure repeats
+
+The local function names the policy without inventing an extension point.
+
+```csharp title="Billing/Discounts.cs"
+public static decimal LoyaltyDiscount(Order order)
+{
+    if (!order.Customer.IsLoyal) {
+        return 0m;
+    }
+
+    return order.Total * 0.05m;
+}
+```
+
+### Problem: Java local branch becomes a provider
+
+The provider exists before there is a second source of behavior.
+
+```java title="src/main/java/example/Discounts.java"
+interface DiscountProvider {
+    BigDecimal discountFor(Order order);
+}
+```
+
+### Better: Java use the existing service shape
+
+The behavior stays inside the service that already owns order pricing.
+
+```java title="src/main/java/example/Discounts.java"
+BigDecimal loyaltyDiscount(Order order) {
+    if (!order.customer().isLoyal()) {
+        return BigDecimal.ZERO;
+    }
+
+    return order.total().multiply(new BigDecimal("0.05"));
+}
+```
+
+### Problem: Python small rule grows a registry
+
+The registry adds a new concept before repeated pressure exists.
+
+```python title="billing/discounts.py"
+discount_registry.register("loyalty", LoyaltyDiscountStrategy())
+
+
+def discount(order):
+    return discount_registry.for_order(order).amount(order)
+```
+
+### Better: Python keep the single rule as a named function
+
+The code can still become a registry later if more rules prove that shape.
+
+```python title="billing/discounts.py"
+def loyalty_discount(order):
+    if not order.customer.is_loyal:
+        return Decimal("0")
+
+    return order.total * Decimal("0.05")
+```
+
 ### Problem: One export path becomes a strategy registry
 
 The product only has one export path, but the change introduces a registry and interface before a
@@ -78,6 +153,17 @@ export async function exportReport(report: Report, format: string) {
   }
 
   return strategy.export(report);
+}
+```
+
+### Better: TypeScript make the one supported path explicit
+
+The caller can see that PDF export is the supported behavior today.
+
+```ts title="src/export/reportExport.ts"
+export async function exportPdfReport(report: Report): Promise<ExportResult> {
+  const rendered = await renderReportPdf(report);
+  return uploadExport(rendered);
 }
 ```
 
@@ -105,6 +191,22 @@ impl PublishConfigProvider for DefaultPublishConfigProvider {
 
 pub fn publish(project: ProjectId, provider: &dyn PublishConfigProvider) -> Result<(), Error> {
     let config = provider.config_for(project);
+    publish_with_config(config)
+}
+```
+
+### Better: Rust pass the concrete configuration where it is needed
+
+The command has one configuration source, so the function accepts the value directly.
+
+```rust title="src/commands/publish.rs"
+pub fn publish(project: ProjectId) -> Result<(), Error> {
+    let config = PublishConfig {
+        project,
+        require_review: true,
+        notify_watchers: true,
+    };
+
     publish_with_config(config)
 }
 ```

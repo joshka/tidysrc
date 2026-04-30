@@ -72,6 +72,7 @@ const languageOrder = new Map([
   ['rs', 7],
   ['ts', 8],
   ['typescript', 8],
+  ['tsx', 8],
   ['md', 9],
   ['markdown', 9],
 ]);
@@ -92,6 +93,7 @@ const languageNames = new Map([
   ['rust', 'Rust'],
   ['ts', 'Typescript'],
   ['typescript', 'Typescript'],
+  ['tsx', 'Typescript'],
   ['md', 'Markdown'],
   ['markdown', 'Markdown'],
 ]);

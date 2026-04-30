@@ -1,7 +1,7 @@
 ---
 title: >-
   Unclear done signal
-status: draft
+status: seed
 category: testing
 topics:
   - verification

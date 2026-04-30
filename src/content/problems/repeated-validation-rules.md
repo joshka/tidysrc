@@ -1,7 +1,7 @@
 ---
 title: >-
   Repeated validation rules
-status: draft
+status: seed
 category: boundaries
 topics:
   - validation
