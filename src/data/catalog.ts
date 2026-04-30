@@ -161,7 +161,23 @@ fn summarize_rows(rows: &[Row]) -> Totals {
       'Use a guard clause when an empty case, validation failure, unsupported mode, or no-op would otherwise indent the main path. Keep the normal behavior visually prominent.',
     examples: [
       {
-        title: 'Guard invalid input before parsing',
+        title: 'Before: hide the valid path behind a branch',
+        path: 'src/parser.rs',
+        language: 'rust',
+        note:
+          'This version is correct, but the useful parsing result sits inside the branch while the empty-input case controls the shape of the function.',
+        code: `pub fn parse_name(input: &str) -> Option<Name> {
+    let trimmed = input.trim();
+
+    if !trimmed.is_empty() {
+        Some(Name::new(trimmed))
+    } else {
+        None
+    }
+}`,
+      },
+      {
+        title: 'After: guard invalid input before parsing',
         path: 'src/parser.rs',
         language: 'rust',
         note:
@@ -257,6 +273,28 @@ fn summarize_rows(rows: &[Row]) -> Totals {
     patterns: valid,
     index: indexed,
   };
+}`,
+      },
+      {
+        title: 'Rust setup, decision, and return paragraphs',
+        path: 'src/import.rs',
+        language: 'rust',
+        note:
+          'Each paragraph has one job: parse the files, reject invalid records, build the index, then assemble the return value.',
+        code: `pub fn import_patterns(files: Vec<SourceFile>) -> Result<Catalog, ImportError> {
+    let parsed = files
+        .into_iter()
+        .map(parse_pattern_file)
+        .collect::<Result<Vec<_>, _>>()?;
+
+    let valid = parsed
+        .into_iter()
+        .filter(|pattern| pattern.status != Status::Rejected)
+        .collect::<Vec<_>>();
+
+    let index = build_search_index(&valid);
+
+    Ok(Catalog { patterns: valid, index })
 }`,
       },
       {
@@ -472,6 +510,23 @@ fn preserves_legacy_empty_field_behavior() {
     assert_eq!(record.middle_name, Some(String::new()));
 }`,
       },
+      {
+        title: 'Go test captures the legacy discount rule',
+        path: 'pricing_test.go',
+        language: 'go',
+        note:
+          'The test records a surprising expired-coupon behavior before the pricing code is reorganized.',
+        code: `func TestExpiredCouponKeepsLegacyDiscount(t *testing.T) {
+    invoice := Invoice{
+        Subtotal: Money(100),
+        Coupon:  Coupon{Code: "SPRING", Expired: true},
+    }
+
+    got := Price(invoice)
+
+    require.Equal(t, Money(90), got.Total)
+}`,
+      },
     ],
     references: ['Working Effectively with Legacy Code: characterization tests.'],
   },
@@ -609,6 +664,22 @@ export function parseEmail(input: string): Email | null {
   return input.includes('@') ? (input as Email) : null;
 }`,
       },
+      {
+        title: 'Java value object replaces repeated checks',
+        path: 'Email.java',
+        language: 'java',
+        note:
+          'The static factory is the only place raw strings become Email values, so callers stop repeating the same validation before sending mail.',
+        code: `public record Email(String value) {
+    public static Email parse(String input) {
+        if (!input.contains("@")) {
+            throw new IllegalArgumentException("email must contain @");
+        }
+
+        return new Email(input);
+    }
+}`,
+      },
     ],
     references: [
       'Rust API Guidelines: conversions, common traits, and predictable public APIs.',
@@ -725,25 +796,31 @@ export function parseEmail(input: string): Email | null {
       'Before calling work complete, run the smallest check that can catch the likely failure. State what ran and do not imply broader verification than you performed.',
     examples: [
       {
-        title: 'Rust targeted check before broader CI',
-        path: 'justfile',
-        language: 'bash',
+        title: 'Rust check aimed at the changed parser branch',
+        path: 'src/parser.rs',
+        language: 'rust',
         note:
-          'The commands run the focused parser test, then formatting and lint checks that match the likely failure modes.',
-        code: `cargo test parser::tests::finds_problem_terms
-cargo fmt --check
-cargo clippy --workspace --all-targets -- -D warnings`,
+          'The narrow test is trustworthy because it exercises the parser branch the change touched, before broader CI runs.',
+        code: `#[test]
+fn rejects_blank_pattern_names() {
+    let error = parse_pattern_name("   ").unwrap_err();
+
+    assert_eq!(error.kind(), ParseErrorKind::BlankName);
+}`,
       },
       {
-        title: 'Site smoke check',
-        path: 'package.json',
-        language: 'json',
+        title: 'JavaScript route smoke check',
+        path: 'catalog.test.js',
+        language: 'js',
         note:
-          'For a content site, build and content checks are the quickest trustworthy signal that routes and data still compile.',
-        code: `"scripts": {
-  "build": "astro build",
-  "check:content": "astro sync && astro check"
-}`,
+          'The route-level assertion is cheaper than a full browser suite but still catches a broken pattern index render.',
+        code: `test('pattern index renders stable entries', async () => {
+  const response = await app.fetch('/patterns/');
+  const html = await response.text();
+
+  expect(response.status).toBe(200);
+  expect(html).toContain('Use a Guard Clause');
+});`,
       },
     ],
     references: ['Tidy First: behavior-preserving changes should stay small and easy to verify.'],
@@ -758,7 +835,7 @@ cargo clippy --workspace --all-targets -- -D warnings`,
     status: 'stable',
     tags: ['agent-guidance', 'workflow', 'review'],
     audiences: ['reviewers', 'agents', 'learners'],
-    languages: ['rust', 'ts'],
+    languages: ['rust', 'ts', 'md'],
     problems: ['A general style preference conflicts with explicit repository guidance.'],
     concepts: ['agent-guidance'],
     related: ['avoid-premature-agent-architecture', 'smallest-trustworthy-verification'],
@@ -801,6 +878,21 @@ and source code that reduces the reader's live mental stack.`,
 const href = patternHref(pattern.slug);
 
 // Avoid introducing a generic URL helper for one local convention.`,
+      },
+      {
+        title: 'Rust local constructor before generic conversion layer',
+        path: 'src/config.rs',
+        language: 'rust',
+        note:
+          'The project already constructs Config through this local helper, so new callers should keep the same boundary instead of adding a generic conversion framework.',
+        code: `impl Config {
+    pub fn from_env(env: &Env) -> Result<Self, ConfigError> {
+        Ok(Self {
+            endpoint: Endpoint::parse(env.required("ENDPOINT")?)?,
+            timeout: Timeout::from_seconds(env.optional("TIMEOUT_SECONDS")?)?,
+        })
+    }
+}`,
       },
     ],
     references: ['Agent guidance: local project guidance overrides general defaults.'],
@@ -863,6 +955,21 @@ const href = patternHref(pattern.slug);
         other => other,
     }
 }`,
+      },
+      {
+        title: 'Java local helper before registry',
+        path: 'PatternFilters.java',
+        language: 'java',
+        note:
+          'The filtering rule is still one concrete behavior, so a local helper is clearer than a registry and strategy interface.',
+        code: `static List<Pattern> stablePatterns(List<Pattern> patterns) {
+    return patterns.stream()
+        .filter(pattern -> pattern.status() == Status.STABLE)
+        .toList();
+}
+
+// Do not introduce PatternProvider, PatternStrategy, and PatternRegistry
+// until there are real extension points to name.`,
       },
     ],
     references: [],

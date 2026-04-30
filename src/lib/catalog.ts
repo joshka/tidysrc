@@ -54,6 +54,8 @@ const languageOrder = new Map([
   ['rs', 3],
   ['ts', 4],
   ['typescript', 4],
+  ['md', 5],
+  ['markdown', 5],
 ]);
 
 const languageNames = new Map([
@@ -65,6 +67,8 @@ const languageNames = new Map([
   ['rust', 'Rust'],
   ['ts', 'Typescript'],
   ['typescript', 'Typescript'],
+  ['md', 'Markdown'],
+  ['markdown', 'Markdown'],
 ]);
 
 function languageRank(language: string): number {

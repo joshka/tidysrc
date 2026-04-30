@@ -142,7 +142,9 @@ const pageTitle = title === 'TidySrc' ? title : `${title} | TidySrc`;
     --surface-muted: #eee4d5;
     --surface-strong: #17120c;
     --code-surface: #f0e5d4;
+    --code-text: #181513;
     --strong-text: #ffffff;
+    --strong-accent: #d97706;
     --text: #181513;
     --muted: #665642;
     --border: #2d2218;
@@ -170,9 +172,11 @@ const pageTitle = title === 'TidySrc' ? title : `${title} | TidySrc`;
     --background: #080a09;
     --surface: #181b19;
     --surface-muted: #20231f;
-    --surface-strong: #050606;
-    --code-surface: #181b19;
-    --strong-text: #f1eee6;
+    --surface-strong: #d0c2ad;
+    --code-surface: #d8cbb8;
+    --code-text: #17120c;
+    --strong-text: #17120c;
+    --strong-accent: #6b3a00;
     --text: #e7e5df;
     --muted: #a89c8b;
     --border: #6f746d;
@@ -579,7 +583,7 @@ const pageTitle = title === 'TidySrc' ? title : `${title} | TidySrc`;
     --ec-brdWd: 2px;
     --ec-brdCol: var(--border);
     --ec-codeBg: var(--code-surface);
-    --ec-codeFg: var(--text);
+    --ec-codeFg: var(--code-text);
     --ec-codeFontFml: var(--font-mono);
     --ec-codeFontSize: 0.88rem;
     --ec-codeLineHt: 1.65;
@@ -590,7 +594,7 @@ const pageTitle = title === 'TidySrc' ? title : `${title} | TidySrc`;
     --ec-sbThumbHoverCol: var(--muted);
     --ec-frm-frameBoxShdCssVal: none;
     --ec-frm-edActTabBg: var(--code-surface);
-    --ec-frm-edActTabFg: var(--text);
+    --ec-frm-edActTabFg: var(--code-text);
     --ec-frm-edActTabBrdCol: var(--border);
     --ec-frm-edActTabIndTopCol: var(--accent);
     --ec-frm-edActTabIndBtmCol: var(--code-surface);
@@ -599,8 +603,8 @@ const pageTitle = title === 'TidySrc' ? title : `${title} | TidySrc`;
     --ec-frm-edTabBarBrdCol: var(--border);
     --ec-frm-edTabBarBrdBtmCol: var(--border);
     --ec-frm-edBg: var(--code-surface);
-    --ec-frm-inlBtnFg: var(--text);
-    --ec-frm-inlBtnBg: var(--text);
+    --ec-frm-inlBtnFg: var(--code-text);
+    --ec-frm-inlBtnBg: var(--code-text);
     --ec-frm-inlBtnBrd: var(--border);
     --ec-frm-tooltipSuccessBg: var(--accent);
     --ec-frm-tooltipSuccessFg: var(--accent-text);
@@ -658,11 +662,39 @@ const pageTitle = title === 'TidySrc' ? title : `${title} | TidySrc`;
   }
 
   :root[data-theme='dark'] .expressive-code .ec-line :where(span[style^='--']:not([class])) {
-    color: var(--1, inherit);
-    background-color: var(--1bg, transparent);
-    font-style: var(--1fs, inherit);
-    font-weight: var(--1fw, inherit);
-    text-decoration: var(--1td, inherit);
+    color: #0f0c09;
+    background-color: var(--0bg, transparent);
+    font-style: var(--0fs, inherit);
+    font-weight: var(--0fw, inherit);
+    text-decoration: var(--0td, inherit);
+  }
+
+  :root[data-theme='dark'] .expressive-code .ec-line span[style*='--0:#BF3441'] {
+    color: #8f1d2b;
+  }
+
+  :root[data-theme='dark'] .expressive-code .ec-line span[style*='--0:#6F42C1'] {
+    color: #56319b;
+  }
+
+  :root[data-theme='dark'] .expressive-code .ec-line span[style*='--0:#005CC5'] {
+    color: #004f9e;
+  }
+
+  :root[data-theme='dark'] .expressive-code .ec-line span[style*='--0:#032F62'] {
+    color: #07315f;
+  }
+
+  :root[data-theme='dark'] .expressive-code .ec-line span[style*='--0:#AE4B07'] {
+    color: #833600;
+  }
+
+  :root[data-theme='dark'] .expressive-code .ec-line span[style*='--0:#22863A'] {
+    color: #17662d;
+  }
+
+  :root[data-theme='dark'] .expressive-code .ec-line span[style*='--0:#6A737D'] {
+    color: #4f565e;
   }
 
   @media (max-width: 820px) {
