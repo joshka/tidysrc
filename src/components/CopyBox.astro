@@ -2,23 +2,43 @@
 type Props = {
   label: string;
   text: string;
+  resolveCurrentUrl?: boolean;
 };
 
-const { label, text } = Astro.props;
+const { label, text, resolveCurrentUrl = false } = Astro.props;
 ---
 
 <div class="copy-box" data-copy-box>
   <div class="copy-box-header">
     <strong>{label}</strong>
-    <button class="button" type="button" data-copy-button data-copy-text={text}>Copy</button>
+    <button
+      class="button"
+      type="button"
+      data-copy-button
+      data-copy-current-url={resolveCurrentUrl ? 'true' : undefined}
+      data-copy-text={text}
+    >
+      Copy
+    </button>
   </div>
   <pre><code>{text}</code></pre>
 </div>
 
 <script>
+  const currentPageUrl = () => window.location.href.split('#')[0];
+  const resolveCopyText = (text: string, button: HTMLButtonElement) =>
+    button.dataset.copyCurrentUrl === 'true'
+      ? text.replaceAll('__CURRENT_PAGE_URL__', currentPageUrl())
+      : text;
+
   for (const button of document.querySelectorAll<HTMLButtonElement>('[data-copy-button]')) {
+    const code = button.closest('[data-copy-box]')?.querySelector('code');
+    if (code) {
+      code.textContent = resolveCopyText(code.textContent ?? '', button);
+    }
+
     button.addEventListener('click', async () => {
-      const text = button.dataset.copyText ?? '';
+      const text = resolveCopyText(button.dataset.copyText ?? '', button);
       await navigator.clipboard.writeText(text);
       const previous = button.textContent;
       button.textContent = 'Copied';

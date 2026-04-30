@@ -28,6 +28,17 @@ const referenceTargets = [
 const referenceHref = (reference: string) =>
   referenceTargets.find(([label]) => reference.startsWith(label))?.[1];
 const isExternalReference = (href: string) => href.startsWith('http');
+const reviewProblem = pattern.data.problems[0] ?? relatedProblems[0]?.data.summary ?? pattern.data.summary;
+const reviewMove = pattern.data.guidance[0] ?? pattern.data.summary;
+const reviewMarkdownSnippet = [
+  `Consider applying [${pattern.data.title}](__CURRENT_PAGE_URL__).`,
+  '',
+  `Problem: ${reviewProblem}`,
+  '',
+  `Pattern move: ${pattern.data.summary}`,
+  '',
+  `Review note: ${reviewMove}`,
+].join('\n');
 ---
 
 <BaseLayout title={pattern.data.title} description={pattern.data.summary}>
@@ -88,6 +99,22 @@ const isExternalReference = (href: string) => href.startsWith('http');
       <section class="agent-panel" id="agents">
         <div class="agent-mark">Agent Instruction</div>
         <CopyBox label="Copyable prompt" text={pattern.data.agentInstruction} />
+      </section>
+
+      <section class="review-snippet" id="review-snippet">
+        <div>
+          <p class="eyebrow">Review snippet</p>
+          <h2>Copy a Markdown review note</h2>
+          <p>
+            Use this when a review comment should name the pattern, explain the problem, and link
+            back to the page for context.
+          </p>
+        </div>
+        <CopyBox
+          label="Markdown snippet"
+          resolveCurrentUrl
+          text={reviewMarkdownSnippet}
+        />
       </section>
 
       <section id="related">
@@ -350,6 +377,40 @@ const isExternalReference = (href: string) => href.startsWith('http');
     padding: clamp(1.25rem, 3vw, 2rem);
   }
 
+  .review-snippet {
+    display: grid;
+    grid-template-columns: minmax(240px, 0.35fr) minmax(0, 1fr);
+    border: 2px solid var(--border);
+    background: var(--surface);
+  }
+
+  .review-snippet > div:first-child {
+    border-right: 2px solid var(--border);
+    background: var(--surface-muted);
+    padding: clamp(1.25rem, 3vw, 2rem);
+  }
+
+  .review-snippet h2 {
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+  }
+
+  .review-snippet p:last-child {
+    color: var(--muted);
+    margin-bottom: 0;
+  }
+
+  .review-snippet :global(.copy-box) {
+    border: 0;
+    padding: clamp(1.25rem, 3vw, 2rem);
+  }
+
+  .review-snippet :global(.copy-box pre) {
+    font-size: clamp(0.86rem, 1.4vw, 1rem);
+    line-height: 1.55;
+    white-space: pre-wrap;
+  }
+
   .related-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -380,19 +441,22 @@ const isExternalReference = (href: string) => href.startsWith('http');
     .pattern-hero,
     .bento-grid,
     .agent-panel,
+    .review-snippet,
     .related-grid {
       grid-template-columns: 1fr;
     }
 
     .hero-title,
     .bento-card + .bento-card,
-    .agent-mark {
+    .agent-mark,
+    .review-snippet > div:first-child {
       border-right: 0;
       border-left: 0;
     }
 
     .bento-card + .bento-card,
-    .agent-mark {
+    .agent-mark,
+    .review-snippet :global(.copy-box) {
       border-top: 2px solid var(--border);
     }
   }
