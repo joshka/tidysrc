@@ -5,7 +5,13 @@ import Chips from '../../components/Chips.astro';
 import CodeExamples from '../../components/CodeExamples.astro';
 import CopyBox from '../../components/CopyBox.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { conceptHref, patternHref, problemHref } from '../../lib/catalog';
+import {
+  conceptHref,
+  languageLabel,
+  patternHref,
+  problemHref,
+  sortedLanguageCodes,
+} from '../../lib/catalog';
 
 export async function getStaticPaths() {
   const patterns = await getCollection('patterns');
@@ -36,6 +42,8 @@ const reviewMarkdownSnippet = [
   '',
   `Suggested move: ${reviewMove}`,
 ].join('\n');
+const languageChoices = sortedLanguageCodes(pattern.data.languages);
+const languageChoiceLabels = languageChoices.map(languageLabel);
 ---
 
 <BaseLayout title={pattern.data.title} description={pattern.data.summary}>
@@ -45,7 +53,7 @@ const reviewMarkdownSnippet = [
         <p class="eyebrow">Pattern // {pattern.id}</p>
         <h1>{pattern.data.title}</h1>
         <Chips
-          items={[...pattern.data.tags.slice(0, 3), ...pattern.data.languages]}
+          items={[...pattern.data.tags.slice(0, 3), ...languageChoiceLabels]}
           status={pattern.data.status}
         />
       </div>
@@ -86,7 +94,7 @@ const reviewMarkdownSnippet = [
       <section id="examples">
         <div class="section-bar">
           <h2>Implementation</h2>
-          <span>{pattern.data.languages.join(' / ')}</span>
+          <span>{languageChoiceLabels.join(' / ')}</span>
         </div>
         <div class="implementation-tabs">
           <CodeExamples examples={pattern.data.examples} />

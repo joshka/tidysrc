@@ -3,7 +3,7 @@ import { getCollection } from 'astro:content';
 
 import PatternList from '../../components/PatternList.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { allLanguages, allTags } from '../../lib/catalog';
+import { allLanguages, allTags, languageLabel } from '../../lib/catalog';
 
 const patterns = await getCollection('patterns');
 const tags = allTags(patterns);
@@ -49,7 +49,7 @@ const languages = allLanguages(patterns);
         Language
         <select data-catalog-filter="languages">
           <option value="">Any language</option>
-          {languages.map((language) => <option value={language}>{language}</option>)}
+          {languages.map((language) => <option value={language}>{languageLabel(language)}</option>)}
         </select>
       </label>
 

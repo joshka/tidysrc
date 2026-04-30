@@ -1,6 +1,12 @@
 ---
 import type { PatternEntry } from '../lib/catalog';
-import { patternHref, patternSearchText, sortedPatterns } from '../lib/catalog';
+import {
+  languageLabel,
+  patternHref,
+  patternSearchText,
+  sortedLanguageCodes,
+  sortedPatterns,
+} from '../lib/catalog';
 import Chips from './Chips.astro';
 
 type Props = {
@@ -31,7 +37,9 @@ const sorted = sortedPatterns(patterns);
         <p>{pattern.data.summary}</p>
         <div class="meta-line">
           {pattern.data.audiences.map((audience) => <span class="chip">{audience}</span>)}
-          {pattern.data.languages.map((language) => <span class="chip">{language}</span>)}
+          {sortedLanguageCodes(pattern.data.languages).map((language) => (
+            <span class="chip">{languageLabel(language)}</span>
+          ))}
         </div>
         <span class="read-docs">Read pattern</span>
       </a>

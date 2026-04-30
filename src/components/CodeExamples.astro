@@ -1,6 +1,8 @@
 ---
 import { Code } from 'astro-expressive-code/components';
 
+import { languageLabel, sortedLanguageCodes } from '../lib/catalog';
+
 type Example = {
   title: string;
   path: string;
@@ -14,17 +16,7 @@ type Props = {
 };
 
 const { examples } = Astro.props;
-const languageNames = new Map([
-  ['go', 'Go'],
-  ['java', 'Java'],
-  ['js', 'JavaScript'],
-  ['javascript', 'JavaScript'],
-  ['rs', 'Rust'],
-  ['rust', 'Rust'],
-  ['ts', 'TypeScript'],
-  ['typescript', 'TypeScript'],
-]);
-const languages = [...new Set(examples.map((example) => example.language))];
+const languages = sortedLanguageCodes([...new Set(examples.map((example) => example.language))]);
 const hasTabs = languages.length > 1;
 const tabId = `code-tabs-${examples
   .map((example) => `${example.language}-${example.title}`)
@@ -48,7 +40,7 @@ const tabId = `code-tabs-${examples
             role="tab"
             type="button"
           >
-            {languageNames.get(language) ?? language}
+            {languageLabel(language)}
           </button>
         ))}
       </div>

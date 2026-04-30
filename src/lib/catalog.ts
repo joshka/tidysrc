@@ -45,12 +45,53 @@ export function statusRank(status: PatternEntry['data']['status']): number {
   }
 }
 
+const languageOrder = new Map([
+  ['go', 0],
+  ['java', 1],
+  ['js', 2],
+  ['javascript', 2],
+  ['rust', 3],
+  ['rs', 3],
+  ['ts', 4],
+  ['typescript', 4],
+]);
+
+const languageNames = new Map([
+  ['go', 'Go'],
+  ['java', 'Java'],
+  ['js', 'JavaScript'],
+  ['javascript', 'JavaScript'],
+  ['rs', 'Rust'],
+  ['rust', 'Rust'],
+  ['ts', 'Typescript'],
+  ['typescript', 'Typescript'],
+]);
+
+function languageRank(language: string): number {
+  return languageOrder.get(language.toLowerCase()) ?? Number.MAX_SAFE_INTEGER;
+}
+
+export function languageLabel(language: string): string {
+  return languageNames.get(language.toLowerCase()) ?? language;
+}
+
+export function sortedLanguageCodes(languages: string[]): string[] {
+  return [...languages].sort((left, right) => {
+    const rank = languageRank(left) - languageRank(right);
+    if (rank !== 0) {
+      return rank;
+    }
+
+    return languageLabel(left).localeCompare(languageLabel(right));
+  });
+}
+
 export function allTags(patterns: PatternEntry[]): string[] {
   return [...new Set(patterns.flatMap((pattern) => pattern.data.tags))].sort();
 }
 
 export function allLanguages(patterns: PatternEntry[]): string[] {
-  return [...new Set(patterns.flatMap((pattern) => pattern.data.languages))].sort();
+  return sortedLanguageCodes([...new Set(patterns.flatMap((pattern) => pattern.data.languages))]);
 }
 
 export function patternSearchText(pattern: PatternEntry): string {
