@@ -4,7 +4,7 @@ title: >-
 summary: >-
   Parse and name configuration policy once so callers do not rediscover defaults, precedence, and
   magic values.
-status: draft
+status: reviewed
 tags:
   - "configuration"
   - "correctness"
@@ -43,8 +43,8 @@ plus unwritten rules about how to combine them.
 Reach for this pattern when several modules read the same environment variable, config key, or
 feature flag directly.
 
-The main tradeoff is that do not create a global config object that every module can reach; pass the
-narrow policy each caller needs.
+The main tradeoff is scope. Do not create a global config object that every module can reach; pass
+the narrow policy each caller needs.
 
 ## Use When
 
@@ -74,7 +74,7 @@ Do not scatter environment reads, defaults, or magic values across callers.
 
 ## Examples
 
-### Rust config boundary names retry policy
+### Config boundary names retry policy
 
 Business code receives RetryPolicy, not loose integers and strings from the environment.
 
@@ -90,7 +90,7 @@ pub fn load_config(env: &Env) -> Result<AppConfig, ConfigError> {
 }
 ```
 
-### Go passes narrow policy
+### Pass narrow policy
 
 The worker receives only the timeout policy it needs, not the full raw configuration.
 
@@ -100,10 +100,15 @@ type WorkerPolicy struct {
     Retries int
 }
 
-worker := NewWorker(config.WorkerPolicy)
+func LoadWorkerPolicy(env Env) WorkerPolicy {
+    return WorkerPolicy{
+        Timeout: env.Duration("WORKER_TIMEOUT", 500*time.Millisecond),
+        Retries: env.Int("WORKER_RETRIES", 3),
+    }
+}
 ```
 
-### TypeScript config parser owns defaults
+### Config parser owns defaults
 
 Callers receive a named retry policy instead of reading raw environment values and repeating
 defaults.
@@ -117,7 +122,7 @@ export function loadRetryPolicy(env: Env): RetryPolicy {
 }
 ```
 
-### C# config boundary owns defaults
+### Config boundary owns defaults
 
 Callers receive RetryPolicy instead of reading environment values directly.
 
@@ -130,16 +135,19 @@ public static RetryPolicy LoadRetryPolicy(IConfiguration config)
 }
 ```
 
-### Java passes narrow config
+### Pass narrow config
 
 The worker receives only the retry policy it needs.
 
 ```java title="WorkerConfig.java"
-var retryPolicy = RetryPolicy.from(config);
-var worker = new Worker(retryPolicy);
+static RetryPolicy loadRetryPolicy(Config config) {
+    return new RetryPolicy(
+        config.getInt("retry.attempts", 3),
+        config.getDuration("retry.timeout", Duration.ofMillis(500)));
+}
 ```
 
-### Python parses config once
+### Parse config once
 
 Defaults and environment names live at the config boundary.
 
@@ -151,36 +159,45 @@ def load_retry_policy(env):
     )
 ```
 
+### Low-level boundary names retry policy
+
+Business code receives named retry settings instead of parsing raw environment strings.
+
+```c title="src/example.c"
+struct retry_policy load_retry_policy(const struct env *env) {
+    return (struct retry_policy) {
+        .attempts = env_int(env, "RETRY_ATTEMPTS", 3),
+        .timeout_ms = env_int(env, "RETRY_TIMEOUT_MS", 500),
+    };
+}
+```
+
+### Object boundary names retry policy
+
+The parser owns defaults and returns a typed policy object.
+
+```cpp title="src/example.cpp"
+RetryPolicy load_retry_policy(const Config& config) {
+    return RetryPolicy{
+        config.get_int("retry.attempts", 3),
+        config.get_duration("retry.timeout", 500ms),
+    };
+}
+```
+
+### Client boundary names retry policy
+
+UI code receives a named policy instead of reading global config values directly.
+
+```js title="src/example.js"
+export function loadRetryPolicy(env) {
+  return {
+    attempts: Number(env.RETRY_ATTEMPTS ?? 3),
+    timeoutMs: Number(env.RETRY_TIMEOUT_MS ?? 500),
+  };
+}
+```
+
 ## References
 
 - None yet.
-
-### Low-level boundary names the rule
-
-The caller delegates the rule to a named boundary instead of repeating mechanics inline.
-
-```c title="src/example.c"
-if (approval_policy_can_approve(policy, user, request)) {
-    approve_request(request);
-}
-```
-
-### Object boundary names the rule
-
-The object caller asks a boundary that owns the rule.
-
-```cpp title="src/example.cpp"
-if (approval_policy.can_approve(user, request)) {
-    approvals.approve(request);
-}
-```
-
-### Client boundary names the rule
-
-The client code uses a named boundary instead of rebuilding the rule.
-
-```js title="src/example.js"
-if (approvalPolicy.canApprove(user, request)) {
-  approve(request);
-}
-```

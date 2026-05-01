@@ -1,7 +1,7 @@
 ---
 title: >-
   Raw Input Leaks Inward
-status: draft
+status: reviewed
 category: boundaries
 topics:
   - validation
@@ -15,6 +15,7 @@ relatedPatterns:
   - make-invalid-states-hard-to-express
   - guard-clause
 relatedConcepts:
+  - boundary-trust
   - observable-behavior
   - reader-locality
 ---
@@ -24,22 +25,31 @@ relatedConcepts:
 Strings, maps, nullable values, or unchecked data move through the system after the boundary should
 have parsed them.
 
-The problem is not the existence of the mechanism itself. It is that the ownership, boundary, or
-contract is implicit enough that each caller can interpret it differently.
+The boundary has enough context to reject, normalize, or convert the input, but it passes the raw
+shape inward. Domain code then receives `string`, `map`, `null`, or request-shaped data when it
+should receive an `OrderId`, parsed command, enum, or result-bearing value.
+
+That weakens [boundary trust](/concepts/boundary-trust/). Callers cannot tell whether the value is
+still uncertain or already safe to use.
 
 ## Why It Matters
 
-Every caller has to remember the same validation rules. That spreads defensive code, creates
+Every caller has to remember the same validation rules. That spreads defensive code and makes
+reviewers ask whether each branch is validating input, enforcing policy, or compensating for a
+missing parsed type.
 
-Reviewers care because the risk is not visible at one call site. They have to reconstruct the
-intended behavior from scattered branches, tests, and boundaries before they can tell whether the
-change is safe.
+The risk is missed paths. One caller rejects an empty id, another accepts it, and a third discovers
+the bad value after it has crossed several layers. The later the failure appears, the harder it is
+to return a useful error or prove the behavior is consistent.
 
 ## Code Impact
 
-The code impact is drift. Related checks, state changes, defaults, errors, or side effects spread
-across files, so a future edit can update one path while leaving another path with the old rule.
-Tests then tend to protect one example rather than the contract that all callers rely on.
+Raw input leaking inward keeps uncertainty alive across the codebase. Function signatures stay too
+broad, repeated guards accumulate, and business logic has to handle invalid states it should never
+receive.
+
+The code also loses a clear place for error shape. Instead of one parser returning a structured
+failure, many callers create slightly different messages, defaults, and recovery paths.
 
 ## Signals
 
@@ -57,12 +67,14 @@ Tests then tend to protect one example rather than the contract that all callers
 
 ## Approach
 
-- Parse raw input at the boundary and pass domain values inward.
-- Use guard clauses for local preconditions, but avoid repeated guards that signal a missing parsed
-  type.
-- Prefer constructors, enums, refined types, or result-bearing parsers that encode the successful
-  state.
-- Keep error messages and failure modes observable while improving the internal shape.
+- [Parse, don't validate](/patterns/parse-dont-validate/) at the boundary and pass domain values
+  inward.
+- Use [guard clauses](/patterns/guard-clause/) for local preconditions, but avoid repeated guards
+  that signal a missing parsed type.
+- [Make invalid states hard to express](/patterns/make-invalid-states-hard-to-express/) with
+  constructors, enums, refined types, or result-bearing parsers.
+- Keep error messages and failure modes [observable](/concepts/observable-behavior/) while improving
+  the internal shape.
 
 ## Examples
 
@@ -79,7 +91,8 @@ public Order Load(string orderId)
 
 ### Better: parses at the boundary
 
-The service receives a domain value.
+The service receives a domain value. This applies
+[Parse, Don't Validate](/patterns/parse-dont-validate/).
 
 ```csharp title="Orders/OrderController.cs"
 public Order Load(string rawOrderId)
@@ -101,7 +114,8 @@ Order load(String orderId) {
 
 ### Better: controller parses once
 
-Invalid input fails before it reaches domain logic.
+Invalid input fails before it reaches domain logic. This applies
+[Parse, Don't Validate](/patterns/parse-dont-validate/).
 
 ```java title="src/main/java/example/OrdersController.java"
 Order load(String rawOrderId) {
@@ -120,7 +134,8 @@ def load_order(payload):
 
 ### Better: boundary passes a parsed value
 
-The route owns the raw payload and the service owns domain behavior.
+The route owns the raw payload and the service owns domain behavior. This applies
+[Parse, Don't Validate](/patterns/parse-dont-validate/).
 
 ```python title="orders/routes.py"
 def load_order(payload):
@@ -140,7 +155,8 @@ pub fn load_order(order_id: String) -> Result<Order, Error> {
 
 ### Better: type carries the parse boundary
 
-Downstream code cannot receive an unparsed id by accident.
+Downstream code cannot receive an unparsed id by accident. This applies
+[Make Invalid States Hard to Express](/patterns/make-invalid-states-hard-to-express/).
 
 ```rust title="src/orders.rs"
 pub fn load_order(order_id: OrderId) -> Result<Order, Error> {
@@ -160,7 +176,8 @@ export function loadOrder(orderId: string) {
 
 ### Better: brands the parsed value
 
-The route converts raw input before calling domain code.
+The route converts raw input before calling domain code. This applies
+[Make Invalid States Hard to Express](/patterns/make-invalid-states-hard-to-express/).
 
 ```ts title="src/orders/route.ts"
 export function loadOrder(rawOrderId: string) {
@@ -168,82 +185,100 @@ export function loadOrder(rawOrderId: string) {
 }
 ```
 
-### Problem: low-level caller repeats the rule
+### Problem: raw id crosses the C boundary
 
-The low-level path updates state without naming the boundary that owns the rule.
-
-```c title="src/example.c"
-if (request_total < 5000 || user_is_manager(user)) {
-    approve_request(request);
-}
-```
-
-### Better: low-level boundary owns the rule
-
-The caller asks a named boundary instead of repeating the condition.
+The service receives a string and has to trust that another caller checked it.
 
 ```c title="src/example.c"
-if (approval_policy_can_approve(policy, user, request)) {
-    approve_request(request);
+Order *load_order(const char *order_id) {
+    return repository_load(order_id);
 }
 ```
 
-### Problem: object path repeats the rule
+### Better: parser creates a domain id
 
-The object caller owns a rule that should have a named boundary.
+The repository receives an `OrderId` that was parsed at the boundary. This applies
+[Parse, Don't Validate](/patterns/parse-dont-validate/).
+
+```c title="src/example.c"
+Order *load_order(const char *raw_order_id) {
+    OrderId order_id;
+
+    if (!parse_order_id(raw_order_id, &order_id)) {
+        return NULL;
+    }
+
+    return repository_load(order_id);
+}
+```
+
+### Problem: nullable request value moves inward
+
+Domain code receives a pointer that may not hold a valid id.
 
 ```cpp title="src/example.cpp"
-if (request.total() < Money::from_cents(500000) || user.is_manager()) {
-    approvals.approve(request);
+Order load_order(const Request& request) {
+    return orders.load(request.query("order_id"));
 }
 ```
 
-### Better: object boundary owns the rule
+### Better: boundary constructs a value object
 
-The policy names the rule and narrows the future change radius.
+The request parser owns uncertainty; the service receives an `OrderId`. This applies
+[Make Invalid States Hard to Express](/patterns/make-invalid-states-hard-to-express/).
 
 ```cpp title="src/example.cpp"
-if (approval_policy.can_approve(user, request)) {
-    approvals.approve(request);
+Order load_order(const Request& request) {
+    auto order_id = OrderId::parse(request.query("order_id"));
+
+    return orders.load(order_id);
 }
 ```
 
-### Problem: service path repeats the rule
+### Problem: handler passes raw path values inward
 
-The service path makes the rule local to one caller, so another caller can drift.
+The service accepts the same raw string shape as the HTTP router.
 
 ```go title="internal/example/service.go"
-if request.Total < 5000 || user.IsManager {
-    approvals.Approve(request)
+func LoadOrder(rawOrderID string) (Order, error) {
+    return repository.Load(rawOrderID)
 }
 ```
 
-### Better: service boundary owns the rule
+### Better: handler parses before calling service
 
-The caller uses a named policy boundary.
+The service only accepts the parsed id. This applies
+[Parse, Don't Validate](/patterns/parse-dont-validate/).
 
 ```go title="internal/example/service.go"
-if approvalPolicy.CanApprove(user, request) {
-    approvals.Approve(request)
+func LoadOrder(rawOrderID string) (Order, error) {
+    orderID, err := ParseOrderID(rawOrderID)
+    if err != nil {
+        return Order{}, err
+    }
+
+    return repository.Load(orderID)
 }
 ```
 
-### Problem: client path repeats the rule
+### Problem: raw form data reaches application logic
 
-The client path repeats a rule that should have a named boundary.
+Application code receives `FormData` instead of a parsed command.
 
 ```js title="src/example.js"
-if (request.total < 5000 || user.role === 'manager') {
-  approve(request);
+export function submitOrder(formData) {
+  return orders.submit(formData.get('orderId'));
 }
 ```
 
-### Better: client boundary owns the rule
+### Better: form parser returns a command
 
-The caller asks the named policy instead of rebuilding the condition.
+The application code receives a named command. This applies
+[Parse, Don't Validate](/patterns/parse-dont-validate/).
 
 ```js title="src/example.js"
-if (approvalPolicy.canApprove(user, request)) {
-  approve(request);
+export function submitOrder(formData) {
+  const command = parseSubmitOrder(formData);
+  return orders.submit(command);
 }
 ```

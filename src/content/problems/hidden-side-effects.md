@@ -1,19 +1,21 @@
 ---
 title: >-
   Hidden Side Effects
-status: draft
+status: reviewed
 category: side-effects
 topics:
   - mutation
   - io
   - review
 summary: >-
-  A call reads like a calculation but mutates state, performs I/O, reads time, or starts external
+  A call reads like a calculation but mutates state, touches external systems, reads time, or starts
   work.
 relatedPatterns:
   - make-side-effects-visible
   - inject-time-and-randomness
   - keep-async-boundaries-explicit
+  - preparatory-refactor
+  - test-observable-behavior
 relatedConcepts:
   - side-effect-visibility
   - temporal-coupling
@@ -22,25 +24,33 @@ relatedConcepts:
 
 ## Description
 
-A call reads like a calculation but mutates state, performs I/O, reads time, or starts external
+A call reads like a calculation but mutates state, touches external systems, reads time, or starts
 work.
 
-The problem is not the existence of the mechanism itself. It is that the ownership, boundary, or
+Effects are normal at system boundaries. The problem appears when the ownership, boundary, or
 contract is implicit enough that each caller can interpret it differently.
 
 ## Why It Matters
 
-Hidden effects make review depend on implementation inspection. A maintainer cannot judge ordering,
+Hidden effects make review depend on implementation inspection. A maintainer cannot judge whether a
+call is safe to move, repeat, skip, or cache by reading the call site alone.
 
-Reviewers care because the risk is not visible at one call site. They have to reconstruct the
-intended behavior from scattered branches, tests, and boundaries before they can tell whether the
-change is safe.
+Reviewers care because the risk is hidden behind a harmless-looking name. They have to reconstruct
+ordering, state changes, and external work from implementation details before they can tell whether
+the change is safe.
+
+Hidden effects also remove good sensing points for tests. If a method only changes collaborators,
+UI state, or external systems, the test has no simple return value or state boundary to assert
+against.
 
 ## Code Impact
 
-The code impact is drift. Related checks, state changes, defaults, errors, or side effects spread
-across files, so a future edit can update one path while leaving another path with the old rule.
-Tests then tend to protect one example rather than the contract that all callers rely on.
+Hidden side effects create accidental ordering constraints. A helper that mutates an argument,
+records an audit event, reads the clock, or starts background work cannot be freely reordered even
+when its name looks pure.
+
+Tests often protect one successful call path while missing repeat calls, skipped calls, or moved
+calls. That leaves the side effect as an implementation detail instead of an observable contract.
 
 ## Signals
 
@@ -59,12 +69,18 @@ Tests then tend to protect one example rather than the contract that all callers
 
 ## Approach
 
-- Separate calculation from mutation or I/O when the ordering matters.
-- Rename or reshape effectful boundaries so the side effect is visible at the call site.
-- Pass time, randomness, clients, stores, or publishers explicitly when ambient access hides
-  behavior.
-- Test the observable effect at the smallest boundary that can catch ordering or failure
-  regressions.
+- [Make side effects visible](/patterns/make-side-effects-visible/) by moving mutation, external
+  calls, and background work into a named statement or boundary.
+- [Inject time and randomness](/patterns/inject-time-and-randomness/) when ambient clocks, timers,
+  random sources, or generated IDs make behavior depend on process state.
+- [Keep async boundaries explicit](/patterns/keep-async-boundaries-explicit/) when the hidden effect
+  starts work that may finish after the caller returns.
+- Use a [preparatory refactor](/patterns/preparatory-refactor/) to extract framework hooks into
+  plain command methods before testing UI, callback, or event-driven code.
+- [Test observable behavior](/patterns/test-observable-behavior/) by splitting command work from
+  query work when a calculation is mixed with an effect.
+- Use the [smallest trustworthy verification](/patterns/smallest-trustworthy-verification/) that
+  can catch the effect happening at the wrong time, being skipped, or running more than once.
 
 ## Examples
 
@@ -138,7 +154,7 @@ def invoice_status(invoice, now):
 
 ### Problem: conversion publishes an event
 
-The function name suggests a pure conversion, but it performs I/O.
+The function name suggests a pure conversion, but it publishes an external event.
 
 ```rust title="src/invoices.rs"
 pub fn to_view(invoice: &Invoice, bus: &EventBus) -> InvoiceView {
@@ -183,82 +199,110 @@ export function selectedTheme(user: User) {
 }
 ```
 
-### Problem: low-level caller repeats the rule
+### Problem: total calculation changes cart state
 
-The low-level path updates state without naming the boundary that owns the rule.
+The function reads like a calculation, but it marks the cart as discounted.
 
-```c title="src/example.c"
-if (request_total < 5000 || user_is_manager(user)) {
-    approve_request(request);
+```c title="src/cart_total.c"
+Money cart_total(Cart *cart) {
+    if (cart->coupon_code != NULL) {
+        cart->discount_applied = true;
+        return money_sub(cart->subtotal, coupon_discount(cart->coupon_code));
+    }
+
+    return cart->subtotal;
 }
 ```
 
-### Better: low-level boundary owns the rule
+### Better: discount application is explicit
 
-The caller asks a named boundary instead of repeating the condition.
+The state change happens in a named operation before the total is read.
 
-```c title="src/example.c"
-if (approval_policy_can_approve(policy, user, request)) {
-    approve_request(request);
+```c title="src/cart_total.c"
+void apply_coupon_discount(Cart *cart) {
+    if (cart->coupon_code == NULL) {
+        return;
+    }
+
+    cart->discount = coupon_discount(cart->coupon_code);
+    cart->discount_applied = true;
+}
+
+Money cart_total(const Cart *cart) {
+    return money_sub(cart->subtotal, cart->discount);
 }
 ```
 
-### Problem: object path repeats the rule
+### Problem: query method writes audit data
 
-The object caller owns a rule that should have a named boundary.
+A method named like a query writes to the audit log.
 
-```cpp title="src/example.cpp"
-if (request.total() < Money::from_cents(500000) || user.is_manager()) {
-    approvals.approve(request);
+```cpp title="src/invoices.cpp"
+InvoiceView InvoiceService::view_for(const Invoice& invoice) {
+    audit_log.record_view(invoice.id());
+    return InvoiceView::from(invoice);
 }
 ```
 
-### Better: object boundary owns the rule
+### Better: effectful name owns the write
 
-The policy names the rule and narrows the future change radius.
+The method name tells callers that the audit effect is part of the operation.
 
-```cpp title="src/example.cpp"
-if (approval_policy.can_approve(user, request)) {
-    approvals.approve(request);
+```cpp title="src/invoices.cpp"
+InvoiceView InvoiceService::record_view_and_render(const Invoice& invoice) {
+    audit_log.record_view(invoice.id());
+    return InvoiceView::from(invoice);
 }
 ```
 
-### Problem: service path repeats the rule
+### Problem: label helper emits a metric
 
-The service path makes the rule local to one caller, so another caller can drift.
+A helper used from templates changes process-wide metrics.
 
-```go title="internal/example/service.go"
-if request.Total < 5000 || user.IsManager {
-    approvals.Approve(request)
+```go title="internal/invoices/label.go"
+func InvoiceLabel(invoice Invoice) string {
+    metrics.Count("invoice_label_rendered")
+    return invoice.Number
 }
 ```
 
-### Better: service boundary owns the rule
+### Better: rendering owns the metric
 
-The caller uses a named policy boundary.
+The effect moves to the operation where rendering is the visible behavior.
 
-```go title="internal/example/service.go"
-if approvalPolicy.CanApprove(user, request) {
-    approvals.Approve(request)
+```go title="internal/invoices/view.go"
+func RenderInvoice(invoice Invoice) string {
+    metrics.Count("invoice_rendered")
+    return InvoiceLabel(invoice)
 }
 ```
 
-### Problem: client path repeats the rule
+### Problem: price helper sends analytics
 
-The client path repeats a rule that should have a named boundary.
+The helper looks like formatting, but every call sends an event.
 
-```js title="src/example.js"
-if (request.total < 5000 || user.role === 'manager') {
-  approve(request);
+```js title="src/pricing/priceLabel.js"
+export function priceLabel(product) {
+  analytics.track('price_viewed', { sku: product.sku });
+  return `$${product.price.toFixed(2)}`;
 }
 ```
 
-### Better: client boundary owns the rule
+### Better: effect is separate from formatting
 
-The caller asks the named policy instead of rebuilding the condition.
+The analytics call is visible at the UI boundary.
 
-```js title="src/example.js"
-if (approvalPolicy.canApprove(user, request)) {
-  approve(request);
+```js title="src/pricing/priceLabel.js"
+export function trackPriceViewed(product) {
+  analytics.track('price_viewed', { sku: product.sku });
+}
+
+export function priceLabel(product) {
+  return `$${product.price.toFixed(2)}`;
 }
 ```
+
+## References
+
+- Michael Feathers, [Working Effectively with Legacy Code](/references/#working-effectively-with-legacy-code),
+  Chapter 10, “The Case of the Undetectable Side Effect.”

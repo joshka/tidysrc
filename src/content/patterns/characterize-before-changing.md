@@ -80,7 +80,7 @@ see a different result. Preserve suspicious behavior first, then change it delib
 
 ## Examples
 
-### Pin current Java behavior
+### Pin current behavior
 
 The test records today’s externally visible discount behavior before changing legacy pricing
 internals.
@@ -94,7 +94,7 @@ void keepsBlankDiscountCodeAsZeroDiscount() {
 }
 ```
 
-### Rust golden test for parser output
+### Golden test for parser output
 
 The test captures the parser’s current empty-field output so a parser refactor cannot silently
 change that boundary.
@@ -108,7 +108,7 @@ fn preserves_legacy_empty_field_behavior() {
 }
 ```
 
-### Go test captures the legacy discount rule
+### Capture the legacy discount rule
 
 The test records a surprising expired-coupon behavior before the pricing code is reorganized.
 
@@ -125,7 +125,7 @@ func TestExpiredCouponKeepsLegacyDiscount(t *testing.T) {
 }
 ```
 
-### C# pins legacy output before refactoring
+### Pin legacy output before refactoring
 
 The test records the visible invoice total before pricing internals move.
 
@@ -139,7 +139,7 @@ public void BlankCouponKeepsCurrentTotal()
 }
 ```
 
-### Python captures a surprising parser edge
+### Capture a surprising parser edge
 
 The test records current behavior without claiming the behavior is desirable.
 
@@ -150,7 +150,7 @@ def test_blank_middle_field_is_preserved():
     assert record.middle_name == ""
 ```
 
-### TypeScript characterizes generated output
+### Characterize generated output
 
 The snapshot pins the boundary output before renderer internals are reorganized.
 
@@ -160,36 +160,41 @@ it('keeps legacy empty summary markup', () => {
 });
 ```
 
+### Pin C parser output before cleanup
+
+The test records today’s blank-field behavior before parser internals move.
+
+```c title="tests/parser_test.c"
+void test_blank_middle_field_is_preserved(void) {
+    struct record record = parse_record("name,,active");
+
+    assert_string_equal("", record.middle_name);
+}
+```
+
+### Pin C++ formatter output before cleanup
+
+The test records the current public string before the formatter is reorganized.
+
+```cpp title="tests/legacy_formatter_test.cpp"
+TEST(LegacyFormatter, KeepsEmptySummaryMarkup) {
+    auto html = render_pattern(Pattern{.title = "Guard", .summary = ""});
+
+    EXPECT_THAT(html, HasSubstr("<p></p>"));
+}
+```
+
+### Characterize generated client output
+
+The test pins the browser-facing markup before renderer internals change.
+
+```js title="legacyRenderer.test.js"
+it('keeps legacy empty summary markup', () => {
+  expect(renderPattern({ title: 'Guard', summary: '' })).toContain('<p></p>');
+});
+```
+
 ## References
 
-- Working Effectively with Legacy Code: characterization tests.
-
-### Low-level boundary names the rule
-
-The caller delegates the rule to a named boundary instead of repeating mechanics inline.
-
-```c title="src/example.c"
-if (approval_policy_can_approve(policy, user, request)) {
-    approve_request(request);
-}
-```
-
-### Object boundary names the rule
-
-The object caller asks a boundary that owns the rule.
-
-```cpp title="src/example.cpp"
-if (approval_policy.can_approve(user, request)) {
-    approvals.approve(request);
-}
-```
-
-### Client boundary names the rule
-
-The client code uses a named boundary instead of rebuilding the rule.
-
-```js title="src/example.js"
-if (approvalPolicy.canApprove(user, request)) {
-  approve(request);
-}
-```
+- [Working Effectively with Legacy Code](/references/#working-effectively-with-legacy-code):
+  characterization tests.

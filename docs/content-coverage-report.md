@@ -7,8 +7,8 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 ## Totals
 
 - P0: 6
-- P1: 74
-- P2: 46
+- P1: 49
+- P2: 55
 
 ## Queue
 
@@ -96,21 +96,6 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Findings:
   - none
 
-### P1 problems/context-drift
-
-- Title: Context Drift
-- Status: seed
-- Source: `src/content/problems/context-drift.md`
-- Route: `/problems/context-drift/`
-- Present languages: none
-- Missing languages:
-  - none
-- Findings:
-  - Missing section: Description
-  - Missing section: Why It Matters
-  - Missing section: Code Impact
-  - No code examples found.
-
 ### P1 problems/cross-cutting-policy-scattered
 
 - Title: Cross-Cutting Policy Scattered
@@ -134,21 +119,6 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
   - none
 - Findings:
   - none
-
-### P1 problems/digging-past-evidence
-
-- Title: Digging Past Evidence
-- Status: seed
-- Source: `src/content/problems/digging-past-evidence.md`
-- Route: `/problems/digging-past-evidence/`
-- Present languages: none
-- Missing languages:
-  - none
-- Findings:
-  - Missing section: Description
-  - Missing section: Why It Matters
-  - Missing section: Code Impact
-  - No code examples found.
 
 ### P1 problems/domain-logic-buried-in-presentation
 
@@ -174,309 +144,12 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Findings:
   - none
 
-### P1 problems/guess-driven-debugging
-
-- Title: Guess-Driven Debugging
-- Status: seed
-- Source: `src/content/problems/guess-driven-debugging.md`
-- Route: `/problems/guess-driven-debugging/`
-- Present languages: none
-- Missing languages:
-  - none
-- Findings:
-  - Missing section: Description
-  - Missing section: Why It Matters
-  - Missing section: Code Impact
-  - No code examples found.
-
 ### P1 problems/hidden-concurrency-assumptions
 
 - Title: Hidden Concurrency Assumptions
 - Status: draft
 - Source: `src/content/problems/hidden-concurrency-assumptions.md`
 - Route: `/problems/hidden-concurrency-assumptions/`
-- Present languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
-- Missing languages:
-  - none
-- Findings:
-  - none
-
-### P1 problems/hidden-side-effects
-
-- Title: Hidden Side Effects
-- Status: draft
-- Source: `src/content/problems/hidden-side-effects.md`
-- Route: `/problems/hidden-side-effects/`
-- Present languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
-- Missing languages:
-  - none
-- Findings:
-  - none
-
-### P1 problems/layer-language-leaks
-
-- Title: Layer Language Leaks
-- Status: draft
-- Source: `src/content/problems/layer-language-leaks.md`
-- Route: `/problems/layer-language-leaks/`
-- Present languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
-- Missing languages:
-  - none
-- Findings:
-  - none
-
-### P1 problems/mixed-structure-and-behavior
-
-- Title: Mixed Structure and Behavior
-- Status: draft
-- Source: `src/content/problems/mixed-structure-and-behavior.md`
-- Route: `/problems/mixed-structure-and-behavior/`
-- Present languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
-- Missing languages:
-  - none
-- Findings:
-  - none
-
-### P1 problems/naming-drift
-
-- Title: Naming Drift
-- Status: draft
-- Source: `src/content/problems/naming-drift.md`
-- Route: `/problems/naming-drift/`
-- Present languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
-- Missing languages:
-  - none
-- Findings:
-  - none
-
-### P1 problems/observability-noise
-
-- Title: Observability Noise
-- Status: draft
-- Source: `src/content/problems/observability-noise.md`
-- Route: `/problems/observability-noise/`
-- Present languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
-- Missing languages:
-  - none
-- Findings:
-  - none
-
-### P1 problems/performance-fix-without-evidence
-
-- Title: Performance Fix Without Evidence
-- Status: draft
-- Source: `src/content/problems/performance-fix-without-evidence.md`
-- Route: `/problems/performance-fix-without-evidence/`
-- Present languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
-- Missing languages:
-  - none
-- Findings:
-  - none
-
-### P1 problems/raw-input-leaks-inward
-
-- Title: Raw Input Leaks Inward
-- Status: draft
-- Source: `src/content/problems/raw-input-leaks-inward.md`
-- Route: `/problems/raw-input-leaks-inward/`
-- Present languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
-- Missing languages:
-  - none
-- Findings:
-  - none
-
-### P1 problems/repeated-validation-rules
-
-- Title: Repeated Validation Rules
-- Status: seed
-- Source: `src/content/problems/repeated-validation-rules.md`
-- Route: `/problems/repeated-validation-rules/`
-- Present languages: none
-- Missing languages:
-  - none
-- Findings:
-  - Missing section: Description
-  - Missing section: Why It Matters
-  - Missing section: Code Impact
-  - No code examples found.
-
-### P1 problems/review-comment-lacks-pattern-name
-
-- Title: Review Comment Lacks a Pattern Name
-- Status: seed
-- Source: `src/content/problems/review-comment-lacks-pattern-name.md`
-- Route: `/problems/review-comment-lacks-pattern-name/`
-- Present languages: none
-- Missing languages:
-  - none
-- Findings:
-  - Missing section: Description
-  - Missing section: Why It Matters
-  - Missing section: Code Impact
-  - No code examples found.
-
-### P1 problems/risky-legacy-change
-
-- Title: Risky Legacy Change
-- Status: draft
-- Source: `src/content/problems/risky-legacy-change.md`
-- Route: `/problems/risky-legacy-change/`
-- Present languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
-- Missing languages:
-  - none
-- Findings:
-  - none
-
-### P1 problems/silent-failure-paths
-
-- Title: Silent Failure Paths
-- Status: draft
-- Source: `src/content/problems/silent-failure-paths.md`
-- Route: `/problems/silent-failure-paths/`
-- Present languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
-- Missing languages:
-  - none
-- Findings:
-  - none
-
-### P1 problems/solution-before-requirements
-
-- Title: Solution Before Requirements
-- Status: seed
-- Source: `src/content/problems/solution-before-requirements.md`
-- Route: `/problems/solution-before-requirements/`
-- Present languages: none
-- Missing languages:
-  - none
-- Findings:
-  - Missing section: Description
-  - Missing section: Why It Matters
-  - Missing section: Code Impact
-  - No code examples found.
-
-### P1 problems/spec-bent-to-fit-implementation
-
-- Title: Spec Bent to Fit Implementation
-- Status: seed
-- Source: `src/content/problems/spec-bent-to-fit-implementation.md`
-- Route: `/problems/spec-bent-to-fit-implementation/`
-- Present languages: none
-- Missing languages:
-  - none
-- Findings:
-  - Missing section: Description
-  - Missing section: Why It Matters
-  - Missing section: Code Impact
-  - No code examples found.
-
-### P1 problems/tests-freeze-private-shape
-
-- Title: Tests Freeze Private Shape
-- Status: draft
-- Source: `src/content/problems/tests-freeze-private-shape.md`
-- Route: `/problems/tests-freeze-private-shape/`
-- Present languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
-- Missing languages:
-  - none
-- Findings:
-  - none
-
-### P1 problems/time-dependent-tests
-
-- Title: Time-Dependent Tests
-- Status: draft
-- Source: `src/content/problems/time-dependent-tests.md`
-- Route: `/problems/time-dependent-tests/`
-- Present languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
-- Missing languages:
-  - none
-- Findings:
-  - none
-
-### P1 problems/tooling-contract-implicit
-
-- Title: Tooling Contract Implicit
-- Status: seed
-- Source: `src/content/problems/tooling-contract-implicit.md`
-- Route: `/problems/tooling-contract-implicit/`
-- Present languages: none
-- Missing languages:
-  - none
-- Findings:
-  - Missing section: Description
-  - Missing section: Why It Matters
-  - Missing section: Code Impact
-  - No code examples found.
-
-### P1 problems/unclear-async-ownership
-
-- Title: Unclear Async Ownership
-- Status: draft
-- Source: `src/content/problems/unclear-async-ownership.md`
-- Route: `/problems/unclear-async-ownership/`
-- Present languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
-- Missing languages:
-  - none
-- Findings:
-  - none
-
-### P1 problems/unclear-done-signal
-
-- Title: Unclear Done Signal
-- Status: seed
-- Source: `src/content/problems/unclear-done-signal.md`
-- Route: `/problems/unclear-done-signal/`
-- Present languages: none
-- Missing languages:
-  - none
-- Findings:
-  - Missing section: Description
-  - Missing section: Why It Matters
-  - Missing section: Code Impact
-  - No code examples found.
-
-### P1 problems/weak-abstractions-hide-context
-
-- Title: Weak Abstractions Hide Context
-- Status: draft
-- Source: `src/content/problems/weak-abstractions-hide-context.md`
-- Route: `/problems/weak-abstractions-hide-context/`
-- Present languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
-- Missing languages:
-  - none
-- Findings:
-  - none
-
-### P1 problems/wide-change-radius
-
-- Title: Wide Change Radius
-- Status: draft
-- Source: `src/content/problems/wide-change-radius.md`
-- Route: `/problems/wide-change-radius/`
-- Present languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
-- Missing languages:
-  - none
-- Findings:
-  - none
-
-### P1 patterns/cap-change-radius
-
-- Title: Cap the Change Radius
-- Status: draft
-- Source: `src/content/patterns/cap-change-radius.md`
-- Route: `/patterns/cap-change-radius/`
-- Present languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
-- Missing languages:
-  - none
-- Findings:
-  - none
-
-### P1 patterns/centralize-configuration-policy
-
-- Title: Centralize Configuration Policy
-- Status: draft
-- Source: `src/content/patterns/centralize-configuration-policy.md`
-- Route: `/patterns/centralize-configuration-policy/`
 - Present languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
 - Missing languages:
   - none
@@ -999,6 +672,102 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Findings:
   - none
 
+### P2 problems/context-drift
+
+- Title: Context Drift
+- Status: seed
+- Source: `src/content/problems/context-drift.md`
+- Route: `/problems/context-drift/`
+- Present languages: TypeScript
+- Missing languages:
+  - none
+- Findings:
+  - none
+
+### P2 problems/digging-past-evidence
+
+- Title: Digging Past Evidence
+- Status: seed
+- Source: `src/content/problems/digging-past-evidence.md`
+- Route: `/problems/digging-past-evidence/`
+- Present languages: TypeScript
+- Missing languages:
+  - none
+- Findings:
+  - none
+
+### P2 problems/guess-driven-debugging
+
+- Title: Guess-Driven Debugging
+- Status: seed
+- Source: `src/content/problems/guess-driven-debugging.md`
+- Route: `/problems/guess-driven-debugging/`
+- Present languages: TypeScript
+- Missing languages:
+  - none
+- Findings:
+  - none
+
+### P2 problems/repeated-validation-rules
+
+- Title: Repeated Validation Rules
+- Status: seed
+- Source: `src/content/problems/repeated-validation-rules.md`
+- Route: `/problems/repeated-validation-rules/`
+- Present languages: TypeScript
+- Missing languages:
+  - none
+- Findings:
+  - none
+
+### P2 problems/review-comment-lacks-pattern-name
+
+- Title: Review Comment Lacks a Pattern Name
+- Status: seed
+- Source: `src/content/problems/review-comment-lacks-pattern-name.md`
+- Route: `/problems/review-comment-lacks-pattern-name/`
+- Present languages: text
+- Missing languages:
+  - none
+- Findings:
+  - none
+
+### P2 problems/solution-before-requirements
+
+- Title: Solution Before Requirements
+- Status: seed
+- Source: `src/content/problems/solution-before-requirements.md`
+- Route: `/problems/solution-before-requirements/`
+- Present languages: TypeScript
+- Missing languages:
+  - none
+- Findings:
+  - none
+
+### P2 problems/spec-bent-to-fit-implementation
+
+- Title: Spec Bent to Fit Implementation
+- Status: seed
+- Source: `src/content/problems/spec-bent-to-fit-implementation.md`
+- Route: `/problems/spec-bent-to-fit-implementation/`
+- Present languages: TypeScript
+- Missing languages:
+  - none
+- Findings:
+  - none
+
+### P2 problems/tooling-contract-implicit
+
+- Title: Tooling Contract Implicit
+- Status: seed
+- Source: `src/content/problems/tooling-contract-implicit.md`
+- Route: `/problems/tooling-contract-implicit/`
+- Present languages: TypeScript, json
+- Missing languages:
+  - none
+- Findings:
+  - none
+
 ### P2 problems/unclear-cache-invalidation
 
 - Title: Unclear Cache Invalidation
@@ -1006,6 +775,18 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Source: `src/content/problems/unclear-cache-invalidation.md`
 - Route: `/problems/unclear-cache-invalidation/`
 - Present languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
+- Missing languages:
+  - none
+- Findings:
+  - none
+
+### P2 problems/unclear-done-signal
+
+- Title: Unclear Done Signal
+- Status: seed
+- Source: `src/content/problems/unclear-done-signal.md`
+- Route: `/problems/unclear-done-signal/`
+- Present languages: text
 - Missing languages:
   - none
 - Findings:
@@ -1461,7 +1242,7 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Status: seed
 - Source: `src/content/concepts/change-economics.md`
 - Route: `/concepts/change-economics/`
-- Present languages: none
+- Present languages: TypeScript
 - Missing languages:
   - none
 - Findings:
@@ -1473,7 +1254,7 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Status: seed
 - Source: `src/content/concepts/cohesion.md`
 - Route: `/concepts/cohesion/`
-- Present languages: none
+- Present languages: TypeScript
 - Missing languages:
   - none
 - Findings:
@@ -1485,7 +1266,7 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Status: seed
 - Source: `src/content/concepts/context-hygiene.md`
 - Route: `/concepts/context-hygiene/`
-- Present languages: none
+- Present languages: text
 - Missing languages:
   - none
 - Findings:
@@ -1497,7 +1278,7 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Status: seed
 - Source: `src/content/concepts/coupling.md`
 - Route: `/concepts/coupling/`
-- Present languages: none
+- Present languages: TypeScript
 - Missing languages:
   - none
 - Findings:
@@ -1509,7 +1290,7 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Status: seed
 - Source: `src/content/concepts/reversibility.md`
 - Route: `/concepts/reversibility/`
-- Present languages: none
+- Present languages: TypeScript
 - Missing languages:
   - none
 - Findings:
@@ -1521,7 +1302,7 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Status: seed
 - Source: `src/content/concepts/review-batch-size.md`
 - Route: `/concepts/review-batch-size/`
-- Present languages: none
+- Present languages: text
 - Missing languages:
   - none
 - Findings:
@@ -1533,7 +1314,7 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Status: seed
 - Source: `src/content/concepts/time-of-check-to-time-of-use.md`
 - Route: `/concepts/time-of-check-to-time-of-use/`
-- Present languages: none
+- Present languages: TypeScript
 - Missing languages:
   - none
 - Findings:
@@ -1545,7 +1326,7 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Status: seed
 - Source: `src/content/concepts/yagni.md`
 - Route: `/concepts/yagni/`
-- Present languages: none
+- Present languages: TypeScript
 - Missing languages:
   - none
 - Findings:

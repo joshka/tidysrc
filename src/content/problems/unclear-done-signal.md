@@ -17,11 +17,26 @@ relatedConcepts:
   - agent-guidance
 ---
 
-## Impact
+## Description
 
 A passing command matters only when it exercises the risk. Without a clear done signal, teams either
 over-test everything or accept shallow verification that misses the bug the change could
 realistically introduce.
+
+An unclear done signal appears when nobody can say which evidence proves the change is complete.
+The final handoff may list commands, but the commands are not tied to the behavior or integration
+point that could break.
+
+## Why It Matters
+
+Verification is part of the change contract. When the done signal is vague, reviewers cannot tell
+whether the important risk was checked or whether the change merely passed an unrelated command.
+
+## Code Impact
+
+The code may ship with untested edge cases, or the review may stall under broad test demands. Both
+outcomes come from the same missing link between the changed surface and the evidence that protects
+it.
 
 ## Signals
 
@@ -45,3 +60,22 @@ realistically introduce.
 - State what was checked and what was not checked in the handoff.
 - When no trustworthy check exists, say so directly and prefer adding characterization before larger
   edits.
+
+## Examples
+
+### Problem: verification is detached from the changed behavior
+
+The handoff says a broad command passed, but it does not identify the behavior that was at risk.
+
+```text title="review/handoff.txt"
+Tests passed: pnpm test
+```
+
+### Better: verification names the protected behavior
+
+The handoff connects the command to the behavior a reviewer should care about.
+
+```text title="review/handoff.txt"
+Verified the report export keeps draft reports hidden:
+pnpm test -- report-export
+```

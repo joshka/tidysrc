@@ -1,7 +1,7 @@
 ---
 title: >-
   Time-Dependent Tests
-status: draft
+status: reviewed
 category: testing
 topics:
   - time
@@ -22,22 +22,31 @@ relatedConcepts:
 
 Tests sleep, wait, or depend on the wall clock because time is hidden inside the code under test.
 
-The problem is not the existence of the mechanism itself. It is that the ownership, boundary, or
-contract is implicit enough that each caller can interpret it differently.
+The business rule depends on time, timers, random identifiers, or scheduling, but the dependency is
+read from ambient process state. Tests then wait for time to pass instead of passing the time value
+the rule should evaluate.
+
+Direct wall-clock access can belong at framework or scheduling edges. The problem is letting that
+edge leak into ordinary business logic, where a fixed `now`, clock, timer, or id generator would
+make the behavior deterministic.
 
 ## Why It Matters
 
-The suite becomes slow and flaky, and failures are hard to diagnose. The test is checking scheduler
+The suite becomes slower, flakier, and harder to diagnose. A one-second sleep in one test looks
+small until dozens of tests repeat it; a broad timeout hides timing races while making every run
+take longer.
 
-Reviewers care because the risk is not visible at one call site. They have to reconstruct the
-intended behavior from scattered branches, tests, and boundaries before they can tell whether the
-change is safe.
+The test is checking scheduler behavior, machine load, and timing tolerance along with the business
+rule. When it fails, reviewers cannot tell whether the expiration policy broke or the test simply
+lost a race against the clock.
 
 ## Code Impact
 
-The code impact is drift. Related checks, state changes, defaults, errors, or side effects spread
-across files, so a future edit can update one path while leaving another path with the old rule.
-Tests then tend to protect one example rather than the contract that all callers rely on.
+Time-dependent tests usually point back to hidden inputs in production code. Expiration, retry,
+ordering, and id-generation rules depend on values the function signature does not show.
+
+That hidden dependency spreads sleeps, polling loops, broad tolerances, and test-only delays across
+the suite. The code becomes harder to refactor because the real policy boundary is not visible.
 
 ## Signals
 
@@ -55,9 +64,15 @@ Tests then tend to protect one example rather than the contract that all callers
 
 ## Approach
 
-- Pass time and randomness through the boundary that owns the policy.
+- [Inject time and randomness](/patterns/inject-time-and-randomness/) through the boundary that owns
+  the policy.
 - Use fixed clocks, deterministic id generators, or explicit instants in tests.
-- Keep direct wall-clock access at edges that truly own scheduling.
+- Keep direct wall-clock access at edges that truly own scheduling, and pass ordinary values inward
+  when a full clock abstraction would be too much.
+- [Make side effects visible](/patterns/make-side-effects-visible/) when time, timers, randomness,
+  or scheduling changes review risk.
+- Use the [smallest trustworthy verification](/patterns/smallest-trustworthy-verification/) that can
+  fail the time-dependent behavior without waiting.
 - Avoid sleeps as verification unless the behavior being tested is the scheduler itself.
 
 ## Examples
@@ -72,7 +87,8 @@ public bool IsOverdue() => DueAt < DateTimeOffset.UtcNow;
 
 ### Better: policy receives a clock value
 
-The test can pass a fixed instant.
+The test can pass a fixed instant. This applies
+[Inject Time and Randomness](/patterns/inject-time-and-randomness/).
 
 ```csharp title="Billing/Invoice.cs"
 public bool IsOverdue(DateTimeOffset now) => DueAt < now;
@@ -90,7 +106,8 @@ boolean isOverdue() {
 
 ### Better: logic receives time explicitly
 
-The behavior is deterministic in tests.
+The behavior is deterministic in tests. This applies
+[Inject Time and Randomness](/patterns/inject-time-and-randomness/).
 
 ```java title="src/main/java/example/Invoice.java"
 boolean isOverdue(Instant now) {
@@ -109,7 +126,8 @@ assert session.is_expired()
 
 ### Better: test passes the instant
 
-The same behavior is checked without sleeping.
+The same behavior is checked without sleeping. This applies
+[Inject Time and Randomness](/patterns/inject-time-and-randomness/).
 
 ```python title="tests/test_sessions.py"
 now = session.created_at + timedelta(seconds=2)
@@ -128,7 +146,8 @@ pub fn is_expired(&self) -> bool {
 
 ### Better: code receives the clock value
 
-The caller decides where ambient time enters.
+The caller decides where ambient time enters. This applies
+[Make Side Effects Visible](/patterns/make-side-effects-visible/).
 
 ```rust title="src/session.rs"
 pub fn is_expired(&self, now: Instant) -> bool {
@@ -147,89 +166,86 @@ expect(session.isExpired()).toBe(true);
 
 ### Better: test passes fixed time
 
-The test checks expiration policy directly.
+The test checks expiration policy directly. This applies
+[Inject Time and Randomness](/patterns/inject-time-and-randomness/).
 
 ```ts title="src/session.test.ts"
 const now = addSeconds(session.createdAt, 1);
 expect(session.isExpired(now)).toBe(true);
 ```
 
-### Problem: low-level caller repeats the rule
+### Problem: test sleeps for token expiry
 
-The low-level path updates state without naming the boundary that owns the rule.
-
-```c title="src/example.c"
-if (request_total < 5000 || user_is_manager(user)) {
-    approve_request(request);
-}
-```
-
-### Better: low-level boundary owns the rule
-
-The caller asks a named boundary instead of repeating the condition.
+The test waits for real time and gets slower as the timeout grows.
 
 ```c title="src/example.c"
-if (approval_policy_can_approve(policy, user, request)) {
-    approve_request(request);
-}
+sleep(2);
+assert_true(session_is_expired(&session));
 ```
 
-### Problem: object path repeats the rule
+### Better: pass the checked time
 
-The object caller owns a rule that should have a named boundary.
+The test checks expiration without waiting. This applies
+[Inject Time and Randomness](/patterns/inject-time-and-randomness/).
+
+```c title="src/example.c"
+time_t now = session.created_at + 2;
+assert_true(session_is_expired_at(&session, now));
+```
+
+### Problem: test relies on real timer expiry
+
+The test can fail under load or slow the suite while waiting for the timer.
 
 ```cpp title="src/example.cpp"
-if (request.total() < Money::from_cents(500000) || user.is_manager()) {
-    approvals.approve(request);
-}
+std::this_thread::sleep_for(2s);
+EXPECT_TRUE(session.is_expired());
 ```
 
-### Better: object boundary owns the rule
+### Better: inject the current instant
 
-The policy names the rule and narrows the future change radius.
+The expiration rule is deterministic. This applies
+[Inject Time and Randomness](/patterns/inject-time-and-randomness/).
 
 ```cpp title="src/example.cpp"
-if (approval_policy.can_approve(user, request)) {
-    approvals.approve(request);
-}
+auto now = session.created_at() + 2s;
+EXPECT_TRUE(session.is_expired(now));
 ```
 
-### Problem: service path repeats the rule
+### Problem: test waits for deadline
 
-The service path makes the rule local to one caller, so another caller can drift.
+The test burns wall-clock time to check a retry policy.
 
 ```go title="internal/example/service.go"
-if request.Total < 5000 || user.IsManager {
-    approvals.Approve(request)
-}
+time.Sleep(2 * time.Second)
+require.True(t, job.RetryDue())
 ```
 
-### Better: service boundary owns the rule
+### Better: pass a fixed clock value
 
-The caller uses a named policy boundary.
+The same policy is checked without slowing the suite. This applies
+[Inject Time and Randomness](/patterns/inject-time-and-randomness/).
 
 ```go title="internal/example/service.go"
-if approvalPolicy.CanApprove(user, request) {
-    approvals.Approve(request)
-}
+now := job.CreatedAt.Add(2 * time.Second)
+require.True(t, job.RetryDue(now))
 ```
 
-### Problem: client path repeats the rule
+### Problem: test waits for timeout
 
-The client path repeats a rule that should have a named boundary.
+The test uses real time to prove a timeout branch.
 
 ```js title="src/example.js"
-if (request.total < 5000 || user.role === 'manager') {
-  approve(request);
-}
+await delay(1000);
+expect(session.isExpired()).toBe(true);
 ```
 
-### Better: client boundary owns the rule
+### Better: pass deterministic time
 
-The caller asks the named policy instead of rebuilding the condition.
+The test checks the timeout rule directly. This applies
+[Inject Time and Randomness](/patterns/inject-time-and-randomness/).
 
 ```js title="src/example.js"
-if (approvalPolicy.canApprove(user, request)) {
-  approve(request);
-}
+const now = addSeconds(session.createdAt, 1);
+expect(session.isExpired(now)).toBe(true);
 ```

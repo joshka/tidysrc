@@ -1,7 +1,7 @@
 ---
 title: >-
   Performance Fix Without Evidence
-status: draft
+status: reviewed
 category: change-risk
 topics:
   - performance
@@ -26,22 +26,29 @@ relatedConcepts:
 A change adds caching, concurrency, allocation tricks, or broad rewrites without a measured
 bottleneck.
 
-The problem is not the existence of the mechanism itself. It is that the ownership, boundary, or
-contract is implicit enough that each caller can interpret it differently.
+The patch may be well-intentioned, but the reviewer cannot tell whether the added complexity buys
+anything. The evidence can be small: a benchmark, profile, production trace, route timing, or a
+focused measurement around the suspected hot path. The problem is the absence of a falsifiable
+performance claim.
 
 ## Why It Matters
 
-Performance work can add state, invalidation, timing, and concurrency risks. Without evidence, the
+Performance work often adds state, invalidation, timing, allocation, and concurrency risks. Without
+evidence, reviewers have to accept those risks on intuition.
 
-Reviewers care because the risk is not visible at one call site. They have to reconstruct the
-intended behavior from scattered branches, tests, and boundaries before they can tell whether the
-change is safe.
+The cost is not only wasted work. A guessed optimization can make the main path harder to read,
+change ordering, introduce stale data, or hide a correctness bug behind code that looks more
+advanced than the measured problem requires.
 
 ## Code Impact
 
-The code impact is drift. Related checks, state changes, defaults, errors, or side effects spread
-across files, so a future edit can update one path while leaving another path with the old rule.
-Tests then tend to protect one example rather than the contract that all callers rely on.
+The code gains performance machinery before the bottleneck is known. Caches need freshness rules,
+parallelism needs ordering and cancellation rules, allocation tricks change ownership, and broad
+rewrites increase the review surface.
+
+When the measurement is missing, future maintainers cannot tell which complexity is still earning
+its keep. They either preserve it forever or remove it without knowing whether they regressed the
+actual hot path.
 
 ## Signals
 
@@ -59,13 +66,29 @@ Tests then tend to protect one example rather than the contract that all callers
 
 ## Approach
 
-- Measure before adding complexity, and keep the measurement close to the claim.
+- [Measure before optimizing](/patterns/measure-before-optimizing/), and keep the measurement close
+  to the claim.
 - Prefer local improvements that preserve reader locality before adding cache or concurrency state.
 - Treat cache, async, and allocation changes as behavior-risking when they alter ordering or
   ownership.
-- Keep the fallback or original behavior easy to compare during review.
+- Use the [smallest trustworthy verification](/patterns/smallest-trustworthy-verification/) that
+  can fail the performance claim.
+- [Make side effects visible](/patterns/make-side-effects-visible/) when the optimization adds
+  cache state, background work, or concurrency.
+- [Cap change radius](/patterns/cap-change-radius/) so the performance change stays reviewable.
 
 ## Examples
+
+### Before: direct load
+
+The code has no cache state yet, so correctness and freshness are straightforward to review.
+
+```csharp title="Catalog/Patterns.cs"
+public Pattern GetPattern(string id)
+{
+    return repository.Load(id);
+}
+```
 
 ### Problem: cache is added without a measured bottleneck
 
@@ -80,11 +103,20 @@ public Pattern GetPattern(string id)
 
 ### Better: optimization starts with a measurement
 
-The claim can be reviewed before adding state.
+The claim can be reviewed before adding state. This applies
+[Measure Before Optimizing](/patterns/measure-before-optimizing/).
 
 ```csharp title="Catalog/PatternsBenchmark.cs"
 [Benchmark]
 public Pattern LoadPattern() => repository.Load(patternId);
+```
+
+### Before: ordered publish loop
+
+The original code preserves report order and has no new scheduling behavior.
+
+```java title="src/main/java/example/Reports.java"
+reports.forEach(report -> publisher.publish(report));
 ```
 
 ### Problem: parallelism changes ordering without evidence
@@ -97,13 +129,23 @@ reports.parallelStream().forEach(report -> publisher.publish(report));
 
 ### Better: keeps behavior stable while measuring
 
-The benchmark targets the suspected bottleneck.
+The benchmark targets the suspected bottleneck. This applies
+[Measure Before Optimizing](/patterns/measure-before-optimizing/).
 
 ```java title="src/jmh/java/example/ReportsBenchmark.java"
 @Benchmark
 public void publishReports() {
     reports.forEach(report -> publisher.publish(report));
 }
+```
+
+### Before: direct repository load
+
+The original path always reads current data.
+
+```python title="catalog/patterns.py"
+def load_pattern(pattern_id):
+    return repository.load(pattern_id)
 ```
 
 ### Problem: memoization hides stale data
@@ -118,7 +160,8 @@ def load_pattern(pattern_id):
 
 ### Better: profile names the hotspot first
 
-The optimization can be chosen from evidence.
+The optimization can be chosen from evidence. This applies
+[Measure Before Optimizing](/patterns/measure-before-optimizing/).
 
 ```python title="scripts/profile_patterns.py"
 with cProfile.Profile() as profile:
@@ -126,23 +169,54 @@ with cProfile.Profile() as profile:
         repository.load(pattern_id)
 ```
 
-### Problem: allocation trick obscures the main path
+### Before: direct catalog parse
 
-The rewrite changes ownership before proving allocation cost matters.
+The original code reparses the catalog and returns fresh data.
 
 ```rust title="src/catalog.rs"
-pub fn titles(patterns: Vec<Pattern>) -> Vec<String> {
-    patterns.into_iter().map(|pattern| pattern.title).collect()
+pub fn load_catalog(path: &Path) -> Result<Catalog, Error> {
+    let source = fs::read_to_string(path)?;
+
+    parse_catalog(&source)
 }
 ```
 
-### Better: benchmark isolates the claim
+### Problem: global cache is added without evidence
 
-The benchmark shows whether title collection is worth optimizing.
+The cache adds invalidation and synchronization before proving parsing dominates runtime.
+
+```rust title="src/catalog.rs"
+static CATALOG: OnceLock<Catalog> = OnceLock::new();
+
+pub fn load_catalog(path: &Path) -> Result<&'static Catalog, Error> {
+    CATALOG.get_or_try_init(|| {
+        let source = fs::read_to_string(path)?;
+
+        parse_catalog(&source)
+    })
+}
+```
+
+### Better: benchmark the parse boundary
+
+The benchmark shows whether parsing is worth changing before cache state is added. This applies
+[Measure Before Optimizing](/patterns/measure-before-optimizing/).
 
 ```rust title="benches/catalog.rs"
-fn titles_benchmark(c: &mut Criterion) {
-    c.bench_function("titles", |b| b.iter(|| titles(patterns.clone())));
+fn catalog_parse_benchmark(c: &mut Criterion) {
+    let source = fs::read_to_string("fixtures/catalog.toml").unwrap();
+
+    c.bench_function("parse catalog", |b| b.iter(|| parse_catalog(&source)));
+}
+```
+
+### Before: direct API read
+
+The original code returns fresh data from the service.
+
+```ts title="src/catalog/loadPattern.ts"
+export async function loadPattern(id: string) {
+  return api.loadPattern(id);
 }
 ```
 
@@ -161,7 +235,8 @@ export async function loadPattern(id: string) {
 
 ### Better: measurement precedes the cache
 
-The timing captures the path before changing behavior.
+The timing captures the path before changing behavior. This applies
+[Measure Before Optimizing](/patterns/measure-before-optimizing/).
 
 ```ts title="src/catalog/loadPattern.measure.ts"
 performance.mark('load-pattern-start');
@@ -170,82 +245,146 @@ performance.mark('load-pattern-end');
 performance.measure('load-pattern', 'load-pattern-start', 'load-pattern-end');
 ```
 
-### Problem: low-level caller repeats the rule
+### Before: direct parse
 
-The low-level path updates state without naming the boundary that owns the rule.
-
-```c title="src/example.c"
-if (request_total < 5000 || user_is_manager(user)) {
-    approve_request(request);
-}
-```
-
-### Better: low-level boundary owns the rule
-
-The caller asks a named boundary instead of repeating the condition.
+The original code has no global cache state.
 
 ```c title="src/example.c"
-if (approval_policy_can_approve(policy, user, request)) {
-    approve_request(request);
+ParsedReport *load_report(const char *path) {
+    return parse_report_file(path);
 }
 ```
 
-### Problem: object path repeats the rule
+### Problem: cache is added before timing the path
 
-The object caller owns a rule that should have a named boundary.
+The cache adds invalidation risk before proving repeated parsing is slow.
+
+```c title="src/example.c"
+static ParsedReport *cached_report;
+
+ParsedReport *load_report(const char *path) {
+    if (cached_report == NULL) {
+        cached_report = parse_report_file(path);
+    }
+
+    return cached_report;
+}
+```
+
+### Better: measure the suspected hot path
+
+The timing check can fail the claim before cache state is added. This applies
+[Measure Before Optimizing](/patterns/measure-before-optimizing/).
+
+```c title="src/example.c"
+clock_t start = clock();
+ParsedReport *report = parse_report_file(path);
+clock_t elapsed = clock() - start;
+
+record_timing("report_parse_ticks", elapsed);
+```
+
+### Before: ordinary owned return
+
+The original code returns an owned value with clear lifetime rules.
 
 ```cpp title="src/example.cpp"
-if (request.total() < Money::from_cents(500000) || user.is_manager()) {
-    approvals.approve(request);
+std::string display_name(const User& user) {
+    return user.first_name() + " " + user.last_name();
 }
 ```
 
-### Better: object boundary owns the rule
+### Problem: allocation trick obscures ownership
 
-The policy names the rule and narrows the future change radius.
+The rewrite changes lifetime and ownership before showing allocation cost matters.
 
 ```cpp title="src/example.cpp"
-if (approval_policy.can_approve(user, request)) {
-    approvals.approve(request);
+std::string_view display_name(const User& user) {
+    static std::string cached;
+    cached = user.first_name() + " " + user.last_name();
+    return cached;
 }
 ```
 
-### Problem: service path repeats the rule
+### Better: benchmark the original allocation
 
-The service path makes the rule local to one caller, so another caller can drift.
+The benchmark names the claim without changing ownership yet. This applies
+[Measure Before Optimizing](/patterns/measure-before-optimizing/).
+
+```cpp title="src/example.cpp"
+static void BMDisplayName(benchmark::State& state) {
+    for (auto _ : state) {
+        benchmark::DoNotOptimize(display_name(user));
+    }
+}
+```
+
+### Before: sequential publish
+
+The original code preserves ordering and cancellation behavior.
 
 ```go title="internal/example/service.go"
-if request.Total < 5000 || user.IsManager {
-    approvals.Approve(request)
+for _, report := range reports {
+    if err := publisher.Publish(ctx, report); err != nil {
+        return err
+    }
 }
 ```
 
-### Better: service boundary owns the rule
+### Problem: goroutines change ordering without evidence
 
-The caller uses a named policy boundary.
+The rewrite introduces scheduling and cancellation questions before proving throughput is bounded by
+publishing.
 
 ```go title="internal/example/service.go"
-if approvalPolicy.CanApprove(user, request) {
-    approvals.Approve(request)
+for _, report := range reports {
+    go publisher.Publish(ctx, report)
 }
 ```
 
-### Problem: client path repeats the rule
+### Better: benchmark the sequential path
 
-The client path repeats a rule that should have a named boundary.
+The benchmark can justify concurrency before the behavior changes. This applies
+[Measure Before Optimizing](/patterns/measure-before-optimizing/).
 
-```js title="src/example.js"
-if (request.total < 5000 || user.role === 'manager') {
-  approve(request);
+```go title="internal/example/service.go"
+func BenchmarkPublishReports(b *testing.B) {
+    for i := 0; i < b.N; i++ {
+        publishReports(ctx, reports, publisher)
+    }
 }
 ```
 
-### Better: client boundary owns the rule
+### Before: direct request
 
-The caller asks the named policy instead of rebuilding the condition.
+The original code always reads fresh data.
 
 ```js title="src/example.js"
-if (approvalPolicy.canApprove(user, request)) {
-  approve(request);
+export async function loadReport(id) {
+  return api.loadReport(id);
 }
+```
+
+### Problem: memoization changes freshness without evidence
+
+The browser cache can return stale data, but the route has not been measured.
+
+```js title="src/example.js"
+const cache = new Map();
+
+export async function loadReport(id) {
+  if (!cache.has(id)) cache.set(id, await api.loadReport(id));
+  return cache.get(id);
+}
+```
+
+### Better: measure before adding cache state
+
+The timing captures whether the request is actually the bottleneck. This applies
+[Measure Before Optimizing](/patterns/measure-before-optimizing/).
+
+```js title="src/example.js"
+const start = performance.now();
+await api.loadReport(id);
+console.info('loadReport ms', performance.now() - start);
 ```

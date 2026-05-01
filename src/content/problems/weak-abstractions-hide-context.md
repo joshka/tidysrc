@@ -1,7 +1,7 @@
 ---
 title: >-
   Weak Abstractions Hide Context
-status: draft
+status: reviewed
 category: architecture
 topics:
   - abstraction
@@ -13,11 +13,10 @@ summary: >-
 relatedPatterns:
   - extract-helper-after-locality
   - reader-locality
-  - avoid-premature-agent-architecture
 relatedConcepts:
   - reader-locality
-  - agent-guidance
   - cognitive-burden
+  - yagni
 ---
 
 ## Description
@@ -25,22 +24,31 @@ relatedConcepts:
 A helper, provider, strategy, registry, or module boundary makes readers jump without carrying
 enough meaning.
 
-The problem is not the existence of the mechanism itself. It is that the ownership, boundary, or
-contract is implicit enough that each caller can interpret it differently.
+The abstraction adds a name, file, interface, or lookup path, but the reader still has to open the
+implementation to understand the behavior. It moves code away from the context that explains it
+without giving the new boundary a durable contract.
+
+This is not an argument against abstraction. Strong abstractions reduce the facts a reader must hold
+at once. Weak abstractions add concepts without reducing [cognitive burden](/concepts/cognitive-burden/)
+or improving [reader locality](/concepts/reader-locality/).
 
 ## Why It Matters
 
 The code looks more organized but is harder to understand locally. Each extra name and file adds a
+navigation step, and each navigation step asks the reader to keep more context in working memory.
 
-Reviewers care because the risk is not visible at one call site. They have to reconstruct the
-intended behavior from scattered branches, tests, and boundaries before they can tell whether the
-change is safe.
+Reviewers also have to judge whether the abstraction is real or speculative. A premature provider,
+registry, or strategy can make a small behavior change look like architecture work.
 
 ## Code Impact
 
-The code impact is drift. Related checks, state changes, defaults, errors, or side effects spread
-across files, so a future edit can update one path while leaving another path with the old rule.
-Tests then tend to protect one example rather than the contract that all callers rely on.
+Weak abstractions spread one behavior across names that do not explain it. Callers become short but
+less informative, helpers depend on caller context, and tests often freeze the new boundary instead
+of the behavior.
+
+The code becomes harder to change because every future edit must decide whether to preserve the
+abstraction, inline it, add a second weak caller, or turn it into the stronger concept it was
+pretending to be.
 
 ## Signals
 
@@ -58,35 +66,39 @@ Tests then tend to protect one example rather than the contract that all callers
 
 ## Approach
 
-- Keep weak helpers near the caller that gives them meaning.
+- Keep weak helpers near the caller that gives them meaning; apply
+  [reader locality](/patterns/reader-locality/) before extracting.
 - Promote code only when the extracted concept has a clear contract beyond mechanical reuse.
 - Prefer a small amount of repetition over a premature shared layer when the repetition is easier to
   read and test.
-- For agent work, state the boundary explicitly: do not add framework-shaped architecture unless the
-  current change needs it.
+- Use [Extract Helper After Locality](/patterns/extract-helper-after-locality/) when the helper name
+  lets the reader skip implementation detail.
+- Treat one-caller providers, registries, and framework-shaped layers as speculative until the
+  repeated concept is real.
 
 ## Examples
 
-### Problem: helper hides the only useful context
+### Problem: provider hides a single C# rule
 
-The helper is used once and its name does not carry the rule.
+The provider is used once and its name does not carry the discount rule.
 
 ```csharp title="Billing/Discounts.cs"
-decimal Discount(Order order) => discountRules.Apply(order);
+decimal Discount(Order order) => discountProvider.AmountFor(order);
 ```
 
-### Better: keeps the weak rule local
+### Better: keep the condition beside the caller
 
-The condition is visible where the behavior is reviewed.
+The condition is visible where the behavior is reviewed. This applies
+[Reader Locality](/patterns/reader-locality/).
 
 ```csharp title="Billing/Discounts.cs"
 decimal Discount(Order order) =>
     order.Customer.IsVip ? 0.10m : 0m;
 ```
 
-### Problem: strategy adds a concept for one branch
+### Problem: strategy hides one branch
 
-The new interface makes readers jump without reducing complexity.
+The strategy boundary makes readers open another type to learn one condition.
 
 ```java title="src/main/java/example/Discounts.java"
 BigDecimal discount(Order order) {
@@ -94,9 +106,10 @@ BigDecimal discount(Order order) {
 }
 ```
 
-### Better: keeps the rule beside the caller
+### Better: keep the branch beside the caller
 
-The local branch is easier to review than the new abstraction.
+The local branch is easier to review than the new abstraction. This applies
+[Reader Locality](/patterns/reader-locality/).
 
 ```java title="src/main/java/example/Discounts.java"
 BigDecimal discount(Order order) {
@@ -104,18 +117,19 @@ BigDecimal discount(Order order) {
 }
 ```
 
-### Problem: helper name does not explain enough
+### Problem: generic helper hides the local rule
 
 The reader has to open the helper to learn the rule.
 
 ```python title="billing/discounts.py"
 def discount(order):
-    return apply_rule(order)
+    return discount_rule.apply(order)
 ```
 
-### Better: names the local decision
+### Better: name the local decision
 
-The variable carries the domain fact without a jump.
+The variable carries the domain fact without a jump. This applies
+[Reader Locality](/patterns/reader-locality/).
 
 ```python title="billing/discounts.py"
 def discount(order):
@@ -123,19 +137,33 @@ def discount(order):
     return Decimal("0.10") if loyalty_discount_applies else Decimal("0")
 ```
 
-### Problem: trait exists for one implementation
+### Problem: trait hides one Rust policy
 
-The trait adds architecture before there is a second policy.
+The trait has one implementation, so readers pay the indirection cost before there is a real
+extension point.
 
 ```rust title="src/discounts.rs"
-pub fn discount(order: &Order, policy: &dyn DiscountPolicy) -> Decimal {
-    policy.discount(order)
+trait DiscountPolicy {
+    fn discount(&self, order: &Order) -> Decimal;
+}
+
+struct VipDiscountPolicy;
+
+impl DiscountPolicy for VipDiscountPolicy {
+    fn discount(&self, order: &Order) -> Decimal {
+        if order.customer.is_vip() { dec!(0.10) } else { dec!(0) }
+    }
+}
+
+pub fn discount(order: &Order) -> Decimal {
+    VipDiscountPolicy.discount(order)
 }
 ```
 
-### Better: keeps the rule local until pressure repeats
+### Better: keep the rule local until pressure repeats
 
-The function has fewer concepts to hold.
+The function has fewer concepts to hold. This applies
+[Reader Locality](/patterns/reader-locality/).
 
 ```rust title="src/discounts.rs"
 pub fn discount(order: &Order) -> Decimal {
@@ -153,9 +181,10 @@ export function discount(order: Order) {
 }
 ```
 
-### Better: keeps the rule in the workflow
+### Better: keep the rule in the workflow
 
-The code stays local until the domain concept earns a boundary.
+The code stays local until the domain concept earns a boundary. This applies
+[Reader Locality](/patterns/reader-locality/).
 
 ```ts title="src/billing/discounts.ts"
 export function discount(order: Order) {
@@ -163,82 +192,90 @@ export function discount(order: Order) {
 }
 ```
 
-### Problem: low-level caller repeats the rule
+### Problem: wrapper hides a local branch
 
-The low-level path updates state without naming the boundary that owns the rule.
-
-```c title="src/example.c"
-if (request_total < 5000 || user_is_manager(user)) {
-    approve_request(request);
-}
-```
-
-### Better: low-level boundary owns the rule
-
-The caller asks a named boundary instead of repeating the condition.
+The reader has to leave the workflow to learn one eligibility check.
 
 ```c title="src/example.c"
-if (approval_policy_can_approve(policy, user, request)) {
-    approve_request(request);
+double discount_for_order(const struct order *order) {
+    return discount_policy_apply(order);
 }
 ```
 
-### Problem: object path repeats the rule
+### Better: keep the small rule local
 
-The object caller owns a rule that should have a named boundary.
+The branch is visible where the discount behavior is reviewed. This applies
+[Reader Locality](/patterns/reader-locality/).
+
+```c title="src/example.c"
+double discount_for_order(const struct order *order) {
+    return order->customer.is_vip ? 0.10 : 0.0;
+}
+```
+
+### Problem: strategy adds a jump for one rule
+
+The strategy name does not carry enough meaning to avoid opening the implementation.
 
 ```cpp title="src/example.cpp"
-if (request.total() < Money::from_cents(500000) || user.is_manager()) {
-    approvals.approve(request);
+Money discount_for(const Order& order) {
+    return discount_strategy->apply(order);
 }
 ```
 
-### Better: object boundary owns the rule
+### Better: keep the branch until the concept repeats
 
-The policy names the rule and narrows the future change radius.
+The local rule is easier to verify than the speculative strategy. This applies
+[Reader Locality](/patterns/reader-locality/).
 
 ```cpp title="src/example.cpp"
-if (approval_policy.can_approve(user, request)) {
-    approvals.approve(request);
+Money discount_for(const Order& order) {
+    return order.customer().is_vip() ? Money::percent(10) : Money::zero();
 }
 ```
 
-### Problem: service path repeats the rule
+### Problem: provider hides a Go rule
 
-The service path makes the rule local to one caller, so another caller can drift.
+The provider layer adds a concept before there is a second policy.
 
 ```go title="internal/example/service.go"
-if request.Total < 5000 || user.IsManager {
-    approvals.Approve(request)
+func Discount(order Order) float64 {
+    return discountProvider.AmountFor(order)
 }
 ```
 
-### Better: service boundary owns the rule
+### Better: keep the rule in the service
 
-The caller uses a named policy boundary.
+The service remains short and the rule is visible. This applies
+[Reader Locality](/patterns/reader-locality/).
 
 ```go title="internal/example/service.go"
-if approvalPolicy.CanApprove(user, request) {
-    approvals.Approve(request)
+func Discount(order Order) float64 {
+    if order.Customer.IsVIP {
+        return 0.10
+    }
+
+    return 0
 }
 ```
 
-### Problem: client path repeats the rule
+### Problem: helper hides the local rule
 
-The client path repeats a rule that should have a named boundary.
+The helper is only used here and its name does not explain the branch.
 
 ```js title="src/example.js"
-if (request.total < 5000 || user.role === 'manager') {
-  approve(request);
+export function discount(order) {
+  return applyDiscountRule(order);
 }
 ```
 
-### Better: client boundary owns the rule
+### Better: keep the condition visible
 
-The caller asks the named policy instead of rebuilding the condition.
+The reader can verify the UI behavior without another jump. This applies
+[Reader Locality](/patterns/reader-locality/).
 
 ```js title="src/example.js"
-if (approvalPolicy.canApprove(user, request)) {
-  approve(request);
+export function discount(order) {
+  return order.customer.isVip ? 0.1 : 0;
 }
 ```

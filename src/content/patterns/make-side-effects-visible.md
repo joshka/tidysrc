@@ -2,7 +2,7 @@
 title: >-
   Make Side Effects Visible
 summary: >-
-  Keep mutation, I/O, time, and external calls obvious at the point where a reader evaluates
+  Keep mutation, external calls, time, and background work obvious at the point where a reader evaluates
   behavior.
 status: draft
 tags:
@@ -25,7 +25,7 @@ languages:
   - "rust"
   - "ts"
 problems:
-  - "A call that looks like a calculation also mutates state, performs I/O, or depends on ambient time."
+  - "A call that looks like a calculation also mutates state, touches external systems, or depends on ambient time."
 concepts:
   - "side-effect-visibility"
   - "cognitive-burden"
@@ -77,8 +77,8 @@ the local idiom but keep the hook name and boundary clear.
 
 ## Agent Instruction
 
-When a change adds mutation, I/O, time, randomness, or external calls, make the effect visible in
-the name, boundary, or statement shape. Do not hide it inside a pure-looking helper.
+When a change adds mutation, time, randomness, background work, or external calls, make the effect
+visible in the name, boundary, or statement shape. Do not hide it inside a pure-looking helper.
 
 ## Examples
 

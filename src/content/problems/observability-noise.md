@@ -1,7 +1,7 @@
 ---
 title: >-
   Observability Noise
-status: draft
+status: reviewed
 category: side-effects
 topics:
   - logs
@@ -23,23 +23,32 @@ relatedConcepts:
 ## Description
 
 Logs, metrics, and events are emitted without a stable contract for what changed or who should act.
+One path logs a message, another increments a branch-shaped metric, and a third emits an event with
+different field names for the same outcome.
 
-The problem is not the existence of the mechanism itself. It is that the ownership, boundary, or
-contract is implicit enough that each caller can interpret it differently.
+The source-change problem is not logging volume by itself. It is that diagnostics become relied-on
+behavior without the same care as other [observable behavior](/concepts/observable-behavior/).
+Operators, dashboards, tests, and support workflows start depending on signals that were added as
+local debugging.
 
 ## Why It Matters
 
-Noisy signals make real failures harder to find. They also become accidental behavior when
+Noisy signals make real failures harder to find. Reviewers also have to decide whether a changed
+log, metric, or event is harmless debug text or part of the contract another system relies on.
 
-Reviewers care because the risk is not visible at one call site. They have to reconstruct the
-intended behavior from scattered branches, tests, and boundaries before they can tell whether the
-change is safe.
+The cost appears during incidents and cleanup. A maintainer may remove a message that powers an
+alert, rename a field a dashboard groups by, or add a metric that counts implementation branches
+instead of user-visible outcomes.
 
 ## Code Impact
 
-The code impact is drift. Related checks, state changes, defaults, errors, or side effects spread
-across files, so a future edit can update one path while leaving another path with the old rule.
-Tests then tend to protect one example rather than the contract that all callers rely on.
+Observability noise spreads signal policy through ordinary code. Helpers log partial context,
+callers choose their own field names, metrics mirror internal branches, and downstream tools parse
+message text because no stable shape exists.
+
+That makes diagnostics hard to change safely. The code no longer shows which signals are temporary
+debugging and which are part of the system boundary, so cleanup and refactoring can break monitoring
+without changing product behavior.
 
 ## Signals
 
@@ -57,10 +66,15 @@ Tests then tend to protect one example rather than the contract that all callers
 
 ## Approach
 
-- Name diagnostic events around observable outcomes and stable context.
+- [Contain observability policy](/patterns/contain-observability-policy/) at the boundary that owns
+  the outcome.
 - Keep debug logs separate from signals that operators or callers depend on.
-- Treat relied-on logs, metrics, and events as observable contracts in tests.
-- Use structured errors and events instead of parsing message text downstream.
+- Treat relied-on logs, metrics, and events as
+  [observable behavior](/concepts/observable-behavior/) in tests.
+- Use [structured errors](/patterns/return-structured-errors/) and events instead of parsing
+  message text downstream.
+- [Make side effects visible](/patterns/make-side-effects-visible/) when logging, metrics, or
+  event publication changes review risk.
 
 ## Examples
 
@@ -74,7 +88,8 @@ logger.LogError("Publish failed");
 
 ### Better: log names the outcome and fields
 
-The signal has stable fields for dashboards and support.
+The signal has stable fields for dashboards and support. This applies
+[Contain Observability Policy](/patterns/contain-observability-policy/).
 
 ```csharp title="Reports/Publisher.cs"
 logger.LogError(error, "report.publish.failed {ReportId}", report.Id);
@@ -90,7 +105,8 @@ metrics.increment("publish.if_branch_failed");
 
 ### Better: metrics name the observable outcome
 
-The metric remains stable when internals move.
+The metric remains stable when internals move. This applies
+[Contain Observability Policy](/patterns/contain-observability-policy/).
 
 ```java title="src/main/java/example/Publisher.java"
 metrics.increment("report_publish_failed", Tags.of("reason", reason.code()));
@@ -106,7 +122,8 @@ logger.info("failed", extra={"id": report.id, "why": reason})
 
 ### Better: event uses a named shape
 
-The event contract is stable enough to test.
+The event contract is stable enough to test. This applies
+[Test Observable Behavior](/patterns/test-observable-behavior/).
 
 ```python title="reports/events.py"
 logger.info(
@@ -125,7 +142,8 @@ tracing::warn!("failed to publish {}", report.id);
 
 ### Better: event fields carry the contract
 
-The message can change without breaking consumers.
+The message can change without breaking consumers. This applies
+[Return Structured Errors](/patterns/return-structured-errors/) to the diagnostic shape.
 
 ```rust title="src/reports.rs"
 tracing::warn!(
@@ -145,7 +163,8 @@ console.warn(`Failed to publish ${report.id}: ${reason}`);
 
 ### Better: emits a structured event
 
-The event name and fields can be treated as observable behavior.
+The event name and fields can be treated as observable behavior. This applies
+[Contain Observability Policy](/patterns/contain-observability-policy/).
 
 ```ts title="src/reports/publish.ts"
 events.emit('report.publish.failed', {
@@ -154,82 +173,78 @@ events.emit('report.publish.failed', {
 });
 ```
 
-### Problem: low-level caller repeats the rule
+### Problem: message text carries the contract
 
-The low-level path updates state without naming the boundary that owns the rule.
-
-```c title="src/example.c"
-if (request_total < 5000 || user_is_manager(user)) {
-    approve_request(request);
-}
-```
-
-### Better: low-level boundary owns the rule
-
-The caller asks a named boundary instead of repeating the condition.
+The consumer has to parse words from a log line to group failures.
 
 ```c title="src/example.c"
-if (approval_policy_can_approve(policy, user, request)) {
-    approve_request(request);
-}
+fprintf(stderr, "publish failed for %s: %s\n", report_id, reason);
 ```
 
-### Problem: object path repeats the rule
+### Better: fields carry the contract
 
-The object caller owns a rule that should have a named boundary.
+The event name and fields stay stable even when the message changes. This applies
+[Contain Observability Policy](/patterns/contain-observability-policy/).
+
+```c title="src/example.c"
+emit_event("report.publish.failed",
+           "report_id", report_id,
+           "reason", reason_code(reason));
+```
+
+### Problem: metric names the implementation branch
+
+The metric changes whenever the branch structure changes.
 
 ```cpp title="src/example.cpp"
-if (request.total() < Money::from_cents(500000) || user.is_manager()) {
-    approvals.approve(request);
-}
+metrics.increment("publish.retry_branch_failed");
 ```
 
-### Better: object boundary owns the rule
+### Better: metric names the outcome
 
-The policy names the rule and narrows the future change radius.
+The metric remains stable while implementation details move. This applies
+[Contain Observability Policy](/patterns/contain-observability-policy/).
 
 ```cpp title="src/example.cpp"
-if (approval_policy.can_approve(user, request)) {
-    approvals.approve(request);
-}
+metrics.increment("report_publish_failed", {{"reason", reason.code()}});
 ```
 
-### Problem: service path repeats the rule
+### Problem: log line omits grouping fields
 
-The service path makes the rule local to one caller, so another caller can drift.
+Operators can see that something failed, but not which report or outcome to group.
 
 ```go title="internal/example/service.go"
-if request.Total < 5000 || user.IsManager {
-    approvals.Approve(request)
-}
+slog.Error("publish failed")
 ```
 
-### Better: service boundary owns the rule
+### Better: log fields name the outcome
 
-The caller uses a named policy boundary.
+The event name and fields make the signal useful to dashboards and tests. This applies
+[Contain Observability Policy](/patterns/contain-observability-policy/).
 
 ```go title="internal/example/service.go"
-if approvalPolicy.CanApprove(user, request) {
-    approvals.Approve(request)
-}
+slog.Error("report.publish.failed",
+    "report_id", report.ID,
+    "reason", reason.Code(),
+)
 ```
 
-### Problem: client path repeats the rule
+### Problem: debug text becomes the signal
 
-The client path repeats a rule that should have a named boundary.
+The UI logs a string that support tooling later treats as a stable event.
 
 ```js title="src/example.js"
-if (request.total < 5000 || user.role === 'manager') {
-  approve(request);
-}
+console.warn(`publish failed: ${report.id} ${reason}`);
 ```
 
-### Better: client boundary owns the rule
+### Better: emit a named event
 
-The caller asks the named policy instead of rebuilding the condition.
+The signal has an event name and stable fields. This applies
+[Contain Observability Policy](/patterns/contain-observability-policy/).
 
 ```js title="src/example.js"
-if (approvalPolicy.canApprove(user, request)) {
-  approve(request);
-}
+events.emit('report.publish.failed', {
+  reportId: report.id,
+  reason: reason.code,
+});
 ```

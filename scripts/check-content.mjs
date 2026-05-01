@@ -144,7 +144,7 @@ for (const file of patternFiles) {
     }
   }
 
-  if (data.status !== 'seed') {
+  if (data.status !== 'seed' && data.exampleStyle !== 'narrative') {
     const missing = missingCoreExamples(languages);
     if (missing.length > 0) {
       errors.push(`${owner} is missing core examples for ${missing.join(', ')}`);

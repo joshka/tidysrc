@@ -6,11 +6,11 @@ Required launch languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeS
 
 ## Summary
 
-- problems: 25/34 complete
+- problems: 24/33 complete
 - patterns: 20/58 complete
 - concepts: 10/18 complete
 
-Overall: 55/110 complete.
+Overall: 54/109 complete.
 
 ## Interpretation
 
@@ -22,29 +22,29 @@ to verify.
 ## Incomplete Entries
 
 - `problems/context-drift`
-  - Present: none
-  - Missing: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
+  - Present: TypeScript
+  - Missing: C, C++, C#, Go, Java, JavaScript, Python, Rust
 - `problems/digging-past-evidence`
-  - Present: none
-  - Missing: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
+  - Present: TypeScript
+  - Missing: C, C++, C#, Go, Java, JavaScript, Python, Rust
 - `problems/guess-driven-debugging`
-  - Present: none
-  - Missing: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
+  - Present: TypeScript
+  - Missing: C, C++, C#, Go, Java, JavaScript, Python, Rust
 - `problems/repeated-validation-rules`
-  - Present: none
-  - Missing: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
+  - Present: TypeScript
+  - Missing: C, C++, C#, Go, Java, JavaScript, Python, Rust
 - `problems/review-comment-lacks-pattern-name`
   - Present: none
   - Missing: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
 - `problems/solution-before-requirements`
-  - Present: none
-  - Missing: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
+  - Present: TypeScript
+  - Missing: C, C++, C#, Go, Java, JavaScript, Python, Rust
 - `problems/spec-bent-to-fit-implementation`
-  - Present: none
-  - Missing: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
+  - Present: TypeScript
+  - Missing: C, C++, C#, Go, Java, JavaScript, Python, Rust
 - `problems/tooling-contract-implicit`
-  - Present: none
-  - Missing: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
+  - Present: TypeScript
+  - Missing: C, C++, C#, Go, Java, JavaScript, Python, Rust
 - `problems/unclear-done-signal`
   - Present: none
   - Missing: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
@@ -163,26 +163,26 @@ to verify.
   - Present: TypeScript
   - Missing: C, C++, C#, Go, Java, JavaScript, Python, Rust
 - `concepts/change-economics`
-  - Present: none
-  - Missing: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
+  - Present: TypeScript
+  - Missing: C, C++, C#, Go, Java, JavaScript, Python, Rust
 - `concepts/cohesion`
-  - Present: none
-  - Missing: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
+  - Present: TypeScript
+  - Missing: C, C++, C#, Go, Java, JavaScript, Python, Rust
 - `concepts/context-hygiene`
   - Present: none
   - Missing: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
 - `concepts/coupling`
-  - Present: none
-  - Missing: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
+  - Present: TypeScript
+  - Missing: C, C++, C#, Go, Java, JavaScript, Python, Rust
 - `concepts/reversibility`
-  - Present: none
-  - Missing: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
+  - Present: TypeScript
+  - Missing: C, C++, C#, Go, Java, JavaScript, Python, Rust
 - `concepts/review-batch-size`
   - Present: none
   - Missing: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
 - `concepts/time-of-check-to-time-of-use`
-  - Present: none
-  - Missing: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
+  - Present: TypeScript
+  - Missing: C, C++, C#, Go, Java, JavaScript, Python, Rust
 - `concepts/yagni`
-  - Present: none
-  - Missing: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
+  - Present: TypeScript
+  - Missing: C, C++, C#, Go, Java, JavaScript, Python, Rust

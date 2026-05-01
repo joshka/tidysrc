@@ -1,7 +1,7 @@
 ---
 title: >-
   Silent Failure Paths
-status: draft
+status: reviewed
 category: side-effects
 topics:
   - errors
@@ -25,22 +25,28 @@ relatedConcepts:
 The code swallows errors, returns empty results, or logs and continues when callers need to know
 work failed.
 
-The problem is not the existence of the mechanism itself. It is that the ownership, boundary, or
-contract is implicit enough that each caller can interpret it differently.
+The failure path exists, but it produces the same caller-visible shape as success. A failed publish
+returns `ok`, a failed search returns an empty list, or a caught exception only writes a log line
+that the caller cannot observe.
+
+Some work is legitimately best-effort. The problem is silence: the code does not say whether the
+failure is safe to ignore, should be retried, should move state, or should be reported.
 
 ## Why It Matters
 
 Failures become harder to diagnose and can corrupt downstream assumptions. The system appears to
+have completed work that did not actually happen.
 
-Reviewers care because the risk is not visible at one call site. They have to reconstruct the
-intended behavior from scattered branches, tests, and boundaries before they can tell whether the
-change is safe.
+Reviewers care because silence changes the contract. Callers cannot recover, users cannot be told
+what failed, retries cannot be scheduled, and tests can pass while the side effect never occurred.
 
 ## Code Impact
 
-The code impact is drift. Related checks, state changes, defaults, errors, or side effects spread
-across files, so a future edit can update one path while leaving another path with the old rule.
-Tests then tend to protect one example rather than the contract that all callers rely on.
+Silent failure paths flatten distinct outcomes into one return shape. Empty data, success, skipped
+work, and failed work become indistinguishable.
+
+That forces later code to infer state from logs, missing records, or timing. It also makes failure
+tests weak because there is no explicit result, event, or state transition to assert.
 
 ## Signals
 
@@ -58,9 +64,15 @@ Tests then tend to protect one example rather than the contract that all callers
 
 ## Approach
 
-- Return structured failures when callers can recover or report them.
+- [Make failures observable](/patterns/make-failures-observable/) when callers own recovery,
+  reporting, or retry.
+- Return [structured failures](/patterns/return-structured-errors/) when callers can recover or
+  report them.
 - Use domain-specific empty states only when absence is valid behavior.
-- Test failure behavior at the boundary where callers observe it.
+- [Test observable behavior](/patterns/test-observable-behavior/) at the boundary where callers see
+  the failed outcome.
+- [Make state transitions explicit](/patterns/make-state-transitions-explicit/) when failed work
+  should move a job, record, or request into a failed state.
 - Keep logging as diagnostics, not as the only behavior signal.
 
 ## Examples
@@ -79,7 +91,8 @@ public async Task Publish(Report report)
 
 ### Better: returns the failure
 
-The caller can report or retry the failed publish.
+The caller can report or retry the failed publish. This applies
+[Make Failures Observable](/patterns/make-failures-observable/).
 
 ```csharp title="Reports/Publisher.cs"
 public async Task<Result> Publish(Report report)
@@ -102,7 +115,8 @@ List<Result> search(Query query) {
 
 ### Better: separates absence from failure
 
-The caller can handle a real failure differently from no matches.
+The caller can handle a real failure differently from no matches. This applies
+[Return Structured Errors](/patterns/return-structured-errors/).
 
 ```java title="src/main/java/example/Search.java"
 SearchResult search(Query query) {
@@ -123,9 +137,10 @@ def publish(report):
         logger.exception("publish failed")
 ```
 
-### Better: returns the failure (2)
+### Better: returns the publish failure
 
-The boundary exposes the observable outcome.
+The boundary exposes the observable outcome. This applies
+[Make Failures Observable](/patterns/make-failures-observable/).
 
 ```python title="reports/publish.py"
 def publish(report):
@@ -150,7 +165,8 @@ pub fn publish(report: Report, queue: &Queue) {
 
 ### Better: returns the publish result
 
-Logging can remain diagnostic, but the caller receives the failure.
+Logging can remain diagnostic, but the caller receives the failure. This applies
+[Make Failures Observable](/patterns/make-failures-observable/).
 
 ```rust title="src/reports.rs"
 pub fn publish(report: Report, queue: &Queue) -> Result<(), PublishError> {
@@ -172,7 +188,8 @@ export async function publish(report: Report) {
 
 ### Better: returns a structured outcome
 
-The caller can show the failure or retry.
+The caller can show the failure or retry. This applies
+[Return Structured Errors](/patterns/return-structured-errors/).
 
 ```ts title="src/reports/publish.ts"
 export async function publish(report: Report): Promise<PublishResult> {
@@ -181,82 +198,127 @@ export async function publish(report: Report): Promise<PublishResult> {
 }
 ```
 
-### Problem: low-level caller repeats the rule
+### Problem: failed write returns success
 
-The low-level path updates state without naming the boundary that owns the rule.
-
-```c title="src/example.c"
-if (request_total < 5000 || user_is_manager(user)) {
-    approve_request(request);
-}
-```
-
-### Better: low-level boundary owns the rule
-
-The caller asks a named boundary instead of repeating the condition.
+The caller cannot tell whether the report was saved.
 
 ```c title="src/example.c"
-if (approval_policy_can_approve(policy, user, request)) {
-    approve_request(request);
+int save_report(struct report *report) {
+    if (write_report(report) != 0) {
+        log_error("save failed");
+    }
+
+    return 0;
 }
 ```
 
-### Problem: object path repeats the rule
+### Better: return the write failure
 
-The object caller owns a rule that should have a named boundary.
+The caller receives a failure it can report or retry. This applies
+[Make Failures Observable](/patterns/make-failures-observable/).
+
+```c title="src/example.c"
+int save_report(struct report *report) {
+    int result = write_report(report);
+    if (result != 0) {
+        log_error("save failed");
+        return result;
+    }
+
+    return 0;
+}
+```
+
+### Problem: export failure looks like success
+
+The result says the export completed even when the file write failed.
 
 ```cpp title="src/example.cpp"
-if (request.total() < Money::from_cents(500000) || user.is_manager()) {
-    approvals.approve(request);
+ExportResult export_report(const Report& report) {
+    try {
+        writer.write(report);
+    } catch (const WriteError& error) {
+        logger.error(error.what());
+    }
+
+    return ExportResult::completed();
 }
 ```
 
-### Better: object boundary owns the rule
+### Better: result separates success from failure
 
-The policy names the rule and narrows the future change radius.
+The caller can branch on the export outcome. This applies
+[Return Structured Errors](/patterns/return-structured-errors/).
 
 ```cpp title="src/example.cpp"
-if (approval_policy.can_approve(user, request)) {
-    approvals.approve(request);
+ExportResult export_report(const Report& report) {
+    try {
+        writer.write(report);
+        return ExportResult::completed();
+    } catch (const WriteError& error) {
+        return ExportResult::failed(error.code());
+    }
 }
 ```
 
-### Problem: service path repeats the rule
+### Problem: failed publish is only logged
 
-The service path makes the rule local to one caller, so another caller can drift.
+The caller receives nil even when the queue rejected the message.
 
 ```go title="internal/example/service.go"
-if request.Total < 5000 || user.IsManager {
-    approvals.Approve(request)
+func Publish(ctx context.Context, report Report) error {
+    if err := queue.Publish(ctx, report); err != nil {
+        slog.Error("publish failed", "error", err)
+    }
+
+    return nil
 }
 ```
 
-### Better: service boundary owns the rule
+### Better: return the publish error
 
-The caller uses a named policy boundary.
+The caller can choose retry, failure state, or user feedback. This applies
+[Make Failures Observable](/patterns/make-failures-observable/).
 
 ```go title="internal/example/service.go"
-if approvalPolicy.CanApprove(user, request) {
-    approvals.Approve(request)
+func Publish(ctx context.Context, report Report) error {
+    if err := queue.Publish(ctx, report); err != nil {
+        slog.Error("publish failed", "error", err)
+        return err
+    }
+
+    return nil
 }
 ```
 
-### Problem: client path repeats the rule
+### Problem: save failure returns ok
 
-The client path repeats a rule that should have a named boundary.
+The UI receives success even when the request failed.
 
 ```js title="src/example.js"
-if (request.total < 5000 || user.role === 'manager') {
-  approve(request);
+export async function saveDraft(draft) {
+  try {
+    await api.saveDraft(draft);
+  } catch (error) {
+    console.error(error);
+  }
+
+  return { status: 'ok' };
 }
 ```
 
-### Better: client boundary owns the rule
+### Better: return a visible failure state
 
-The caller asks the named policy instead of rebuilding the condition.
+The UI can render a retry path. This applies
+[Make Failures Observable](/patterns/make-failures-observable/).
 
 ```js title="src/example.js"
-if (approvalPolicy.canApprove(user, request)) {
-  approve(request);
+export async function saveDraft(draft) {
+  try {
+    await api.saveDraft(draft);
+    return { status: 'saved' };
+  } catch (error) {
+    return { status: 'failed', reason: 'save-failed' };
+  }
 }
 ```

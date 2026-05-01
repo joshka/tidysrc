@@ -3,7 +3,8 @@ title: >-
   Cap the Change Radius
 summary: >-
   Keep a change inside the smallest coherent set of files, calls, and concepts that can carry it.
-status: draft
+status: reviewed
+exampleStyle: narrative
 tags:
   - "workflow"
   - "architecture"
@@ -12,16 +13,7 @@ audiences:
   - "reviewers"
   - "agents"
   - "learners"
-languages:
-  - "c"
-  - "cpp"
-  - "csharp"
-  - "go"
-  - "java"
-  - "js"
-  - "python"
-  - "rust"
-  - "ts"
+languages: []
 problems:
   - "A small behavior change requires touching many distant files that do not own the behavior."
 concepts:
@@ -39,9 +31,6 @@ A change radius grows when a small rule forces edits across files, tests, builde
 docs that do not own the behavior. Some radius is real coupling. Some is accidental shape. Before
 broadening a patch, ask which boundary should own the rule and which edits only exist because the
 current shape leaks it.
-
-Reach for this pattern when one rule change touches several layers because the rule is represented
-as loose data or repeated conditionals.
 
 The main tradeoff is that large radii can be legitimate for public API changes; make that
 compatibility cost explicit instead of hiding it as cleanup.
@@ -78,108 +67,11 @@ patch radius small or explain why the wider radius is a real contract change.
 
 ## Examples
 
-### Move the rule to the policy boundary
-
-Callers stop repeating the stable-status rule; future changes edit the policy instead of every
-catalog view.
-
-```ts title="src/policy.ts"
-export function canPublish(pattern: Pattern): boolean {
-  return pattern.status === 'stable' && pattern.examples.length > 0;
-}
-```
-
-### Rust type carries the rule through callers
-
-Callers that receive PublishablePattern no longer repeat the same readiness checks before
-publishing.
-
-```rust title="src/publish.rs"
-pub struct PublishablePattern(Pattern);
-
-impl TryFrom<Pattern> for PublishablePattern {
-    type Error = PublishError;
-
-    fn try_from(pattern: Pattern) -> Result<Self, Self::Error> {
-        pattern.ensure_ready()?;
-        Ok(Self(pattern))
-    }
-}
-```
-
-### Java service narrows the edited surface
-
-Controllers ask the policy for the rule instead of repeating the same publish checks across
-endpoints.
-
-```java title="PublishPolicy.java"
-final class PublishPolicy {
-    boolean canPublish(Pattern pattern) {
-        return pattern.status() == Status.STABLE && !pattern.examples().isEmpty();
-    }
-}
-```
-
-### C# adds a facade at the churn boundary
-
-Callers depend on a small local gateway instead of each knowing the vendor API shape.
-
-```csharp title="SearchGateway.cs"
-public Task<IReadOnlyList<Pattern>> SearchPatterns(string query)
-{
-    return vendorClient.SearchAsync(new SearchRequest(query));
-}
-```
-
-### Python contains a field rename
-
-Only the adapter knows the vendor changed display_name to title.
-
-```python title="pattern_gateway.py"
-def to_pattern(row):
-    return Pattern(slug=row["slug"], title=row["display_name"], summary=row["summary"])
-```
+- First patch: move the repeated rule to the owning boundary and add targeted tests for that rule.
+- Second patch: update callers to ask that boundary instead of rebuilding the rule.
+- Third patch, only if needed: remove dead helpers, stale constants, or compatibility shims after
+  behavior is verified.
 
 ## References
 
 - None yet.
-
-### Low-level boundary names the rule
-
-The caller delegates the rule to a named boundary instead of repeating mechanics inline.
-
-```c title="src/example.c"
-if (approval_policy_can_approve(policy, user, request)) {
-    approve_request(request);
-}
-```
-
-### Object boundary names the rule
-
-The object caller asks a boundary that owns the rule.
-
-```cpp title="src/example.cpp"
-if (approval_policy.can_approve(user, request)) {
-    approvals.approve(request);
-}
-```
-
-### Service boundary names the rule
-
-The service keeps the rule behind one named operation.
-
-```go title="internal/example/service.go"
-if approvalPolicy.CanApprove(user, request) {
-    approvals.Approve(request)
-}
-```
-
-### Client boundary names the rule
-
-The client code uses a named boundary instead of rebuilding the rule.
-
-```js title="src/example.js"
-if (approvalPolicy.canApprove(user, request)) {
-  approve(request);
-}
-```

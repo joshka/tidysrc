@@ -90,11 +90,6 @@ Useful, but overlaps with the side-effect visibility concept. Keep the problem p
 goes wrong in code review: a reader cannot see that a call writes, publishes, mutates, or schedules
 work.
 
-### Layer Language Leaks
-
-Useful, but the title may need another pass for plainness. The problem is not simply that words cross
-layers; it is that one layer starts depending on another layer's vocabulary and decisions.
-
 ### Mixed Structure and Behavior
 
 Important and well aligned with the existing pattern language. The renamed title is stronger than

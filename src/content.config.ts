@@ -6,6 +6,7 @@ const patternSchema = z.object({
   title: z.string(),
   summary: z.string(),
   status: z.enum(['seed', 'draft', 'reviewed']),
+  exampleStyle: z.enum(['code', 'narrative']).optional(),
   tags: z.array(z.string()),
   audiences: z.array(z.enum(['reviewers', 'agents', 'learners'])),
   languages: z.array(z.string()),

@@ -3,6 +3,7 @@ import type { CodeExample } from '../data/catalog';
 export type PatternContent = {
   agentInstruction: string;
   examples: CodeExample[];
+  exampleNotes: string[];
   guidance: string[];
   narrative: string[];
   references: string[];
@@ -25,6 +26,7 @@ export function parsePatternContent(source: string, id: string): PatternContent 
   return {
     agentInstruction: parseParagraph(requireSection(sections, 'agent instruction', id)),
     examples: parseExamples(requireSection(sections, 'examples', id), id),
+    exampleNotes: parseExampleNotes(requireSection(sections, 'examples', id)),
     guidance: parseListSection(requireSection(sections, 'guidance', id)),
     narrative: parseParagraphs(requireSection(sections, 'core idea', id)),
     references: parseReferences(requireSection(sections, 'references', id)),
@@ -95,11 +97,16 @@ function parseExamples(section: string, id: string): CodeExample[] {
     examples.push(parseExampleBlock(title, body, id));
   }
 
-  if (examples.length === 0) {
-    throw new Error(`Pattern "${id}" has "## Examples" but no "###" example blocks.`);
+  return examples;
+}
+
+function parseExampleNotes(section: string): string[] {
+  if (section.match(/^###\s+(.+)$/m)) {
+    return [];
   }
 
-  return examples;
+  const items = parseListSection(section);
+  return items.length > 0 ? items : parseParagraphs(section);
 }
 
 function parseExampleBlock(title: string, body: string, id: string): CodeExample {

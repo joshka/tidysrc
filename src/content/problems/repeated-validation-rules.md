@@ -18,10 +18,24 @@ relatedConcepts:
   - reader-locality
 ---
 
-## Impact
+## Description
 
 Repeated validation looks defensive but often marks a weak domain boundary. Over time the rules
 drift, edge cases differ, and callers can pass values that should never exist inside the system.
+
+The same validity rule appears in controllers, services, jobs, and helpers because the code does
+not have one trusted representation for the value after it has been checked.
+
+## Why It Matters
+
+Repeated validation creates false confidence. Each check appears cautious, but the system still
+allows disagreement about what valid means and when data becomes safe to use.
+
+## Code Impact
+
+The code accumulates duplicated conditionals, mismatched error messages, and raw strings or numbers
+flowing through internal APIs. Every new caller has to remember the validation rule instead of
+receiving a value that already satisfies it.
 
 ## Signals
 
@@ -44,3 +58,37 @@ drift, edge cases differ, and callers can pass values that should never exist in
 - Use invalid-state-resistant types where they reduce caller burden without over-modeling the
   domain.
 - Keep behavior-visible error messages covered while consolidating the rule.
+
+## Examples
+
+### Problem: each caller repeats the same format rule
+
+The validated value remains a raw string, so every caller has to remember the same check.
+
+```typescript title="src/users/invite.ts"
+export function inviteUser(email: string) {
+  if (!email.includes("@")) {
+    throw new Error("invalid email");
+  }
+
+  return sendInvite(email);
+}
+```
+
+### Better: the boundary creates a trusted value
+
+The parser owns the validation rule, and internal code receives the parsed value.
+
+```typescript title="src/users/email-address.ts"
+export class EmailAddress {
+  private constructor(readonly value: string) {}
+
+  static parse(value: string): EmailAddress {
+    if (!value.includes("@")) {
+      throw new Error("invalid email");
+    }
+
+    return new EmailAddress(value);
+  }
+}
+```

@@ -22,6 +22,8 @@ Use this checklist when reviewing problem pages. It captures the shape proven ou
 - [ ] `Description` is not a second summary. It gives the reader a clearer mental model.
 - [ ] `Why It Matters` is not generic importance text. It names the review or maintenance cost.
 - [ ] `Code Impact` is not the same as `Why It Matters`. It names the code-level consequence.
+- [ ] `Code Impact` does not begin with a label sentence like "The code impact is X"; it states
+  the concrete code effect directly.
 - [ ] `Signals` are not instructions. They are things the reader may already be seeing.
 - [ ] `Approach` does not over-prescribe architecture when a local fix is enough.
 - [ ] Section headings are content labels, not UI instructions such as "start here" or "use this".
@@ -41,6 +43,8 @@ Use this checklist when reviewing problem pages. It captures the shape proven ou
 - [ ] All launch languages are covered when the problem is code-shaped: C, C++, C#, Go, Java,
   JavaScript, Python, Rust, and TypeScript.
 - [ ] Use `Problem:` and `Better:` pairs when contrast teaches the issue.
+- [ ] Add a `Before:` example when the problem is a risky change and the reader needs to see the
+  original shape to understand what could break.
 - [ ] Drop the language name from example titles; the language tab already carries it.
 - [ ] Each example note states the local problem before the code.
 - [ ] Each better example note names the pattern or idea used to clean it up.

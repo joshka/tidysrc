@@ -1,7 +1,7 @@
 ---
 title: >-
   Risky Legacy Change
-status: draft
+status: reviewed
 category: change-risk
 topics:
   - legacy-code
@@ -23,22 +23,32 @@ relatedConcepts:
 
 The existing behavior is unclear, under-tested, or coupled to callers that a small edit can break.
 
-The problem is not the existence of the mechanism itself. It is that the ownership, boundary, or
-contract is implicit enough that each caller can interpret it differently.
+The risk comes from uncertainty, not age alone. A small cleanup can change parsing quirks, error
+shape, ordering, formatting, or side effects that callers already depend on. If no test or example
+names that behavior, review cannot tell whether the change preserved the contract or merely changed
+something nobody noticed.
+
+Legacy code often needs a behavior pin before it needs a design opinion. Once the current
+[observable behavior](/concepts/observable-behavior/) is visible, the team can decide what to keep,
+what to fix, and which structure can move separately.
 
 ## Why It Matters
 
 The danger comes from uncertainty about intentional behavior. Without characterization, a tidy can
+turn into a behavior change while still looking like cleanup.
 
-Reviewers care because the risk is not visible at one call site. They have to reconstruct the
-intended behavior from scattered branches, tests, and boundaries before they can tell whether the
-change is safe.
+Reviewers need to know which observable result should stay the same before they can judge the
+change. Otherwise every rename, extraction, guard clause, or parser cleanup carries hidden product
+risk.
 
 ## Code Impact
 
-The code impact is drift. Related checks, state changes, defaults, errors, or side effects spread
-across files, so a future edit can update one path while leaving another path with the old rule.
-Tests then tend to protect one example rather than the contract that all callers rely on.
+Risky legacy code tends to mix structure, behavior, and compatibility quirks. A refactor may change
+the same lines that define public output, persisted state, errors, logs, or call ordering.
+
+The code impact is review ambiguity. Future maintainers cannot tell whether a changed branch was a
+deliberate behavior change, a missed edge case, or an accidental side effect of making the code look
+better.
 
 ## Signals
 
@@ -56,17 +66,20 @@ Tests then tend to protect one example rather than the contract that all callers
 
 ## Approach
 
-- Characterize the current behavior before changing it, especially around edge cases and public
-  boundaries.
-- Separate structural cleanup from behavior changes so review can answer one question at a time.
-- Protect observable behavior instead of private implementation shape.
-- Use the smallest trustworthy verification loop before broadening tests or refactoring further.
+- [Characterize before changing](/patterns/characterize-before-changing/) around edge cases and
+  public boundaries.
+- [Separate structure from behavior](/patterns/separate-structure-from-behavior/) so review can
+  answer one question at a time.
+- [Test observable behavior](/patterns/test-observable-behavior/) instead of private
+  implementation shape.
+- Use the [smallest trustworthy verification](/patterns/smallest-trustworthy-verification/) before
+  broadening tests or refactoring further.
 
 ## Examples
 
-### Problem: legacy parser changes without a behavior pin
+### Before: legacy parser behavior exists
 
-The rewrite may change accepted inputs, but no test names the old behavior.
+The old parser accepts ambiguous date strings, and callers may already depend on that behavior.
 
 ```csharp title="Legacy/DateParser.cs"
 public DateTime ParseDate(string value)
@@ -75,12 +88,34 @@ public DateTime ParseDate(string value)
 }
 ```
 
+### Problem: legacy parser changes without a behavior pin
+
+The rewrite may change accepted inputs, but no test names the old behavior being replaced.
+
+```csharp title="Legacy/DateParser.cs"
+public DateTime ParseDate(string value)
+{
+    return DateTime.ParseExact(value, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+}
+```
+
 ### Better: characterization names the existing contract
 
-The test records behavior before the parser changes.
+The test records behavior before the parser changes. This applies
+[Characterize Before Changing](/patterns/characterize-before-changing/).
 
 ```csharp title="Legacy/DateParserTests.cs"
 Assert.Equal(new DateTime(2024, 1, 2), parser.ParseDate("01/02/2024"));
+```
+
+### Before: legacy parser throws current exception
+
+The current parser trims input and lets `Integer.parseInt` choose the failure shape.
+
+```java title="src/main/java/legacy/Parser.java"
+int parseCount(String value) {
+    return Integer.parseInt(value.trim());
+}
 ```
 
 ### Problem: cleanup changes legacy error behavior
@@ -89,16 +124,30 @@ The caller may depend on the current exception shape.
 
 ```java title="src/main/java/legacy/Parser.java"
 int parseCount(String value) {
-    return Integer.parseInt(value.trim());
+    if (!value.matches("\\d+")) {
+        throw new IllegalArgumentException("count must be numeric");
+    }
+
+    return Integer.parseInt(value);
 }
 ```
 
 ### Better: characterization protects the public edge
 
-The test captures the observable failure before cleanup.
+The test captures the observable failure before cleanup. This applies
+[Characterize Before Changing](/patterns/characterize-before-changing/).
 
 ```java title="src/test/java/legacy/ParserTest.java"
 assertThrows(NumberFormatException.class, () -> parser.parseCount("many"));
+```
+
+### Before: legacy function has undocumented callers
+
+The existing function trims input and raises Python's standard `ValueError` for non-numeric text.
+
+```python title="legacy/parser.py"
+def parse_count(value):
+    return int(value.strip())
 ```
 
 ### Problem: legacy behavior is edited directly
@@ -107,21 +156,25 @@ The function may have undocumented callers.
 
 ```python title="legacy/parser.py"
 def parse_count(value):
-    return int(value.strip())
+    if not value.isdecimal():
+        raise ParseError("count must be numeric")
+
+    return int(value)
 ```
 
 ### Better: pins current behavior first
 
-The characterization tells review what changed later.
+The characterization tells review what changed later. This applies
+[Characterize Before Changing](/patterns/characterize-before-changing/).
 
 ```python title="tests/test_parser.py"
 with pytest.raises(ValueError):
     parse_count("many")
 ```
 
-### Problem: legacy parser is refactored without examples
+### Before: parser returns the current error shape
 
-The refactor can accidentally change edge-case parsing.
+The existing function trims and returns whatever `parse` reports.
 
 ```rust title="src/legacy.rs"
 pub fn parse_count(value: &str) -> Result<u32, ParseIntError> {
@@ -129,14 +182,39 @@ pub fn parse_count(value: &str) -> Result<u32, ParseIntError> {
 }
 ```
 
+### Problem: legacy parser is refactored without examples
+
+The refactor can accidentally change edge-case parsing.
+
+```rust title="src/legacy.rs"
+pub fn parse_count(value: &str) -> Result<u32, CountError> {
+    if !value.chars().all(|ch| ch.is_ascii_digit()) {
+        return Err(CountError::Invalid);
+    }
+
+    Ok(value.parse().unwrap())
+}
+```
+
 ### Better: characterization records edge behavior
 
-The test protects the observable parser contract.
+The test protects the observable parser contract. This applies
+[Test Observable Behavior](/patterns/test-observable-behavior/).
 
 ```rust title="src/legacy.rs"
 #[test]
 fn rejects_words() {
     assert!(parse_count("many").is_err());
+}
+```
+
+### Before: formatter has visible output
+
+The current formatter trims and uppercases a value that may already be visible to callers.
+
+```ts title="src/legacy/format.ts"
+export function formatCode(value: string) {
+  return value.trim().toUpperCase();
 }
 ```
 
@@ -146,94 +224,158 @@ The formatter may be part of a public contract.
 
 ```ts title="src/legacy/format.ts"
 export function formatCode(value: string) {
-  return value.trim().toUpperCase();
+  return value.normalize().toUpperCase();
 }
 ```
 
 ### Better: pins the output before cleanup
 
-The test makes the legacy contract explicit.
+The test makes the legacy contract explicit. This applies
+[Characterize Before Changing](/patterns/characterize-before-changing/).
 
 ```ts title="src/legacy/format.test.ts"
 expect(formatCode(' ab ')).toBe('AB');
 ```
 
-### Problem: low-level caller repeats the rule
+### Before: parser has permissive legacy behavior
 
-The low-level path updates state without naming the boundary that owns the rule.
-
-```c title="src/example.c"
-if (request_total < 5000 || user_is_manager(user)) {
-    approve_request(request);
-}
-```
-
-### Better: low-level boundary owns the rule
-
-The caller asks a named boundary instead of repeating the condition.
+The current parser treats blank and non-numeric input as zero through `atoi`.
 
 ```c title="src/example.c"
-if (approval_policy_can_approve(policy, user, request)) {
-    approve_request(request);
+int parse_count(const char *value) {
+    while (*value == ' ') {
+        value++;
+    }
+
+    return atoi(value);
 }
 ```
 
-### Problem: object path repeats the rule
+### Problem: parser cleanup has no behavior pin
 
-The object caller owns a rule that should have a named boundary.
+The cleanup may change how blank fields are handled, but no test records the current contract.
+
+```c title="src/example.c"
+int parse_count(const char *value) {
+    char *end;
+    long count = strtol(value, &end, 10);
+
+    if (*end != '\0') {
+        return -1;
+    }
+
+    return (int)count;
+}
+```
+
+### Better: characterize the parser edge
+
+The test pins the observable behavior before parser cleanup. This applies
+[Characterize Before Changing](/patterns/characterize-before-changing/).
+
+```c title="src/example.c"
+void test_parse_count_keeps_legacy_blank_behavior(void) {
+    assert_int_equal(0, parse_count(""));
+}
+```
+
+### Before: formatter output is part of the contract
+
+The current formatter trims and uppercases output used by files and snapshots.
 
 ```cpp title="src/example.cpp"
-if (request.total() < Money::from_cents(500000) || user.is_manager()) {
-    approvals.approve(request);
+std::string format_code(std::string value) {
+    trim(value);
+    uppercase(value);
+    return value;
 }
 ```
 
-### Better: object boundary owns the rule
+### Problem: formatter cleanup touches public output
 
-The policy names the rule and narrows the future change radius.
+The formatter output may be consumed by files, emails, or snapshots.
 
 ```cpp title="src/example.cpp"
-if (approval_policy.can_approve(user, request)) {
-    approvals.approve(request);
+std::string format_code(std::string value) {
+    return normalize_whitespace(value);
 }
 ```
 
-### Problem: service path repeats the rule
+### Better: test the output contract
 
-The service path makes the rule local to one caller, so another caller can drift.
+The test protects visible output while internals move. This applies
+[Test Observable Behavior](/patterns/test-observable-behavior/).
+
+```cpp title="src/example.cpp"
+TEST(FormatCode, PreservesLegacyTrimAndUppercase) {
+    EXPECT_EQ("AB", format_code(" ab "));
+}
+```
+
+### Before: parser returns current parse errors
+
+The current parser trims input and exposes the standard conversion error.
 
 ```go title="internal/example/service.go"
-if request.Total < 5000 || user.IsManager {
-    approvals.Approve(request)
+func ParseCount(value string) (int, error) {
+    return strconv.Atoi(strings.TrimSpace(value))
 }
 ```
 
-### Better: service boundary owns the rule
+### Problem: cleanup can change error behavior
 
-The caller uses a named policy boundary.
+The parser shape looks small, but callers may depend on the current error.
 
 ```go title="internal/example/service.go"
-if approvalPolicy.CanApprove(user, request) {
-    approvals.Approve(request)
+func ParseCount(value string) (int, error) {
+    if strings.TrimSpace(value) == "" {
+        return 0, ErrMissingCount
+    }
+
+    return strconv.Atoi(value)
 }
 ```
 
-### Problem: client path repeats the rule
+### Better: characterize the error edge
 
-The client path repeats a rule that should have a named boundary.
+The test records the failure callers can observe. This applies
+[Characterize Before Changing](/patterns/characterize-before-changing/).
 
-```js title="src/example.js"
-if (request.total < 5000 || user.role === 'manager') {
-  approve(request);
+```go title="internal/example/service.go"
+func TestParseCountRejectsWords(t *testing.T) {
+    _, err := ParseCount("many")
+    if err == nil {
+        t.Fatal("expected error")
+    }
 }
 ```
 
-### Better: client boundary owns the rule
+### Before: renderer has visible empty markup
 
-The caller asks the named policy instead of rebuilding the condition.
+The existing renderer turns missing summaries into an empty paragraph.
 
 ```js title="src/example.js"
-if (approvalPolicy.canApprove(user, request)) {
-  approve(request);
+export function renderSummary(summary) {
+  return `<p>${summary || ''}</p>`;
 }
+```
+
+### Problem: renderer cleanup can change markup
+
+The markup looks incidental, but callers or tests may rely on it.
+
+```js title="src/example.js"
+export function renderSummary(summary) {
+  if (!summary) return '';
+  return `<p>${summary}</p>`;
+}
+```
+
+### Better: characterize generated output
+
+The test pins the visible output before renderer cleanup. This applies
+[Characterize Before Changing](/patterns/characterize-before-changing/).
+
+```js title="src/example.js"
+expect(renderSummary(null)).toBe('<p></p>');
 ```

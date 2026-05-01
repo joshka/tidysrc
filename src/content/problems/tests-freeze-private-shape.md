@@ -1,7 +1,7 @@
 ---
 title: >-
   Tests Freeze Private Shape
-status: draft
+status: reviewed
 category: testing
 topics:
   - observable-behavior
@@ -20,22 +20,30 @@ relatedConcepts:
 
 A test fails when internals move even though the user-visible behavior has not changed.
 
-The problem is not the existence of the mechanism itself. It is that the ownership, boundary, or
-contract is implicit enough that each caller can interpret it differently.
+The test protects the route the implementation currently takes instead of the result callers
+observe. It verifies helper calls, private ordering, intermediate values, or mocks that encode
+today's shape. A harmless extraction, rename, or reordering then looks like a regression.
+
+Private-shape assertions are sometimes right: a helper may be a real contract, an algorithm may need
+an invariant test, or a performance-sensitive path may require a specific call shape. The problem is
+asserting private shape when the stable contract is [observable behavior](/concepts/observable-behavior/).
 
 ## Why It Matters
 
-These tests make code harder to improve. They turn harmless refactors into test rewrites, train
+These tests make code harder to improve. They turn harmless refactors into test rewrites and make
+incidental structure feel mandatory.
 
-Reviewers care because the risk is not visible at one call site. They have to reconstruct the
-intended behavior from scattered branches, tests, and boundaries before they can tell whether the
-change is safe.
+The worse failure is false confidence. A suite can stay green because the same helper was called,
+while the returned value, rendered output, persisted state, or user-visible error is wrong.
 
 ## Code Impact
 
-The code impact is drift. Related checks, state changes, defaults, errors, or side effects spread
-across files, so a future edit can update one path while leaving another path with the old rule.
-Tests then tend to protect one example rather than the contract that all callers rely on.
+The code impact is friction around structure changes. Refactors require coordinated test rewrites,
+mocks grow to mirror implementation details, and tests fail in files that do not explain the
+behavior being protected.
+
+That friction pushes teams away from improving design. It also makes review noisy because the diff
+mixes real behavior protection with assertions that only restate the old implementation path.
 
 ## Signals
 
@@ -54,13 +62,15 @@ Tests then tend to protect one example rather than the contract that all callers
 
 ## Approach
 
-- Move assertions toward outputs, errors, side effects, persisted state, or collaborator contracts.
+- Move assertions toward [observable behavior](/concepts/observable-behavior/): outputs, errors,
+  side effects, persisted state, or collaborator contracts.
 - Keep private-shape assertions only when the shape itself is the contract, such as ordering
   guarantees or performance-sensitive calls.
 - When replacing brittle tests, keep enough coverage to protect the behavior before deleting the old
   assertions.
-- For agents, make the verification target explicit so they do not satisfy the suite by preserving
-  accidental internals.
+- Use [test observable behavior](/patterns/test-observable-behavior/) as the default replacement.
+- Use the [smallest trustworthy verification](/patterns/smallest-trustworthy-verification/) that
+  would catch the likely behavior regression.
 
 ## Examples
 
@@ -75,7 +85,8 @@ gateway.Verify(x => x.CalculateTax(invoice), Times.Once);
 
 ### Better: test verifies the observable result
 
-The test protects the invoice total callers see.
+The test protects the invoice total callers see. This applies
+[Test Observable Behavior](/patterns/test-observable-behavior/).
 
 ```csharp title="Billing/InvoiceTests.cs"
 var result = processor.Process(invoice);
@@ -94,7 +105,8 @@ verify(totalCalculator).sum(invoice);
 
 ### Better: test checks output behavior
 
-The assertion targets the behavior the caller depends on.
+The assertion targets the behavior the caller depends on. This applies
+[Test Observable Behavior](/patterns/test-observable-behavior/).
 
 ```java title="src/test/java/example/InvoiceTest.java"
 var processed = processor.process(invoice);
@@ -112,7 +124,8 @@ processor._calculate_tax.assert_called_once_with(invoice)
 
 ### Better: test asserts output behavior
 
-The internal shape can change without losing coverage.
+The internal shape can change without losing coverage. This applies
+[Test Observable Behavior](/patterns/test-observable-behavior/).
 
 ```python title="tests/test_invoice.py"
 processed = processor.process(invoice)
@@ -129,7 +142,8 @@ assert_eq!(build_steps(invoice), vec!["tax", "total", "status"]);
 
 ### Better: test protects observable output
 
-The assertion checks the behavior the caller receives.
+The assertion checks the behavior the caller receives. This applies
+[Test Observable Behavior](/patterns/test-observable-behavior/).
 
 ```rust title="src/invoice.rs"
 let processed = process_invoice(invoice);
@@ -147,89 +161,99 @@ expect(formatMoney).toHaveBeenCalledWith(invoice.total);
 
 ### Better: test asserts rendered behavior
 
-The test protects what users see.
+The test protects what users see. This applies
+[Test Observable Behavior](/patterns/test-observable-behavior/).
 
 ```ts title="src/invoice.test.ts"
 renderInvoice(invoice);
 expect(screen.getByText('$110.00')).toBeVisible();
 ```
 
-### Problem: low-level caller repeats the rule
+### Problem: test freezes parser helper calls
 
-The low-level path updates state without naming the boundary that owns the rule.
-
-```c title="src/example.c"
-if (request_total < 5000 || user_is_manager(user)) {
-    approve_request(request);
-}
-```
-
-### Better: low-level boundary owns the rule
-
-The caller asks a named boundary instead of repeating the condition.
+The test fails if parsing is reorganized, even when the parsed record is unchanged.
 
 ```c title="src/example.c"
-if (approval_policy_can_approve(policy, user, request)) {
-    approve_request(request);
-}
+parse_field(&record, "title", "Release Notes");
+parse_field(&record, "status", "draft");
+
+assert_int_equal(2, record.field_count);
 ```
 
-### Problem: object path repeats the rule
+### Better: test the parsed result
 
-The object caller owns a rule that should have a named boundary.
+The test protects the record callers receive. This applies
+[Test Observable Behavior](/patterns/test-observable-behavior/).
+
+```c title="src/example.c"
+struct record record = parse_record("title=Release Notes\nstatus=draft");
+
+assert_string_equal("Release Notes", record.title);
+assert_string_equal("draft", record.status);
+```
+
+### Problem: test freezes exporter internals
+
+The test asserts which helper builds the file instead of the file contract.
 
 ```cpp title="src/example.cpp"
-if (request.total() < Money::from_cents(500000) || user.is_manager()) {
-    approvals.approve(request);
-}
+EXPECT_CALL(writer, write_header());
+EXPECT_CALL(writer, write_rows(_));
+
+export_report(report, writer);
 ```
 
-### Better: object boundary owns the rule
+### Better: test the exported file
 
-The policy names the rule and narrows the future change radius.
+The test protects what downstream consumers read. This applies
+[Test Observable Behavior](/patterns/test-observable-behavior/).
 
 ```cpp title="src/example.cpp"
-if (approval_policy.can_approve(user, request)) {
-    approvals.approve(request);
-}
+auto file = export_report(report);
+
+EXPECT_THAT(file.contents(), HasSubstr("Report ID,Status"));
+EXPECT_THAT(file.contents(), HasSubstr("R-42,ready"));
 ```
 
-### Problem: service path repeats the rule
+### Problem: test freezes repository call shape
 
-The service path makes the rule local to one caller, so another caller can drift.
+The test fails if search stops calling one helper directly.
 
 ```go title="internal/example/service.go"
-if request.Total < 5000 || user.IsManager {
-    approvals.Approve(request)
-}
+repo.On("FindBySlug", "guard-clause").Return(pattern)
+
+result := Search(repo, "guard-clause")
+require.Equal(t, pattern, result[0])
 ```
 
-### Better: service boundary owns the rule
+### Better: test search behavior
 
-The caller uses a named policy boundary.
+The test protects the API result instead of the private lookup path. This applies
+[Test Observable Behavior](/patterns/test-observable-behavior/).
 
 ```go title="internal/example/service.go"
-if approvalPolicy.CanApprove(user, request) {
-    approvals.Approve(request)
-}
+results := Search(index, "guard-clause")
+
+require.Equal(t, []string{"guard-clause"}, slugs(results))
 ```
 
-### Problem: client path repeats the rule
+### Problem: test freezes formatter calls
 
-The client path repeats a rule that should have a named boundary.
+The test fails when the component stops calling a particular formatter.
 
 ```js title="src/example.js"
-if (request.total < 5000 || user.role === 'manager') {
-  approve(request);
-}
+renderInvoice(invoice);
+
+expect(formatMoney).toHaveBeenCalledWith(invoice.total);
 ```
 
-### Better: client boundary owns the rule
+### Better: test rendered text
 
-The caller asks the named policy instead of rebuilding the condition.
+The test protects what the user sees. This applies
+[Test Observable Behavior](/patterns/test-observable-behavior/).
 
 ```js title="src/example.js"
-if (approvalPolicy.canApprove(user, request)) {
-  approve(request);
-}
+renderInvoice(invoice);
+
+expect(screen.getByText('$110.00')).toBeVisible();
 ```

@@ -1,7 +1,13 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { ensureDir, formatLanguages, markdownFiles, requiredExampleLanguages } from './review-utils.mjs';
+import {
+  ensureDir,
+  formatLanguages,
+  markdownFiles,
+  parseFrontmatter,
+  requiredExampleLanguages,
+} from './review-utils.mjs';
 
 const outputFile = path.join('docs', 'language-coverage-report.md');
 const labels = new Map([
@@ -34,13 +40,18 @@ console.log(`Wrote ${outputFile}.`);
 function coverageRows(type) {
   return markdownFiles(`src/content/${type}`).map((file) => {
     const source = fs.readFileSync(file, 'utf8');
+    const data = parseFrontmatter(source, file);
     const present = exampleLanguages(source).filter((language) =>
       requiredExampleLanguages.includes(language),
     );
-    const missing = requiredExampleLanguages.filter((language) => !present.includes(language));
+    const missing =
+      data.exampleStyle === 'narrative'
+        ? []
+        : requiredExampleLanguages.filter((language) => !present.includes(language));
     return {
       file,
       id: path.basename(file, '.md'),
+      narrative: data.exampleStyle === 'narrative',
       missing,
       present,
       type,
@@ -124,7 +135,9 @@ ${incompleteRows.map(entryLine).join('\n')}
 
 function entryLine(row) {
   const missing = row.missing.map((language) => labels.get(language) ?? language).join(', ');
-  const present = row.present.map((language) => labels.get(language) ?? language).join(', ') || 'none';
+  const present =
+    row.present.map((language) => labels.get(language) ?? language).join(', ') ||
+    (row.narrative ? 'narrative example' : 'none');
   return `- \`${row.type}/${row.id}\`
   - Present: ${present}
   - Missing: ${missing}`;

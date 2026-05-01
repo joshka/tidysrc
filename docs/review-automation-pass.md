@@ -26,6 +26,16 @@ fixes that were safe to apply from review work that still needs human judgment.
 - Added every launch-language example that the review queue identified as missing for draft
   problems, draft patterns, and draft concepts.
 - Updated pattern frontmatter language lists when new language examples were added.
+- Normalized the remaining seed problem entries to the current problem-page shape:
+  `Description`, `Why It Matters`, `Code Impact`, `Signals`, `Diagnostic Questions`, `Approach`,
+  and `Examples`.
+- Added compact before/better example anchors to the remaining seed problem entries so the review
+  queue no longer reports seed structure gaps.
+- Normalized seed concept entries from the lighter `Mental model` / `Review heuristic` shape to
+  the current concept shape with `Why it matters`, `How to apply it`, and `Examples`.
+- Confirmed seed pattern entries already have the required pattern article sections:
+  `Core Idea`, `Use When`, `Guidance`, `Tradeoffs`, `Agent Instruction`, `Examples`, and
+  `References`.
 
 ## Validation
 
@@ -41,27 +51,14 @@ Current queue state after regeneration:
 
 - Total review items: 126
 - P0: 6
-- P1: 74
-- P2: 46
+- P1: 65
+- P2: 55
 
 ## Remaining Generated Findings
 
 No draft entries currently have missing launch-language findings.
 
-### Seed Problems Missing Structure
-
-These seed problems still use an early shape and have no examples. They should stay seed until
-their title, scope, and examples are worth reviewing.
-
-- `problems/context-drift`
-- `problems/digging-past-evidence`
-- `problems/guess-driven-debugging`
-- `problems/repeated-validation-rules`
-- `problems/review-comment-lacks-pattern-name`
-- `problems/solution-before-requirements`
-- `problems/spec-bent-to-fit-implementation`
-- `problems/tooling-contract-implicit`
-- `problems/unclear-done-signal`
+No seed entries currently have generated structure findings.
 
 ## Manual Review Notes
 
@@ -70,6 +67,10 @@ their title, scope, and examples are worth reviewing.
 - The newly added language examples satisfy coverage and validation, but they still need editorial
   review. Several are intentionally compact and may need replacement with more topic-specific
   examples before launch.
+- The seed problem examples are deliberately small anchors, not launch-ready examples. Use them to
+  judge whether the page has a viable shape before deciding whether to expand or keep the item seed.
+- The seed concept examples are also deliberately small. They make the page structure concrete, but
+  they should not be treated as final language coverage or launch-quality examples.
 - Concept example policy is still unresolved. The current pass added broad language examples, but
   the right launch shape may be fewer, stronger examples instead of full coverage.
 - Review tooling now suppresses missing-language findings for seed entries. That keeps the queue

@@ -131,14 +131,26 @@ const displayTags = pattern.data.tags.filter((tag) => {
         </section>
       </div>
 
-      <section id="examples">
-        <div class="section-bar">
-          <h2>Implementation</h2>
-        </div>
-        <div class="implementation-tabs">
-          <CodeExamples examples={patternContent.examples} />
-        </div>
-      </section>
+      {
+        (patternContent.examples.length > 0 || patternContent.exampleNotes.length > 0) && (
+          <section id="examples">
+            <div class="section-bar">
+              <h2>{patternContent.examples.length > 0 ? 'Implementation' : 'Review Shape'}</h2>
+            </div>
+            {
+              patternContent.examples.length > 0 ? (
+                <div class="implementation-tabs">
+                  <CodeExamples examples={patternContent.examples} />
+                </div>
+              ) : (
+                <div class="panel narrative-examples">
+                  {patternContent.exampleNotes.map((note) => <p><InlineMarkdown text={note} /></p>)}
+                </div>
+              )
+            }
+          </section>
+        )
+      }
 
       <section class="agent-panel" id="agents">
         <div class="agent-mark">Agent Instruction</div>
@@ -186,33 +198,37 @@ const displayTags = pattern.data.tags.filter((tag) => {
         </div>
       </section>
 
-      <section id="references">
-        <h2 class="underlined">References</h2>
-        <ul class="reference-list">
-          {
-            patternContent.references.map((reference) => {
-              const href = referenceHref(reference);
-              return (
-                <li>
-                  {hasInlineMarkdownLink(reference) ? (
-                    <InlineMarkdown text={reference} />
-                  ) : href ? (
-                    <a
-                      href={href}
-                      rel={isExternalReference(href) ? 'noreferrer' : undefined}
-                      target={isExternalReference(href) ? '_blank' : undefined}
-                    >
-                      {reference}
-                    </a>
-                  ) : (
-                    <span>{reference}</span>
-                  )}
-                </li>
-              );
-            })
-          }
-        </ul>
-      </section>
+      {
+        patternContent.references.length > 0 && (
+          <section id="references">
+            <h2 class="underlined">References</h2>
+            <ul class="reference-list">
+              {
+                patternContent.references.map((reference) => {
+                  const href = referenceHref(reference);
+                  return (
+                    <li>
+                      {hasInlineMarkdownLink(reference) ? (
+                        <InlineMarkdown text={reference} />
+                      ) : href ? (
+                        <a
+                          href={href}
+                          rel={isExternalReference(href) ? 'noreferrer' : undefined}
+                          target={isExternalReference(href) ? '_blank' : undefined}
+                        >
+                          {reference}
+                        </a>
+                      ) : (
+                        <span>{reference}</span>
+                      )}
+                    </li>
+                  );
+                })
+              }
+            </ul>
+          </section>
+        )
+      }
     </article>
   </section>
 </BaseLayout>

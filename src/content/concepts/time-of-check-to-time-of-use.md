@@ -14,7 +14,7 @@ relatedPatterns:
   - "make-invalid-states-hard-to-express"
 ---
 
-## Mental model
+## Why it matters
 
 Time-of-check to time-of-use bugs happen when code verifies a fact and then relies on that fact
 after the world has had a chance to change. The gap may be a thread switch, an `await`, a callback,
@@ -25,8 +25,35 @@ The same shape appears outside classic concurrency bugs. A change can update one
 state but miss another path that later uses the old assumption. The code still has a check, but the
 check and the use are no longer one reviewable unit.
 
-## Review heuristic
+## How to apply it
 
 Look for permission checks, existence checks, cache freshness checks, and lifecycle checks that are
 separated from the operation they authorize. Keep the check and use in one boundary when possible;
 otherwise re-check, lock, version, or encode the state so stale facts are rejected.
+
+## Examples
+
+### Split check and use: permission can change between steps
+
+The code checks permission, then waits before using the checked fact.
+
+```ts title="src/files/delete-file.ts"
+export async function deleteFile(user: User, fileId: string) {
+  if (!await canDelete(user, fileId)) {
+    throw new Error("not allowed");
+  }
+
+  await auditDeletionRequest(user, fileId);
+  await files.delete(fileId);
+}
+```
+
+### Better: authorize at the operation boundary
+
+The operation re-checks the fact at the point where it matters.
+
+```ts title="src/files/delete-file.ts"
+export async function deleteFile(user: User, fileId: string) {
+  await files.deleteIfAllowed(user.id, fileId);
+}
+```

@@ -124,7 +124,7 @@ function contentEntries(type) {
     }
     const presentLanguages = exampleLanguages(source);
     const missingLanguages =
-      data.status === 'seed' || type === 'references'
+      data.status === 'seed' || type === 'references' || data.exampleStyle === 'narrative'
         ? []
         : type === 'concepts' && !section(source, 'Examples')
         ? [...requiredExampleLanguages]
@@ -132,7 +132,7 @@ function contentEntries(type) {
     const sections = headings(source);
     const findings = findingsFor(type, data, source, presentLanguages, missingLanguages);
     const priority = priorityFor(type, id, data.status, findings);
-    const reviewFocus = reviewFocusFor(type, findings, data.status);
+    const reviewFocus = reviewFocusFor(type, data, findings, data.status);
     const route = routeForEntry(type, id);
 
     return [{
@@ -151,6 +151,7 @@ function contentEntries(type) {
       reviewFocus,
       findings,
       sections,
+      exampleStyle: data.exampleStyle ?? 'code',
       presentLanguages,
       missingLanguages,
       summary: data.summary ?? summaryFromBody(stripFrontmatter(source)),
@@ -314,7 +315,7 @@ function findingsFor(type, data, source, presentLanguages, missingLanguages) {
     }
   }
 
-  if (presentLanguages.length === 0 && type !== 'concepts') {
+  if (presentLanguages.length === 0 && type !== 'concepts' && data.exampleStyle !== 'narrative') {
     findings.push('No code examples found.');
   }
 
@@ -364,11 +365,15 @@ function priorityFor(type, id, status, findings) {
   return status === 'seed' ? 'P2' : 'P1';
 }
 
-function reviewFocusFor(type, findings, status) {
+function reviewFocusFor(type, data, findings, status) {
   const focus = [];
   if (type === 'patterns') {
     focus.push('Does the title name a reusable source-change move?');
-    focus.push('Do examples prove the pattern across the required languages?');
+    focus.push(
+      data.exampleStyle === 'narrative'
+        ? 'Does the review-shape example make the pattern concrete?'
+        : 'Do examples prove the pattern across the required languages?',
+    );
     focus.push('Is the agent instruction narrow enough to apply safely?');
   } else if (type === 'problems') {
     focus.push('Does the title name a problem you would use in review?');
@@ -424,6 +429,7 @@ ${entry.reviewFocus.map((item) => `- ${item}`).join('\n')}
 
 ## Coverage
 
+- Example style: ${entry.exampleStyle}
 - Present example languages: ${formatLanguages(entry.presentLanguages)}
 - Missing launch languages: ${formatLanguages(entry.missingLanguages)}
 

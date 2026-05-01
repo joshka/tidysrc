@@ -1,7 +1,7 @@
 ---
 title: >-
   Unclear Async Ownership
-status: draft
+status: reviewed
 category: async
 topics:
   - lifecycle
@@ -23,22 +23,31 @@ relatedConcepts:
 
 Async work starts without a clear owner for ordering, cancellation, errors, or lifetime.
 
-The problem is not the existence of the mechanism itself. It is that the ownership, boundary, or
-contract is implicit enough that each caller can interpret it differently.
+The code starts a task, goroutine, promise, callback, queue job, or subscription, but the caller
+cannot tell who owns completion. It is unclear whether the work must finish before the next read,
+who can cancel it, and where errors are observed.
+
+Detached work can be valid. Framework handlers, queues, telemetry, and best-effort notifications
+often have their own lifecycle. The problem is detaching work without naming that lifecycle or the
+failure policy.
 
 ## Why It Matters
 
 Work can outlive the request, fail silently, race with subsequent reads, or leak resources.
 
-Reviewers care because the risk is not visible at one call site. They have to reconstruct the
-intended behavior from scattered branches, tests, and boundaries before they can tell whether the
-change is safe.
+Reviewers need to know whether scheduling is enough or completion matters. If the ownership is not
+visible, a caller may read stale state, return before required work finishes, drop errors, or keep
+work running after cancellation.
 
 ## Code Impact
 
-The code impact is drift. Related checks, state changes, defaults, errors, or side effects spread
-across files, so a future edit can update one path while leaving another path with the old rule.
-Tests then tend to protect one example rather than the contract that all callers rely on.
+Unclear async ownership hides ordering and lifetime in control flow. A helper that looks like a
+normal call may start background work, mutate state later, or log a failure the caller needed to
+handle.
+
+The code becomes hard to test because the observable behavior is not at the call boundary. Tests
+either wait and hope, ignore the background path, or assert implementation details instead of
+completion, cancellation, or failure behavior.
 
 ## Signals
 
@@ -56,10 +65,16 @@ Tests then tend to protect one example rather than the contract that all callers
 
 ## Approach
 
-- Make awaits, spawns, callbacks, and queues visible at the boundary that owns ordering.
+- [Name async ownership](/patterns/name-async-ownership/) at the boundary that starts background
+  work.
+- [Keep async boundaries explicit](/patterns/keep-async-boundaries-explicit/) where ordering,
+  cancellation, and failure can change behavior.
 - Return a result, handle, or queued status when work continues after the current function.
 - Pass cancellation or context through detached work.
-- Test the observable ordering or cancellation behavior instead of only the happy path.
+- [Make side effects visible](/patterns/make-side-effects-visible/) when async work mutates state or
+  touches external systems later.
+- [Test observable behavior](/patterns/test-observable-behavior/) for ordering, cancellation, or
+  failure behavior instead of only the happy path.
 
 ## Examples
 
@@ -76,7 +91,8 @@ public void PublishLater(Report report)
 
 ### Better: returns the queued work
 
-The caller can decide whether to await or track it.
+The caller can decide whether to await or track it. This applies
+[Name Async Ownership](/patterns/name-async-ownership/).
 
 ```csharp title="Reports/Publisher.cs"
 public Task PublishLater(Report report, CancellationToken cancellation)
@@ -97,7 +113,8 @@ void publishLater(Report report) {
 
 ### Better: returns ownership of the future
 
-The caller receives a handle for ordering and errors.
+The caller receives a handle for ordering and errors. This applies
+[Keep Async Boundaries Explicit](/patterns/keep-async-boundaries-explicit/).
 
 ```java title="src/main/java/example/Reports.java"
 CompletableFuture<Void> publishLater(Report report) {
@@ -116,7 +133,8 @@ def publish_later(report):
 
 ### Better: returns the task handle
 
-The caller owns whether to await, cancel, or track it.
+The caller owns whether to await, cancel, or track it. This applies
+[Name Async Ownership](/patterns/name-async-ownership/).
 
 ```python title="reports/publish.py"
 def publish_later(report):
@@ -135,7 +153,8 @@ pub fn publish_later(report: Report) {
 
 ### Better: returns the join handle
 
-The boundary makes detached work explicit.
+The boundary makes detached work explicit. This applies
+[Keep Async Boundaries Explicit](/patterns/keep-async-boundaries-explicit/).
 
 ```rust title="src/reports.rs"
 pub fn publish_later(report: Report) -> JoinHandle<Result<(), PublishError>> {
@@ -155,7 +174,8 @@ export function publishLater(report: Report) {
 
 ### Better: returns ownership of the promise
 
-The caller can await or handle failure.
+The caller can await or handle failure. This applies
+[Keep Async Boundaries Explicit](/patterns/keep-async-boundaries-explicit/).
 
 ```ts title="src/reports/publish.ts"
 export function publishLater(report: Report) {
@@ -163,82 +183,90 @@ export function publishLater(report: Report) {
 }
 ```
 
-### Problem: low-level caller repeats the rule
+### Problem: callback outlives its owner
 
-The low-level path updates state without naming the boundary that owns the rule.
-
-```c title="src/example.c"
-if (request_total < 5000 || user_is_manager(user)) {
-    approve_request(request);
-}
-```
-
-### Better: low-level boundary owns the rule
-
-The caller asks a named boundary instead of repeating the condition.
+The callback can run after the request owner has gone away.
 
 ```c title="src/example.c"
-if (approval_policy_can_approve(policy, user, request)) {
-    approve_request(request);
+void publish_later(struct report *report) {
+    event_loop_schedule(publish_report, report);
 }
 ```
 
-### Problem: object path repeats the rule
+### Better: return scheduled work ownership
 
-The object caller owns a rule that should have a named boundary.
+The caller receives the scheduled work id and can cancel or track it. This applies
+[Name Async Ownership](/patterns/name-async-ownership/).
+
+```c title="src/example.c"
+scheduled_task publish_later(struct report *report) {
+    return event_loop_schedule(publish_report, report);
+}
+```
+
+### Problem: detached thread hides failure
+
+The caller cannot join the work or observe errors.
 
 ```cpp title="src/example.cpp"
-if (request.total() < Money::from_cents(500000) || user.is_manager()) {
-    approvals.approve(request);
+void publish_later(Report report) {
+    std::thread([report] {
+        queue.publish(report);
+    }).detach();
 }
 ```
 
-### Better: object boundary owns the rule
+### Better: return a future
 
-The policy names the rule and narrows the future change radius.
+The caller owns completion and failure observation. This applies
+[Keep Async Boundaries Explicit](/patterns/keep-async-boundaries-explicit/).
 
 ```cpp title="src/example.cpp"
-if (approval_policy.can_approve(user, request)) {
-    approvals.approve(request);
+std::future<void> publish_later(Report report) {
+    return std::async(std::launch::async, [report] {
+        queue.publish(report);
+    });
 }
 ```
 
-### Problem: service path repeats the rule
+### Problem: goroutine ignores cancellation
 
-The service path makes the rule local to one caller, so another caller can drift.
+The background publish can outlive the request context.
 
 ```go title="internal/example/service.go"
-if request.Total < 5000 || user.IsManager {
-    approvals.Approve(request)
+func PublishLater(report Report) {
+    go publisher.Publish(context.Background(), report)
 }
 ```
 
-### Better: service boundary owns the rule
+### Better: pass context through the worker
 
-The caller uses a named policy boundary.
+The worker shares the caller's cancellation boundary. This applies
+[Keep Async Boundaries Explicit](/patterns/keep-async-boundaries-explicit/).
 
 ```go title="internal/example/service.go"
-if approvalPolicy.CanApprove(user, request) {
-    approvals.Approve(request)
+func PublishLater(ctx context.Context, report Report) {
+    go publisher.Publish(ctx, report)
 }
 ```
 
-### Problem: client path repeats the rule
+### Problem: promise is started and forgotten
 
-The client path repeats a rule that should have a named boundary.
+The caller cannot observe completion or failure.
 
 ```js title="src/example.js"
-if (request.total < 5000 || user.role === 'manager') {
-  approve(request);
+export function publishLater(report) {
+  queue.publish(report);
 }
 ```
 
-### Better: client boundary owns the rule
+### Better: return the promise
 
-The caller asks the named policy instead of rebuilding the condition.
+The caller can await, chain, or report failure. This applies
+[Keep Async Boundaries Explicit](/patterns/keep-async-boundaries-explicit/).
 
 ```js title="src/example.js"
-if (approvalPolicy.canApprove(user, request)) {
-  approve(request);
+export function publishLater(report) {
+  return queue.publish(report);
 }
 ```

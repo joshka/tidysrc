@@ -1,7 +1,7 @@
 ---
 title: >-
   Naming Drift
-status: draft
+status: reviewed
 category: readability
 topics:
   - naming
@@ -22,24 +22,33 @@ relatedConcepts:
 
 ## Description
 
-Names keep their old words after behavior, ownership, or domain meaning changes.
+Names are often accurate when they are written and misleading after the code changes around them.
+A helper called `is_vip`, `has_flag`, or `is_active` can keep compiling after the rule becomes
+loyalty eligibility, paid access, or account readiness.
 
-The problem is not the existence of the mechanism itself. It is that the ownership, boundary, or
-contract is implicit enough that each caller can interpret it differently.
+That drift matters because names are the first model readers use. When a name describes old
+behavior, the reader has to inspect the implementation before trusting every call site, test name,
+and error message that repeats it.
 
 ## Why It Matters
 
-Stale names mislead readers and agents. The code compiles, but every review requires reconciling
+Stale names make review slower and less reliable. The code may be correct, but the vocabulary sends
+reviewers toward the wrong mental model, so they spend time reconciling the name with the behavior
+instead of reviewing the change.
 
-Reviewers care because the risk is not visible at one call site. They have to reconstruct the
-intended behavior from scattered branches, tests, and boundaries before they can tell whether the
-change is safe.
+The cost grows when the stale name spreads into tests and callers. A future maintainer may update
+the implementation while preserving the old word, or update a caller based on the name and quietly
+break the actual rule.
 
 ## Code Impact
 
-The code impact is drift. Related checks, state changes, defaults, errors, or side effects spread
-across files, so a future edit can update one path while leaving another path with the old rule.
-Tests then tend to protect one example rather than the contract that all callers rely on.
+Naming drift leaves old domain language attached to current behavior. Predicates become too broad,
+helpers describe storage mechanics instead of meaning, and tests assert outdated concepts even when
+the assertions still pass.
+
+Once the wrong vocabulary reaches several files, a small behavior change turns into a terminology
+audit. The code has to be checked for both the old name and the current rule before the reviewer can
+tell what will actually change.
 
 ## Signals
 
@@ -57,11 +66,16 @@ Tests then tend to protect one example rather than the contract that all callers
 
 ## Approach
 
-- Rename to the current domain fact before changing behavior when the rename is behavior-preserving.
-- Use explaining variables for local decisions instead of generic condition names.
+- [Keep names current](/patterns/keep-name-current/) before changing behavior when the rename is
+  behavior-preserving.
+- Use an [explaining variable](/patterns/explaining-variable/) for local decisions instead of a
+  generic condition name.
 - Keep terminology consistent across tests, examples, and user-facing errors when they describe the
   same contract.
-- Avoid broad vocabulary rewrites while a behavior change is in progress.
+- [Separate structure from behavior](/patterns/separate-structure-from-behavior/) when a rename is
+  adjacent to a behavior change.
+- Improve [reader locality](/patterns/reader-locality/) by keeping the name near the rule it
+  explains.
 
 ## Examples
 
@@ -78,7 +92,8 @@ bool IsVip(Customer customer)
 
 ### Better: name says the current domain fact
 
-The reviewer can discuss eligibility without remembering the old implementation.
+The reviewer can discuss eligibility without remembering the old implementation. This applies
+[Keep Names Current](/patterns/keep-name-current/).
 
 ```csharp title="Billing/Discounts.cs"
 bool IsEligibleForLoyaltyDiscount(Customer customer)
@@ -99,7 +114,8 @@ boolean hasFlag(Account account) {
 
 ### Better: name describes domain meaning
 
-The name carries the rule's role at the call site.
+The name carries the rule's role at the call site. This applies
+[Keep Names Current](/patterns/keep-name-current/).
 
 ```java title="src/main/java/example/AccountRules.java"
 boolean qualifiesForLoyaltyDiscount(Account account) {
@@ -118,7 +134,8 @@ def is_vip(customer):
 
 ### Better: name follows current behavior
 
-Tests and callers can use the same vocabulary.
+Tests and callers can use the same vocabulary. This applies
+[Keep Names Current](/patterns/keep-name-current/).
 
 ```python title="billing/discounts.py"
 def is_eligible_for_loyalty_discount(customer):
@@ -137,7 +154,8 @@ pub fn is_active(customer: &Customer) -> bool {
 
 ### Better: name narrows the meaning
 
-The predicate says what future branches are deciding.
+The predicate says what future branches are deciding. This applies
+[Keep Names Current](/patterns/keep-name-current/).
 
 ```rust title="src/billing.rs"
 pub fn qualifies_for_loyalty_discount(customer: &Customer) -> bool {
@@ -157,90 +175,95 @@ export function isVip(customer: Customer) {
 
 ### Better: name matches the rule
 
-The call site can talk about the actual domain decision.
+The call site can talk about the actual domain decision. This applies
+[Keep Names Current](/patterns/keep-name-current/).
 
-```ts title="src/billing/discounts.ts"
+```typescript title="src/billing/discounts.ts"
 export function isEligibleForLoyaltyDiscount(customer: Customer) {
   return customer.tier === 'gold' && customer.accountAgeDays > 365;
 }
 ```
 
-### Problem: low-level caller repeats the rule
+### Problem: name hides the access rule
 
-The low-level path updates state without naming the boundary that owns the rule.
-
-```c title="src/example.c"
-if (request_total < 5000 || user_is_manager(user)) {
-    approve_request(request);
-}
-```
-
-### Better: low-level boundary owns the rule
-
-The caller asks a named boundary instead of repeating the condition.
+The name says active account, but the rule is really current paid access.
 
 ```c title="src/example.c"
-if (approval_policy_can_approve(policy, user, request)) {
-    approve_request(request);
+bool account_is_active(const Account *account, Date today) {
+    return account->paid_until >= today && account->closed_at == NULL;
 }
 ```
 
-### Problem: object path repeats the rule
+### Better: name says the domain fact
 
-The object caller owns a rule that should have a named boundary.
+The caller can read the access decision without inspecting the predicate body. This applies
+[Keep Names Current](/patterns/keep-name-current/).
+
+```c title="src/example.c"
+bool account_has_current_paid_access(const Account *account, Date today) {
+    return account->paid_until >= today && account->closed_at == NULL;
+}
+```
+
+### Problem: method name preserves storage vocabulary
+
+The method name says flag, but the behavior is a loyalty discount decision.
 
 ```cpp title="src/example.cpp"
-if (request.total() < Money::from_cents(500000) || user.is_manager()) {
-    approvals.approve(request);
+bool Customer::has_flag() const {
+    return tier_ == Tier::Gold && account_age_days_ > 365;
 }
 ```
 
-### Better: object boundary owns the rule
+### Better: method name says what callers need
 
-The policy names the rule and narrows the future change radius.
+The method names the decision at the call site. This applies
+[Keep Names Current](/patterns/keep-name-current/).
 
 ```cpp title="src/example.cpp"
-if (approval_policy.can_approve(user, request)) {
-    approvals.approve(request);
+bool Customer::qualifies_for_loyalty_discount() const {
+    return tier_ == Tier::Gold && account_age_days_ > 365;
 }
 ```
 
-### Problem: service path repeats the rule
+### Problem: exported name stays too broad
 
-The service path makes the rule local to one caller, so another caller can drift.
+`IsReady` is broad enough to mean several things, but this rule is only about starting a paid trial.
 
 ```go title="internal/example/service.go"
-if request.Total < 5000 || user.IsManager {
-    approvals.Approve(request)
+func IsReady(account Account) bool {
+    return account.EmailVerified && account.PaymentMethodID != ""
 }
 ```
 
-### Better: service boundary owns the rule
+### Better: exported name names the decision
 
-The caller uses a named policy boundary.
+Callers can now tell which kind of readiness the helper describes. This applies
+[Keep Names Current](/patterns/keep-name-current/).
 
 ```go title="internal/example/service.go"
-if approvalPolicy.CanApprove(user, request) {
-    approvals.Approve(request)
+func CanStartPaidTrial(account Account) bool {
+    return account.EmailVerified && account.PaymentMethodID != ""
 }
 ```
 
-### Problem: client path repeats the rule
+### Problem: validation name is too vague
 
-The client path repeats a rule that should have a named boundary.
+`isValid` hides the user action this rule gates.
 
 ```js title="src/example.js"
-if (request.total < 5000 || user.role === 'manager') {
-  approve(request);
+export function isValid(user) {
+  return Boolean(user.email) && user.acceptedTerms && !user.deletedAt;
 }
 ```
 
-### Better: client boundary owns the rule
+### Better: name matches the UI decision
 
-The caller asks the named policy instead of rebuilding the condition.
+The name gives the React component a readable branch. This applies
+[Keep Names Current](/patterns/keep-name-current/).
 
 ```js title="src/example.js"
-if (approvalPolicy.canApprove(user, request)) {
-  approve(request);
+export function canCreateWorkspace(user) {
+  return Boolean(user.email) && user.acceptedTerms && !user.deletedAt;
 }
 ```
