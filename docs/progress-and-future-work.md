@@ -22,8 +22,8 @@ left-sidebar documentation manual.
 change, aimed at reviewers, agents, and learners. It records the decision to keep the site
 standalone, concise, searchable, and structured enough for agent consumption.
 
-The plan also records the main page models: patterns, problems, concepts, agents, configs, and
-references. Several later implementation decisions follow that structure.
+The plan also records the main page models: patterns, problems, concepts, agents, deferred configs,
+and references. Several later implementation decisions follow that structure.
 
 ### Writing Guidelines
 
@@ -44,9 +44,9 @@ requires impact, signals, diagnostic questions, approach, and optional examples.
 
 ### Maturity Metadata
 
-Content entries now have maturity/status metadata such as `seed`, `draft`, `reviewed`, and
-`stable`. New additions from broad source material are generally marked `seed` so they can be
-hidden, filtered, or reviewed before being treated as launch-ready.
+Content entries now have maturity/status metadata: `seed`, `draft`, and `reviewed`. New additions
+from broad source material are generally marked `seed` so they can be hidden, filtered, or reviewed
+before being treated as launch-ready.
 
 ### Problem Catalog
 
@@ -236,6 +236,39 @@ enough to be useful.
 Avoid building a taxonomy wall. The grouping should help readers choose an entry point and help
 agents retrieve relevant guidance.
 
+### Manual Related-Link Curation
+
+Related and nearby entries should be curated by editorial judgment, not inferred only from shared
+tags or shared patterns. During the `Hidden Main Path` review, the automatic nearby-problem list
+surfaced `Review comment lacks a pattern name`, which shared vocabulary but did not help the reader
+continue the source-change idea.
+
+Track these misses during manual review. They are useful signals for whether the site needs a new
+relationship field, hand-picked nearby entries, or a stronger distinction between search tags and
+reader-facing related links.
+
+### Candidate Concepts From Review
+
+Keep a running list of concepts that recur during problem and pattern review. Add a concept only
+when several pages need the same explanatory idea, and back-reference the pages that exposed it so
+priority is based on repeated usefulness instead of one-off terminology.
+
+Current candidates:
+
+- `Main Path` or `Happy Path`: surfaced by `Hidden Main Path`. This would explain the ordinary path
+  a reader should find first, and why exceptional, empty, or precondition paths should not dominate
+  a function's shape.
+- `Logic Paragraphs` or `Phase Boundaries`: surfaced by `Hidden Main Path` and `Chunk Statements`.
+  This would explain setup, validation, decision, mutation, and result assembly as readable phases
+  before choosing a concrete formatting or extraction pattern.
+- `Propagate Failure Normally` or `Use the Language's Failure Channel`: surfaced by `Hidden Main
+  Path` while reviewing Rust `?` propagation and Java checked-exception shapes. This may be a
+  pattern rather than a concept. It is distinct from `Guard Clause` because it focuses on idiomatic
+  failure propagation, and distinct from `Return Structured Errors` or `Preserve Error Context`
+  because it focuses on control flow rather than error shape.
+- [x] `YAGNI`: added as a seed concept from `Premature Architecture` so the problem page can link
+  the term instead of expanding it inline.
+
 ### Agent Failure Modes Surface
 
 The agentic patterns exist as seed entries, but there is not yet a dedicated guide or landing page
@@ -245,11 +278,12 @@ prepare, constrain, explore, edit, verify, hand off.
 That surface should still avoid becoming a separate AI manual. The same patterns should remain part
 of the general source-change language.
 
-### Configs and Agent Instructions
+### Deferred Configs and Agent Instructions
 
-The `/configs/` section exists, but it needs a focused pass to decide which reusable files belong
-there. Candidate material includes AGENTS.md snippets, review prompts, verification handoff
-templates, lint/format guidance, and agent stop-condition templates.
+The `/configs/` section is deferred behind the `joshka/configs-page-abeyance` jj bookmark. It needs
+a focused pass before returning to the public site. Candidate material includes AGENTS.md snippets,
+review prompts, verification handoff templates, lint/format guidance, and agent stop-condition
+templates.
 
 Configs should be practical and copyable, not another essay surface.
 

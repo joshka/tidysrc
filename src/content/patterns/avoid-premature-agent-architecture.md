@@ -4,7 +4,7 @@ title: >-
 summary: >-
   Do not introduce broad architecture from one or two local examples, especially in agent-written
   code.
-status: draft
+status: seed
 tags:
   - "agent-guidance"
   - "architecture"
@@ -26,7 +26,7 @@ concepts:
   - "cognitive-burden"
 related:
   - "reader-locality"
-  - "repo-local-instructions-win"
+  - "follow-existing-conventions"
   - "separate-structure-from-behavior"
 ---
 

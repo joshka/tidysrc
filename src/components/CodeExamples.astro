@@ -1,6 +1,7 @@
 ---
 import { Code } from 'astro-expressive-code/components';
 
+import InlineMarkdown from './InlineMarkdown.astro';
 import { languageLabel, sortedLanguageCodes } from '../lib/catalog';
 
 type Example = {
@@ -25,9 +26,12 @@ const exampleTone = (title: string) => {
   if (title.toLowerCase().startsWith('better:')) {
     return 'better';
   }
+  if (title.toLowerCase().startsWith('after:')) {
+    return 'after';
+  }
   return undefined;
 };
-const exampleTitle = (title: string) => title.replace(/^(Problem|Better):\s+/i, '');
+const exampleTitle = (title: string) => title.replace(/^(Problem|Better|After):\s+/i, '');
 const tabId = `code-tabs-${examples
   .map((example) => `${example.language}-${example.title}`)
   .join('-')
@@ -76,7 +80,7 @@ const tabId = `code-tabs-${examples
                       </div>
                       <span>{example.path}</span>
                     </div>
-                    {example.note && <p class="example-note">{example.note}</p>}
+                    {example.note && <p class="example-note"><InlineMarkdown text={example.note} /></p>}
                     <Code code={example.code} lang={example.language} meta={`title="${example.path}"`} />
                   </article>
                 );
@@ -98,7 +102,7 @@ const tabId = `code-tabs-${examples
               </div>
               <span>{example.path}</span>
             </div>
-            {example.note && <p class="example-note">{example.note}</p>}
+            {example.note && <p class="example-note"><InlineMarkdown text={example.note} /></p>}
             <Code code={example.code} lang={example.language} meta={`title="${example.path}"`} />
           </article>
         );
@@ -185,6 +189,10 @@ const tabId = `code-tabs-${examples
     border-left-color: #2f6f3e;
   }
 
+  .example-after {
+    border-left-color: var(--accent);
+  }
+
   .example-header {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
@@ -228,6 +236,12 @@ const tabId = `code-tabs-${examples
     color: #fffaf1;
   }
 
+  .example-after .example-tone {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--accent-text);
+  }
+
   .example-header span {
     color: var(--muted);
     font-family: var(--font-mono);
@@ -237,10 +251,20 @@ const tabId = `code-tabs-${examples
   }
 
   .example-note {
-    border: 2px solid var(--border);
-    background: var(--surface-muted);
+    color: var(--muted);
     margin: 0;
-    padding: 0.75rem;
+  }
+
+  .example-note a {
+    color: var(--accent-strong);
+    font-weight: 800;
+    text-underline-offset: 0.18em;
+  }
+
+  .example-note code {
+    border: 1px solid var(--border);
+    background: var(--surface-muted);
+    padding: 0 0.2em;
   }
 
   .example .expressive-code {

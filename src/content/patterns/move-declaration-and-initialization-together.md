@@ -26,80 +26,14 @@ related:
 
 ## Core Idea
 
-A
-declaration
-without
-its
-value
-creates
-a
-temporary
-mystery.
-The
-reader
-must
-remember
-the
-name,
-wonder
-when
-it
-becomes
-valid,
-and
-check
-whether
-it
-can
-be
-observed
-early.
+A declaration without its value creates a temporary mystery. The reader must remember the name,
+wonder when it becomes valid, and check whether it can be observed early.
 
-Move
-declaration
-to
-the
-point
-where
-the
-value
-is
-known.
-This
-often
-removes
-nullable
-state,
-mutation,
-and
-defensive
-checks.
+Move declaration to the point where the value is known. This often removes nullable state, mutation,
+and defensive checks.
 
-The
-tradeoff
-is
-scope.
-Sometimes
-a
-value
-must
-be
-declared
-before
-a
-try/finally
-or
-language
-construct,
-but
-most
-local
-variables
-can
-start
-life
-with
-meaning.
+The tradeoff is scope. Sometimes a value must be declared before a try/finally or language
+construct, but most local variables can start life with meaning.
 
 ## Use When
 
@@ -137,4 +71,4 @@ return loadPattern(slug);
 
 ## References
 
-- Tidy First? chapter themes: use as inspiration, not a direct content source.
+- [Tidy First?: Move Declaration and Initialization Together](https://www.oreilly.com/library/view/tidy-first/9781098151232/ch07.html)

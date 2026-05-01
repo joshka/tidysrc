@@ -4,4 +4,4 @@ title: >-
 href: "https://lawsofux.com/"
 ---
 
-Human-centered UX principles presented as concise laws with examples and references.
+UX principles for decisions that increase user attention, memory, or choice burden.

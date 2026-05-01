@@ -4,4 +4,4 @@ title: >-
 href: "https://www.patterns.dev/"
 ---
 
-Web development pattern catalog with examples and visual explanations.
+Frontend and rendering patterns with practical examples and visual explanations.

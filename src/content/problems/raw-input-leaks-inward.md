@@ -1,6 +1,6 @@
 ---
 title: >-
-  Raw input leaks inward
+  Raw Input Leaks Inward
 status: draft
 category: boundaries
 topics:
@@ -19,10 +19,27 @@ relatedConcepts:
   - reader-locality
 ---
 
-## Impact
+## Description
+
+Strings, maps, nullable values, or unchecked data move through the system after the boundary should
+have parsed them.
+
+The problem is not the existence of the mechanism itself. It is that the ownership, boundary, or
+contract is implicit enough that each caller can interpret it differently.
+
+## Why It Matters
 
 Every caller has to remember the same validation rules. That spreads defensive code, creates
-inconsistent edge handling, and makes invalid states look like normal application data.
+
+Reviewers care because the risk is not visible at one call site. They have to reconstruct the
+intended behavior from scattered branches, tests, and boundaries before they can tell whether the
+change is safe.
+
+## Code Impact
+
+The code impact is drift. Related checks, state changes, defaults, errors, or side effects spread
+across files, so a future edit can update one path while leaving another path with the old rule.
+Tests then tend to protect one example rather than the contract that all callers rely on.
 
 ## Signals
 
@@ -49,7 +66,7 @@ inconsistent edge handling, and makes invalid states look like normal applicatio
 
 ## Examples
 
-### Problem: C# passes raw request strings inward
+### Problem: passes raw request strings inward
 
 Every caller has to remember the same id parsing rule.
 
@@ -60,7 +77,7 @@ public Order Load(string orderId)
 }
 ```
 
-### Better: C# parses at the boundary
+### Better: parses at the boundary
 
 The service receives a domain value.
 
@@ -72,7 +89,7 @@ public Order Load(string rawOrderId)
 }
 ```
 
-### Problem: Java raw strings cross the boundary
+### Problem: raw strings cross the boundary
 
 The service accepts values that may not be valid ids.
 
@@ -82,7 +99,7 @@ Order load(String orderId) {
 }
 ```
 
-### Better: Java controller parses once
+### Better: controller parses once
 
 Invalid input fails before it reaches domain logic.
 
@@ -92,7 +109,7 @@ Order load(String rawOrderId) {
 }
 ```
 
-### Problem: Python raw payloads move inward
+### Problem: raw payloads move inward
 
 Business code receives unchecked JSON shape.
 
@@ -101,7 +118,7 @@ def load_order(payload):
     return orders.load(payload["order_id"])
 ```
 
-### Better: Python boundary passes a parsed value
+### Better: boundary passes a parsed value
 
 The route owns the raw payload and the service owns domain behavior.
 
@@ -111,7 +128,7 @@ def load_order(payload):
     return orders.load(order_id)
 ```
 
-### Problem: Rust raw strings reach domain code
+### Problem: raw strings reach domain code
 
 The function signature does not say whether the id has been validated.
 
@@ -121,7 +138,7 @@ pub fn load_order(order_id: String) -> Result<Order, Error> {
 }
 ```
 
-### Better: Rust type carries the parse boundary
+### Better: type carries the parse boundary
 
 Downstream code cannot receive an unparsed id by accident.
 
@@ -131,7 +148,7 @@ pub fn load_order(order_id: OrderId) -> Result<Order, Error> {
 }
 ```
 
-### Problem: TypeScript raw ids leak past the route
+### Problem: raw ids leak past the route
 
 Structural typing makes plain strings easy to pass everywhere.
 
@@ -141,12 +158,92 @@ export function loadOrder(orderId: string) {
 }
 ```
 
-### Better: TypeScript brands the parsed value
+### Better: brands the parsed value
 
 The route converts raw input before calling domain code.
 
 ```ts title="src/orders/route.ts"
 export function loadOrder(rawOrderId: string) {
   return orders.load(parseOrderId(rawOrderId));
+}
+```
+
+### Problem: low-level caller repeats the rule
+
+The low-level path updates state without naming the boundary that owns the rule.
+
+```c title="src/example.c"
+if (request_total < 5000 || user_is_manager(user)) {
+    approve_request(request);
+}
+```
+
+### Better: low-level boundary owns the rule
+
+The caller asks a named boundary instead of repeating the condition.
+
+```c title="src/example.c"
+if (approval_policy_can_approve(policy, user, request)) {
+    approve_request(request);
+}
+```
+
+### Problem: object path repeats the rule
+
+The object caller owns a rule that should have a named boundary.
+
+```cpp title="src/example.cpp"
+if (request.total() < Money::from_cents(500000) || user.is_manager()) {
+    approvals.approve(request);
+}
+```
+
+### Better: object boundary owns the rule
+
+The policy names the rule and narrows the future change radius.
+
+```cpp title="src/example.cpp"
+if (approval_policy.can_approve(user, request)) {
+    approvals.approve(request);
+}
+```
+
+### Problem: service path repeats the rule
+
+The service path makes the rule local to one caller, so another caller can drift.
+
+```go title="internal/example/service.go"
+if request.Total < 5000 || user.IsManager {
+    approvals.Approve(request)
+}
+```
+
+### Better: service boundary owns the rule
+
+The caller uses a named policy boundary.
+
+```go title="internal/example/service.go"
+if approvalPolicy.CanApprove(user, request) {
+    approvals.Approve(request)
+}
+```
+
+### Problem: client path repeats the rule
+
+The client path repeats a rule that should have a named boundary.
+
+```js title="src/example.js"
+if (request.total < 5000 || user.role === 'manager') {
+  approve(request);
+}
+```
+
+### Better: client boundary owns the rule
+
+The caller asks the named policy instead of rebuilding the condition.
+
+```js title="src/example.js"
+if (approvalPolicy.canApprove(user, request)) {
+  approve(request);
 }
 ```

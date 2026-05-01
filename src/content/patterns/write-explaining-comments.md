@@ -27,78 +27,13 @@ related:
 
 ## Core Idea
 
-A
-useful
-comment
-explains
-why
-the
-code
-takes
-a
-surprising
-shape.
-It
-can
-record
-a
-compatibility
-constraint,
-domain
-rule,
-benchmark
-result,
-or
-external
-contract
-that
-is
-not
-visible
-locally.
+A useful comment explains why the code takes a surprising shape. It can record a compatibility
+constraint, domain rule, benchmark result, or external contract that is not visible locally.
 
-Prefer
-better
-names
-and
-structure
-first.
-Add
-a
-comment
-when
-the
-missing
-fact
-lives
-outside
-the
-code
-or
-would
-require
-a
-worse
-design
-to
-encode
-directly.
+Prefer better names and structure first. Add a comment when the missing fact lives outside the code
+or would require a worse design to encode directly.
 
-The
-tradeoff
-is
-decay.
-Comments
-need
-the
-same
-review
-as
-code
-when
-the
-constraint
-changes.
+The tradeoff is decay. Comments need the same review as code when the constraint changes.
 
 ## Use When
 
@@ -136,4 +71,4 @@ const summary = input.summary ?? '';
 
 ## References
 
-- Tidy First? chapter themes: use as inspiration, not a direct content source.
+- [Tidy First?: Explaining Comments](https://www.oreilly.com/library/view/tidy-first/9781098151232/ch14.html)

@@ -1,12 +1,70 @@
 import type { CodeExample } from '../data/catalog';
 
+export type InlineMarkdownPart =
+  | {
+      text: string;
+      type: 'text';
+    }
+  | {
+      href: string;
+      text: string;
+      type: 'link';
+    }
+  | {
+      text: string;
+      type: 'code';
+    }
+  | {
+      text: string;
+      type: 'strong';
+    }
+  | {
+      text: string;
+      type: 'emphasis';
+    };
+
 export type ProblemContent = {
   approach: string[];
+  codeImpact: string;
+  description: string[];
   diagnosticQuestions: string[];
   examples?: CodeExample[];
   impact: string;
+  references: string[];
   signals: string[];
+  whyItMatters: string;
 };
+
+export function parseInlineMarkdown(text: string): InlineMarkdownPart[] {
+  const parts: InlineMarkdownPart[] = [];
+  const matches = [
+    ...text.matchAll(/\[([^\]]+)\]\(([^)]+)\)|`([^`]+)`|\*\*([^*]+)\*\*|\*([^*]+)\*/g),
+  ];
+  let cursor = 0;
+
+  for (const match of matches) {
+    const index = match.index ?? 0;
+    if (index > cursor) {
+      parts.push({ text: text.slice(cursor, index), type: 'text' });
+    }
+    if (match[1] && match[2]) {
+      parts.push({ href: match[2], text: match[1], type: 'link' });
+    } else if (match[3]) {
+      parts.push({ text: match[3], type: 'code' });
+    } else if (match[4]) {
+      parts.push({ text: match[4], type: 'strong' });
+    } else if (match[5]) {
+      parts.push({ text: match[5], type: 'emphasis' });
+    }
+    cursor = index + match[0].length;
+  }
+
+  if (cursor < text.length) {
+    parts.push({ text: text.slice(cursor), type: 'text' });
+  }
+
+  return parts.length > 0 ? parts : [{ text, type: 'text' }];
+}
 
 export function parseProblemContent(source: string, id: string): ProblemContent {
   const sections = new Map<string, string>();
@@ -20,13 +78,23 @@ export function parseProblemContent(source: string, id: string): ProblemContent 
     sections.set(title, source.slice(start, end).trim());
   }
 
-  const impact = requireSection(sections, 'impact', id);
+  const description = sections.get('description');
+  const whyItMatters = sections.get('why it matters');
+  const codeImpact = sections.get('code impact');
+  const legacyImpact = sections.get('impact');
+
+  const parsedWhyItMatters = parseParagraph(whyItMatters ?? legacyImpact ?? '');
+
   return {
     approach: parseListSection(requireSection(sections, 'approach', id)),
+    codeImpact: parseParagraph(codeImpact ?? legacyImpact ?? ''),
+    description: description ? parseParagraphs(description) : [],
     diagnosticQuestions: parseListSection(requireSection(sections, 'diagnostic questions', id)),
     examples: parseExamples(sections.get('examples') ?? '', id),
-    impact: parseParagraph(impact),
+    impact: parsedWhyItMatters,
+    references: parseReferences(sections.get('references') ?? ''),
     signals: parseListSection(requireSection(sections, 'signals', id)),
+    whyItMatters: parsedWhyItMatters,
   };
 }
 
@@ -46,6 +114,13 @@ function parseParagraph(section: string): string {
       ?.replace(/\s*\n\s*/g, ' ')
       .trim() ?? ''
   );
+}
+
+function parseParagraphs(section: string): string[] {
+  return section
+    .split(/\n{2,}/)
+    .map((paragraph) => paragraph.replace(/\s*\n\s*/g, ' ').trim())
+    .filter(Boolean);
 }
 
 function parseListSection(section: string): string[] {
@@ -72,6 +147,10 @@ function parseListSection(section: string): string[] {
   }
 
   return items;
+}
+
+function parseReferences(section: string): string[] {
+  return parseListSection(section).filter((reference) => reference !== 'None yet.');
 }
 
 function parseExamples(section: string, id: string): CodeExample[] | undefined {

@@ -26,81 +26,14 @@ related:
 
 ## Core Idea
 
-Async
-ownership
-answers
-who
-is
-responsible
-for
-completion,
-cancellation,
-and
-failure.
-Without
-that
-owner,
-work
-can
-outlive
-requests,
-lose
-errors,
-or
-mutate
-state
-after
-readers
-think
-the
-flow
-is
-done.
+Async ownership answers who is responsible for completion, cancellation, and failure. Without that
+owner, work can outlive requests, lose errors, or mutate state after readers think the flow is done.
 
-Name
-ownership
-at
-the
-boundary
-where
-work
-is
-spawned,
-queued,
-subscribed,
-or
-detached.
-Return
-a
-handle
-when
-the
-caller
-owns
-observation.
+Name ownership at the boundary where work is spawned, queued, subscribed, or detached. Return a
+handle when the caller owns observation.
 
-The
-tradeoff
-is
-ceremony.
-Some
-framework-managed
-work
-has
-an
-implicit
-owner,
-but
-that
-owner
-should
-still
-be
-visible
-in
-the
-surrounding
-code.
+The tradeoff is ceremony. Some framework-managed work has an implicit owner, but that owner should
+still be visible in the surrounding code.
 
 ## Use When
 
@@ -139,4 +72,4 @@ export function scheduleReindex(patternId: PatternId) {
 
 ## References
 
-- Tidy First? chapter themes: use as inspiration, not a direct content source.
+- None yet.

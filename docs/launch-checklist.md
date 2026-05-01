@@ -5,11 +5,11 @@ Use this checklist before publishing TidySrc. It is intentionally separate from
 
 ## Content Readiness
 
-- [ ] Every stable or reviewed pattern has a clear core idea, use-when guidance, tradeoffs,
+- [ ] Every reviewed pattern has a clear core idea, use-when guidance, tradeoffs,
   examples, agent instruction, related links, and references where relevant.
-- [ ] Every stable or reviewed problem explains impact, signals, diagnostic questions, approach,
+- [ ] Every reviewed problem explains impact, signals, diagnostic questions, approach,
   related patterns, and at least one useful example when the problem is code-shaped.
-- [ ] Every stable or reviewed concept defines the idea in source-change terms and links to the
+- [ ] Every reviewed concept defines the idea in source-change terms and links to the
   problems or patterns that make it concrete.
 - [ ] Seed entries are either hidden, clearly marked, or acceptable to publish as reviewable seeds.
 - [ ] No page relies on vague AI-writing filler instead of concrete source-change pressure.

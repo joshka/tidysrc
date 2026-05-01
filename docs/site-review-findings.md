@@ -188,8 +188,7 @@ clearly useful, carefully edited, and lightly attributed.
 - [ ] Review the problem catalog first, because problems define why the site exists.
 - [ ] Review patterns second, making sure each one clearly answers one or more problems.
 - [ ] Review concepts third, using them to explain the durable mental models behind the patterns.
-- [x] Add a maturity field for all content types, such as `seed`, `draft`, `reviewed`, and
-  `stable`.
+- [x] Add a maturity field for all content types, such as `seed`, `draft`, and `reviewed`.
 - [x] Add durable URL-addressable filters to `/problems/`.
 - [ ] Group `/problems/` by domain.
 - [x] Fix the narrow mobile overflow on pattern detail pages.

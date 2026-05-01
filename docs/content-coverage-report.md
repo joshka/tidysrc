@@ -6,9 +6,9 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 
 ## Totals
 
-- P0: 15
-- P1: 62
-- P2: 50
+- P0: 6
+- P1: 74
+- P2: 46
 
 ## Queue
 
@@ -30,18 +30,6 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Status: page
 - Source: `src/pages/concepts/index.astro`
 - Route: `/concepts/`
-- Present languages: none
-- Missing languages:
-  - none
-- Findings:
-  - none
-
-### P0 page/configs/index
-
-- Title: Configs Index
-- Status: page
-- Source: `src/pages/configs/index.astro`
-- Route: `/configs/`
 - Present languages: none
 - Missing languages:
   - none
@@ -96,229 +84,71 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Findings:
   - none
 
-### P0 problems/hidden-main-path
+### P1 problems/configuration-drift
 
-- Title: Hidden Main Path
-- Status: reviewed
-- Source: `src/content/problems/hidden-main-path.md`
-- Route: `/problems/hidden-main-path/`
+- Title: Configuration Drift
+- Status: draft
+- Source: `src/content/problems/configuration-drift.md`
+- Route: `/problems/configuration-drift/`
 - Present languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
 - Missing languages:
   - none
 - Findings:
   - none
 
-### P0 problems/premature-architecture
+### P1 problems/context-drift
 
-- Title: Premature Architecture
-- Status: reviewed
-- Source: `src/content/problems/premature-architecture.md`
-- Route: `/problems/premature-architecture/`
-- Present languages: C#, Java, Python, Rust, TypeScript
+- Title: Context Drift
+- Status: seed
+- Source: `src/content/problems/context-drift.md`
+- Route: `/problems/context-drift/`
+- Present languages: none
 - Missing languages:
-  - c
-  - cpp
-  - go
-  - js
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, Go, JavaScript.
-
-### P0 patterns/observable-behavior-tests
-
-- Title: Observable Behavior Tests
-- Status: stable
-- Source: `src/content/patterns/observable-behavior-tests.md`
-- Route: `/patterns/observable-behavior-tests/`
-- Present languages: C#, Go, Java, Python, Rust, TypeScript
-- Missing languages:
-  - c
-  - cpp
-  - js
-- Findings:
-  - Missing launch language examples: C, C++, JavaScript.
-
-### P0 patterns/reader-locality
-
-- Title: Reader Locality
-- Status: stable
-- Source: `src/content/patterns/reader-locality.md`
-- Route: `/patterns/reader-locality/`
-- Present languages: C#, Java, Python, Rust, TypeScript
-- Missing languages:
-  - c
-  - cpp
-  - go
-  - js
-- Findings:
-  - Missing launch language examples: C, C++, Go, JavaScript.
-
-### P0 patterns/repo-local-instructions-win
-
-- Title: Repo-Local Instructions Win
-- Status: stable
-- Source: `src/content/patterns/repo-local-instructions-win.md`
-- Route: `/patterns/repo-local-instructions-win/`
-- Present languages: C#, Java, Python, Rust, TypeScript, Markdown
-- Missing languages:
-  - c
-  - cpp
-  - go
-  - js
-- Findings:
-  - Missing launch language examples: C, C++, Go, JavaScript.
-
-### P0 patterns/separate-structure-from-behavior
-
-- Title: Separate Structure From Behavior
-- Status: stable
-- Source: `src/content/patterns/separate-structure-from-behavior.md`
-- Route: `/patterns/separate-structure-from-behavior/`
-- Present languages: C#, Java, Python, Rust, TypeScript
-- Missing languages:
-  - c
-  - cpp
-  - go
-  - js
-- Findings:
-  - Missing launch language examples: C, C++, Go, JavaScript.
-
-### P0 patterns/smallest-trustworthy-verification
-
-- Title: Smallest Trustworthy Verification
-- Status: stable
-- Source: `src/content/patterns/smallest-trustworthy-verification.md`
-- Route: `/patterns/smallest-trustworthy-verification/`
-- Present languages: C#, Java, JavaScript, Python, Rust
-- Missing languages:
-  - c
-  - cpp
-  - go
-  - ts
-- Findings:
-  - Missing launch language examples: C, C++, Go, TypeScript.
-
-### P0 patterns/guard-clause
-
-- Title: Use a Guard Clause
-- Status: stable
-- Source: `src/content/patterns/guard-clause.md`
-- Route: `/patterns/guard-clause/`
-- Present languages: C#, Go, Java, JavaScript, Python, Rust
-- Missing languages:
-  - c
-  - cpp
-  - ts
-- Findings:
-  - Missing launch language examples: C, C++, TypeScript.
-
-### P1 problems/ambiguous-state-transitions
-
-- Title: Ambiguous state transitions
-- Status: draft
-- Source: `src/content/problems/ambiguous-state-transitions.md`
-- Route: `/problems/ambiguous-state-transitions/`
-- Present languages: C#, Java, Python, Rust, TypeScript
-- Missing languages:
-  - c
-  - cpp
-  - go
-  - js
-- Findings:
-  - Missing launch language examples: C, C++, Go, JavaScript.
-
-### P1 problems/boolean-flag-maze
-
-- Title: Boolean flag maze
-- Status: draft
-- Source: `src/content/problems/boolean-flag-maze.md`
-- Route: `/problems/boolean-flag-maze/`
-- Present languages: C#, Java, Python, Rust, TypeScript
-- Missing languages:
-  - c
-  - cpp
-  - go
-  - js
-- Findings:
-  - Missing launch language examples: C, C++, Go, JavaScript.
-
-### P1 problems/cache-invalidation-unclear
-
-- Title: Cache invalidation unclear
-- Status: draft
-- Source: `src/content/problems/cache-invalidation-unclear.md`
-- Route: `/problems/cache-invalidation-unclear/`
-- Present languages: C#, Java, Python, Rust, TypeScript
-- Missing languages:
-  - c
-  - cpp
-  - go
-  - js
-- Findings:
-  - Missing launch language examples: C, C++, Go, JavaScript.
-
-### P1 problems/concurrency-assumptions-hidden
-
-- Title: Concurrency assumptions hidden
-- Status: draft
-- Source: `src/content/problems/concurrency-assumptions-hidden.md`
-- Route: `/problems/concurrency-assumptions-hidden/`
-- Present languages: C#, Java, Python, Rust, TypeScript
-- Missing languages:
-  - c
-  - cpp
-  - go
-  - js
-- Findings:
-  - Impact may be too short to explain why this is a problem.
-  - Missing launch language examples: C, C++, Go, JavaScript.
-
-### P1 problems/configuration-drift
-
-- Title: Configuration drift
-- Status: draft
-- Source: `src/content/problems/configuration-drift.md`
-- Route: `/problems/configuration-drift/`
-- Present languages: C#, Java, Python, Rust, TypeScript
-- Missing languages:
-  - c
-  - cpp
-  - go
-  - js
-- Findings:
-  - Impact may be too short to explain why this is a problem.
-  - Missing launch language examples: C, C++, Go, JavaScript.
+  - Missing section: Description
+  - Missing section: Why It Matters
+  - Missing section: Code Impact
+  - No code examples found.
 
 ### P1 problems/cross-cutting-policy-scattered
 
-- Title: Cross-cutting policy scattered
+- Title: Cross-Cutting Policy Scattered
 - Status: draft
 - Source: `src/content/problems/cross-cutting-policy-scattered.md`
 - Route: `/problems/cross-cutting-policy-scattered/`
-- Present languages: C#, Java, Python, Rust, TypeScript
+- Present languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - go
-  - js
+  - none
 - Findings:
-  - Impact may be too short to explain why this is a problem.
-  - Missing launch language examples: C, C++, Go, JavaScript.
+  - none
 
 ### P1 problems/data-migration-risk
 
-- Title: Data migration risk
+- Title: Data Migration Risk
 - Status: draft
 - Source: `src/content/problems/data-migration-risk.md`
 - Route: `/problems/data-migration-risk/`
-- Present languages: C#, Java, Python, Rust, TypeScript
+- Present languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - go
-  - js
+  - none
 - Findings:
-  - Impact may be too short to explain why this is a problem.
-  - Missing launch language examples: C, C++, Go, JavaScript.
+  - none
+
+### P1 problems/digging-past-evidence
+
+- Title: Digging Past Evidence
+- Status: seed
+- Source: `src/content/problems/digging-past-evidence.md`
+- Route: `/problems/digging-past-evidence/`
+- Present languages: none
+- Missing languages:
+  - none
+- Findings:
+  - Missing section: Description
+  - Missing section: Why It Matters
+  - Missing section: Code Impact
+  - No code examples found.
 
 ### P1 problems/domain-logic-buried-in-presentation
 
@@ -326,14 +156,11 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Status: draft
 - Source: `src/content/problems/domain-logic-buried-in-presentation.md`
 - Route: `/problems/domain-logic-buried-in-presentation/`
-- Present languages: C#, Java, Python, Rust, TypeScript
+- Present languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - go
-  - js
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, Go, JavaScript.
+  - none
 
 ### P1 problems/error-context-lost
 
@@ -341,45 +168,62 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Status: draft
 - Source: `src/content/problems/error-context-lost.md`
 - Route: `/problems/error-context-lost/`
-- Present languages: C#, Java, Python, Rust, TypeScript
+- Present languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - go
-  - js
+  - none
 - Findings:
-  - Impact may be too short to explain why this is a problem.
-  - Missing launch language examples: C, C++, Go, JavaScript.
+  - none
+
+### P1 problems/guess-driven-debugging
+
+- Title: Guess-Driven Debugging
+- Status: seed
+- Source: `src/content/problems/guess-driven-debugging.md`
+- Route: `/problems/guess-driven-debugging/`
+- Present languages: none
+- Missing languages:
+  - none
+- Findings:
+  - Missing section: Description
+  - Missing section: Why It Matters
+  - Missing section: Code Impact
+  - No code examples found.
+
+### P1 problems/hidden-concurrency-assumptions
+
+- Title: Hidden Concurrency Assumptions
+- Status: draft
+- Source: `src/content/problems/hidden-concurrency-assumptions.md`
+- Route: `/problems/hidden-concurrency-assumptions/`
+- Present languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
+- Missing languages:
+  - none
+- Findings:
+  - none
 
 ### P1 problems/hidden-side-effects
 
-- Title: Hidden side effects
+- Title: Hidden Side Effects
 - Status: draft
 - Source: `src/content/problems/hidden-side-effects.md`
 - Route: `/problems/hidden-side-effects/`
-- Present languages: C#, Java, Python, Rust, TypeScript
+- Present languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - go
-  - js
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, Go, JavaScript.
+  - none
 
 ### P1 problems/layer-language-leaks
 
-- Title: Layer language leaks
+- Title: Layer Language Leaks
 - Status: draft
 - Source: `src/content/problems/layer-language-leaks.md`
 - Route: `/problems/layer-language-leaks/`
-- Present languages: C#, Java, Python, Rust, TypeScript
+- Present languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - go
-  - js
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, Go, JavaScript.
+  - none
 
 ### P1 problems/mixed-structure-and-behavior
 
@@ -387,202 +231,233 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Status: draft
 - Source: `src/content/problems/mixed-structure-and-behavior.md`
 - Route: `/problems/mixed-structure-and-behavior/`
-- Present languages: C#, Java, Python, Rust, TypeScript
+- Present languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - go
-  - js
+  - none
 - Findings:
-  - Impact may be too short to explain why this is a problem.
-  - Missing launch language examples: C, C++, Go, JavaScript.
+  - none
 
 ### P1 problems/naming-drift
 
-- Title: Naming drift
+- Title: Naming Drift
 - Status: draft
 - Source: `src/content/problems/naming-drift.md`
 - Route: `/problems/naming-drift/`
-- Present languages: C#, Java, Python, Rust, TypeScript
+- Present languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - go
-  - js
+  - none
 - Findings:
-  - Impact may be too short to explain why this is a problem.
-  - Missing launch language examples: C, C++, Go, JavaScript.
+  - none
 
 ### P1 problems/observability-noise
 
-- Title: Observability noise
+- Title: Observability Noise
 - Status: draft
 - Source: `src/content/problems/observability-noise.md`
 - Route: `/problems/observability-noise/`
-- Present languages: C#, Java, Python, Rust, TypeScript
+- Present languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - go
-  - js
+  - none
 - Findings:
-  - Impact may be too short to explain why this is a problem.
-  - Missing launch language examples: C, C++, Go, JavaScript.
+  - none
 
 ### P1 problems/performance-fix-without-evidence
 
-- Title: Performance fix without evidence
+- Title: Performance Fix Without Evidence
 - Status: draft
 - Source: `src/content/problems/performance-fix-without-evidence.md`
 - Route: `/problems/performance-fix-without-evidence/`
-- Present languages: C#, Java, Python, Rust, TypeScript
+- Present languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - go
-  - js
+  - none
 - Findings:
-  - Impact may be too short to explain why this is a problem.
-  - Missing launch language examples: C, C++, Go, JavaScript.
+  - none
 
 ### P1 problems/raw-input-leaks-inward
 
-- Title: Raw input leaks inward
+- Title: Raw Input Leaks Inward
 - Status: draft
 - Source: `src/content/problems/raw-input-leaks-inward.md`
 - Route: `/problems/raw-input-leaks-inward/`
-- Present languages: C#, Java, Python, Rust, TypeScript
+- Present languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - go
-  - js
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, Go, JavaScript.
+  - none
+
+### P1 problems/repeated-validation-rules
+
+- Title: Repeated Validation Rules
+- Status: seed
+- Source: `src/content/problems/repeated-validation-rules.md`
+- Route: `/problems/repeated-validation-rules/`
+- Present languages: none
+- Missing languages:
+  - none
+- Findings:
+  - Missing section: Description
+  - Missing section: Why It Matters
+  - Missing section: Code Impact
+  - No code examples found.
+
+### P1 problems/review-comment-lacks-pattern-name
+
+- Title: Review Comment Lacks a Pattern Name
+- Status: seed
+- Source: `src/content/problems/review-comment-lacks-pattern-name.md`
+- Route: `/problems/review-comment-lacks-pattern-name/`
+- Present languages: none
+- Missing languages:
+  - none
+- Findings:
+  - Missing section: Description
+  - Missing section: Why It Matters
+  - Missing section: Code Impact
+  - No code examples found.
 
 ### P1 problems/risky-legacy-change
 
-- Title: Risky legacy change
+- Title: Risky Legacy Change
 - Status: draft
 - Source: `src/content/problems/risky-legacy-change.md`
 - Route: `/problems/risky-legacy-change/`
-- Present languages: C#, Java, Python, Rust, TypeScript
+- Present languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - go
-  - js
+  - none
 - Findings:
-  - Impact may be too short to explain why this is a problem.
-  - Missing launch language examples: C, C++, Go, JavaScript.
+  - none
 
 ### P1 problems/silent-failure-paths
 
-- Title: Silent failure paths
+- Title: Silent Failure Paths
 - Status: draft
 - Source: `src/content/problems/silent-failure-paths.md`
 - Route: `/problems/silent-failure-paths/`
-- Present languages: C#, Java, Python, Rust, TypeScript
+- Present languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - go
-  - js
+  - none
 - Findings:
-  - Impact may be too short to explain why this is a problem.
-  - Missing launch language examples: C, C++, Go, JavaScript.
+  - none
+
+### P1 problems/solution-before-requirements
+
+- Title: Solution Before Requirements
+- Status: seed
+- Source: `src/content/problems/solution-before-requirements.md`
+- Route: `/problems/solution-before-requirements/`
+- Present languages: none
+- Missing languages:
+  - none
+- Findings:
+  - Missing section: Description
+  - Missing section: Why It Matters
+  - Missing section: Code Impact
+  - No code examples found.
+
+### P1 problems/spec-bent-to-fit-implementation
+
+- Title: Spec Bent to Fit Implementation
+- Status: seed
+- Source: `src/content/problems/spec-bent-to-fit-implementation.md`
+- Route: `/problems/spec-bent-to-fit-implementation/`
+- Present languages: none
+- Missing languages:
+  - none
+- Findings:
+  - Missing section: Description
+  - Missing section: Why It Matters
+  - Missing section: Code Impact
+  - No code examples found.
 
 ### P1 problems/tests-freeze-private-shape
 
-- Title: Tests freeze private shape
+- Title: Tests Freeze Private Shape
 - Status: draft
 - Source: `src/content/problems/tests-freeze-private-shape.md`
 - Route: `/problems/tests-freeze-private-shape/`
-- Present languages: C#, Java, Python, Rust, TypeScript
+- Present languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - go
-  - js
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, Go, JavaScript.
+  - none
 
 ### P1 problems/time-dependent-tests
 
-- Title: Time-dependent tests
+- Title: Time-Dependent Tests
 - Status: draft
 - Source: `src/content/problems/time-dependent-tests.md`
 - Route: `/problems/time-dependent-tests/`
-- Present languages: C#, Java, Python, Rust, TypeScript
+- Present languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - go
-  - js
+  - none
 - Findings:
-  - Impact may be too short to explain why this is a problem.
-  - Missing launch language examples: C, C++, Go, JavaScript.
+  - none
+
+### P1 problems/tooling-contract-implicit
+
+- Title: Tooling Contract Implicit
+- Status: seed
+- Source: `src/content/problems/tooling-contract-implicit.md`
+- Route: `/problems/tooling-contract-implicit/`
+- Present languages: none
+- Missing languages:
+  - none
+- Findings:
+  - Missing section: Description
+  - Missing section: Why It Matters
+  - Missing section: Code Impact
+  - No code examples found.
 
 ### P1 problems/unclear-async-ownership
 
-- Title: Unclear async ownership
+- Title: Unclear Async Ownership
 - Status: draft
 - Source: `src/content/problems/unclear-async-ownership.md`
 - Route: `/problems/unclear-async-ownership/`
-- Present languages: C#, Java, Python, Rust, TypeScript
+- Present languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - go
-  - js
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, Go, JavaScript.
+  - none
+
+### P1 problems/unclear-done-signal
+
+- Title: Unclear Done Signal
+- Status: seed
+- Source: `src/content/problems/unclear-done-signal.md`
+- Route: `/problems/unclear-done-signal/`
+- Present languages: none
+- Missing languages:
+  - none
+- Findings:
+  - Missing section: Description
+  - Missing section: Why It Matters
+  - Missing section: Code Impact
+  - No code examples found.
 
 ### P1 problems/weak-abstractions-hide-context
 
-- Title: Weak abstractions hide context
+- Title: Weak Abstractions Hide Context
 - Status: draft
 - Source: `src/content/problems/weak-abstractions-hide-context.md`
 - Route: `/problems/weak-abstractions-hide-context/`
-- Present languages: C#, Java, Python, Rust, TypeScript
+- Present languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - go
-  - js
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, Go, JavaScript.
+  - none
 
 ### P1 problems/wide-change-radius
 
-- Title: Wide change radius
+- Title: Wide Change Radius
 - Status: draft
 - Source: `src/content/problems/wide-change-radius.md`
 - Route: `/problems/wide-change-radius/`
-- Present languages: C#, Java, Python, Rust, TypeScript
+- Present languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - go
-  - js
+  - none
 - Findings:
-  - Impact may be too short to explain why this is a problem.
-  - Missing launch language examples: C, C++, Go, JavaScript.
-
-### P1 patterns/avoid-premature-agent-architecture
-
-- Title: Avoid Premature Agent Architecture
-- Status: draft
-- Source: `src/content/patterns/avoid-premature-agent-architecture.md`
-- Route: `/patterns/avoid-premature-agent-architecture/`
-- Present languages: C#, Java, Python, Rust, TypeScript
-- Missing languages:
-  - c
-  - cpp
-  - go
-  - js
-- Findings:
-  - Missing launch language examples: C, C++, Go, JavaScript.
+  - none
 
 ### P1 patterns/cap-change-radius
 
@@ -590,14 +465,11 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Status: draft
 - Source: `src/content/patterns/cap-change-radius.md`
 - Route: `/patterns/cap-change-radius/`
-- Present languages: C#, Java, Python, Rust, TypeScript
+- Present languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - go
-  - js
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, Go, JavaScript.
+  - none
 
 ### P1 patterns/centralize-configuration-policy
 
@@ -605,13 +477,11 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Status: draft
 - Source: `src/content/patterns/centralize-configuration-policy.md`
 - Route: `/patterns/centralize-configuration-policy/`
-- Present languages: C#, Go, Java, Python, Rust, TypeScript
+- Present languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - js
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, JavaScript.
+  - none
 
 ### P1 patterns/characterize-before-changing
 
@@ -619,13 +489,11 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Status: draft
 - Source: `src/content/patterns/characterize-before-changing.md`
 - Route: `/patterns/characterize-before-changing/`
-- Present languages: C#, Go, Java, Python, Rust, TypeScript
+- Present languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - js
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, JavaScript.
+  - none
 
 ### P1 patterns/chunk-statements
 
@@ -633,13 +501,11 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Status: draft
 - Source: `src/content/patterns/chunk-statements.md`
 - Route: `/patterns/chunk-statements/`
-- Present languages: C#, Go, Java, Python, Rust, TypeScript
+- Present languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - js
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, JavaScript.
+  - none
 
 ### P1 patterns/inject-time-and-randomness
 
@@ -647,13 +513,11 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Status: draft
 - Source: `src/content/patterns/inject-time-and-randomness.md`
 - Route: `/patterns/inject-time-and-randomness/`
-- Present languages: C#, Go, Java, Python, Rust, TypeScript
+- Present languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - js
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, JavaScript.
+  - none
 
 ### P1 patterns/keep-async-boundaries-explicit
 
@@ -661,13 +525,11 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Status: draft
 - Source: `src/content/patterns/keep-async-boundaries-explicit.md`
 - Route: `/patterns/keep-async-boundaries-explicit/`
-- Present languages: C#, Go, Java, Python, Rust, TypeScript
+- Present languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - js
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, JavaScript.
+  - none
 
 ### P1 patterns/make-invalid-states-hard-to-express
 
@@ -675,14 +537,11 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Status: draft
 - Source: `src/content/patterns/make-invalid-states-hard-to-express.md`
 - Route: `/patterns/make-invalid-states-hard-to-express/`
-- Present languages: C#, Java, Python, Rust, TypeScript
+- Present languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - go
-  - js
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, Go, JavaScript.
+  - none
 
 ### P1 patterns/make-side-effects-visible
 
@@ -690,13 +549,11 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Status: draft
 - Source: `src/content/patterns/make-side-effects-visible.md`
 - Route: `/patterns/make-side-effects-visible/`
-- Present languages: C#, Go, Java, Python, Rust, TypeScript
+- Present languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - js
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, JavaScript.
+  - none
 
 ### P1 patterns/make-state-transitions-explicit
 
@@ -704,14 +561,11 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Status: draft
 - Source: `src/content/patterns/make-state-transitions-explicit.md`
 - Route: `/patterns/make-state-transitions-explicit/`
-- Present languages: C#, Java, Python, Rust, TypeScript
+- Present languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - go
-  - js
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, Go, JavaScript.
+  - none
 
 ### P1 patterns/name-cross-layer-contracts
 
@@ -719,14 +573,11 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Status: draft
 - Source: `src/content/patterns/name-cross-layer-contracts.md`
 - Route: `/patterns/name-cross-layer-contracts/`
-- Present languages: C#, Java, Python, Rust, TypeScript
+- Present languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - go
-  - js
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, Go, JavaScript.
+  - none
 
 ### P1 patterns/parse-dont-validate
 
@@ -734,28 +585,35 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Status: draft
 - Source: `src/content/patterns/parse-dont-validate.md`
 - Route: `/patterns/parse-dont-validate/`
-- Present languages: C#, Go, Java, Python, Rust, TypeScript
+- Present languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - js
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, JavaScript.
+  - none
+
+### P1 patterns/preparatory-refactor
+
+- Title: Preparatory Refactor
+- Status: draft
+- Source: `src/content/patterns/preparatory-refactor.md`
+- Route: `/patterns/preparatory-refactor/`
+- Present languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
+- Missing languages:
+  - none
+- Findings:
+  - none
 
 ### P1 patterns/replace-boolean-flag-with-choice
 
-- Title: Replace Boolean Flag With a Choice
+- Title: Replace Boolean Flag with a Choice
 - Status: draft
 - Source: `src/content/patterns/replace-boolean-flag-with-choice.md`
 - Route: `/patterns/replace-boolean-flag-with-choice/`
-- Present languages: C#, Java, Python, Rust, TypeScript
+- Present languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - go
-  - js
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, Go, JavaScript.
+  - none
 
 ### P1 patterns/return-structured-errors
 
@@ -763,13 +621,11 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Status: draft
 - Source: `src/content/patterns/return-structured-errors.md`
 - Route: `/patterns/return-structured-errors/`
-- Present languages: C#, Go, Java, Python, Rust, TypeScript
+- Present languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - js
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, JavaScript.
+  - none
 
 ### P1 patterns/explaining-variable
 
@@ -777,13 +633,11 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Status: draft
 - Source: `src/content/patterns/explaining-variable.md`
 - Route: `/patterns/explaining-variable/`
-- Present languages: C#, Java, JavaScript, Python, Rust, TypeScript
+- Present languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - go
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, Go.
+  - none
 
 ### P1 concepts/agent-guidance
 
@@ -791,19 +645,11 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Status: draft
 - Source: `src/content/concepts/agent-guidance.md`
 - Route: `/concepts/agent-guidance/`
-- Present languages: none
+- Present languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
-  - ts
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript.
+  - none
 
 ### P1 concepts/boundary-trust
 
@@ -811,19 +657,11 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Status: draft
 - Source: `src/content/concepts/boundary-trust.md`
 - Route: `/concepts/boundary-trust/`
-- Present languages: none
+- Present languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
-  - ts
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript.
+  - none
 
 ### P1 concepts/change-radius
 
@@ -831,19 +669,11 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Status: draft
 - Source: `src/content/concepts/change-radius.md`
 - Route: `/concepts/change-radius/`
-- Present languages: none
+- Present languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
-  - ts
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript.
+  - none
 
 ### P1 concepts/cognitive-burden
 
@@ -851,19 +681,11 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Status: draft
 - Source: `src/content/concepts/cognitive-burden.md`
 - Route: `/concepts/cognitive-burden/`
-- Present languages: none
+- Present languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
-  - ts
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript.
+  - none
 
 ### P1 concepts/observable-behavior
 
@@ -871,19 +693,11 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Status: draft
 - Source: `src/content/concepts/observable-behavior.md`
 - Route: `/concepts/observable-behavior/`
-- Present languages: none
+- Present languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
-  - ts
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript.
+  - none
 
 ### P1 concepts/reader-locality
 
@@ -891,18 +705,11 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Status: draft
 - Source: `src/content/concepts/reader-locality.md`
 - Route: `/concepts/reader-locality/`
-- Present languages: TypeScript
+- Present languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, C#, Go, Java, JavaScript, Python, Rust.
+  - none
 
 ### P1 concepts/side-effect-visibility
 
@@ -910,19 +717,11 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Status: draft
 - Source: `src/content/concepts/side-effect-visibility.md`
 - Route: `/concepts/side-effect-visibility/`
-- Present languages: none
+- Present languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
-  - ts
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript.
+  - none
 
 ### P1 concepts/state-space
 
@@ -930,19 +729,11 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Status: draft
 - Source: `src/content/concepts/state-space.md`
 - Route: `/concepts/state-space/`
-- Present languages: none
+- Present languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
-  - ts
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript.
+  - none
 
 ### P1 concepts/structure-vs-behavior
 
@@ -950,19 +741,11 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Status: draft
 - Source: `src/content/concepts/structure-vs-behavior.md`
 - Route: `/concepts/structure-vs-behavior/`
-- Present languages: none
+- Present languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
-  - ts
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript.
+  - none
 
 ### P1 concepts/temporal-coupling
 
@@ -970,19 +753,23 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Status: draft
 - Source: `src/content/concepts/temporal-coupling.md`
 - Route: `/concepts/temporal-coupling/`
+- Present languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
+- Missing languages:
+  - none
+- Findings:
+  - none
+
+### P1 references/agentpatterns-ai
+
+- Title: AgentPatterns.ai
+- Status: page
+- Source: `src/content/references/agentpatterns-ai.md`
+- Route: `/references/#agentpatterns-ai`
 - Present languages: none
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
-  - ts
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript.
+  - none
 
 ### P1 references/ai-blindspots
 
@@ -992,15 +779,19 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Route: `/references/#ai-blindspots`
 - Present languages: none
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
-  - ts
+  - none
+- Findings:
+  - none
+
+### P1 references/architectural-metapatterns
+
+- Title: Architectural Metapatterns
+- Status: page
+- Source: `src/content/references/architectural-metapatterns.md`
+- Route: `/references/#architectural-metapatterns`
+- Present languages: none
+- Missing languages:
+  - none
 - Findings:
   - none
 
@@ -1012,35 +803,19 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Route: `/references/#ed-page-s-rust-style`
 - Present languages: none
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
-  - ts
+  - none
 - Findings:
   - none
 
-### P1 references/hillside-patterns
+### P1 references/geepaw-large-scale-refactoring
 
-- Title: Hillside Patterns
+- Title: GeePaw Hill: Large-Scale Refactoring
 - Status: page
-- Source: `src/content/references/hillside-patterns.md`
-- Route: `/references/#hillside-patterns`
+- Source: `src/content/references/geepaw-large-scale-refactoring.md`
+- Route: `/references/#geepaw-large-scale-refactoring`
 - Present languages: none
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
-  - ts
+  - none
 - Findings:
   - none
 
@@ -1052,15 +827,19 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Route: `/references/#interface-refactoring-catalog`
 - Present languages: none
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
-  - ts
+  - none
+- Findings:
+  - none
+
+### P1 references/tidy-first
+
+- Title: Kent Beck: Tidy First?
+- Status: page
+- Source: `src/content/references/tidy-first.md`
+- Route: `/references/#tidy-first`
+- Present languages: none
+- Missing languages:
+  - none
 - Findings:
   - none
 
@@ -1072,15 +851,7 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Route: `/references/#laws-of-software-engineering`
 - Present languages: none
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
-  - ts
+  - none
 - Findings:
   - none
 
@@ -1092,15 +863,19 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Route: `/references/#laws-of-ux`
 - Present languages: none
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
-  - ts
+  - none
+- Findings:
+  - none
+
+### P1 references/microsoft-pragmatic-rust-checklist
+
+- Title: Microsoft Pragmatic Rust Guidelines Checklist
+- Status: page
+- Source: `src/content/references/microsoft-pragmatic-rust-checklist.md`
+- Route: `/references/#microsoft-pragmatic-rust-checklist`
+- Present languages: none
+- Missing languages:
+  - none
 - Findings:
   - none
 
@@ -1112,35 +887,19 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Route: `/references/#patterns-dev`
 - Present languages: none
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
-  - ts
+  - none
 - Findings:
   - none
 
 ### P1 references/portland-pattern-repository
 
-- Title: Portland Pattern Repository
+- Title: Portland Pattern Repository (C2)
 - Status: page
 - Source: `src/content/references/portland-pattern-repository.md`
 - Route: `/references/#portland-pattern-repository`
 - Present languages: none
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
-  - ts
+  - none
 - Findings:
   - none
 
@@ -1152,15 +911,7 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Route: `/references/#refactoring-guru-catalog`
 - Present languages: none
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
-  - ts
+  - none
 - Findings:
   - none
 
@@ -1172,15 +923,7 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Route: `/references/#refactoring-com`
 - Present languages: none
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
-  - ts
+  - none
 - Findings:
   - none
 
@@ -1192,15 +935,19 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Route: `/references/#refactoring-com-catalog`
 - Present languages: none
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
-  - ts
+  - none
+- Findings:
+  - none
+
+### P1 references/rust-api-guidelines-checklist
+
+- Title: Rust API Guidelines Checklist
+- Status: page
+- Source: `src/content/references/rust-api-guidelines-checklist.md`
+- Route: `/references/#rust-api-guidelines-checklist`
+- Present languages: none
+- Missing languages:
+  - none
 - Findings:
   - none
 
@@ -1212,35 +959,19 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Route: `/references/#sourcemaking-code-smells`
 - Present languages: none
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
-  - ts
+  - none
 - Findings:
   - none
 
-### P1 references/tidy-first
+### P1 references/hillside-patterns
 
-- Title: Tidy First?
+- Title: The Hillside Group Patterns
 - Status: page
-- Source: `src/content/references/tidy-first.md`
-- Route: `/references/#tidy-first`
+- Source: `src/content/references/hillside-patterns.md`
+- Route: `/references/#hillside-patterns`
 - Present languages: none
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
-  - ts
+  - none
 - Findings:
   - none
 
@@ -1252,206 +983,45 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Route: `/references/#understand-legacy-code-articles`
 - Present languages: none
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
-  - ts
+  - none
 - Findings:
   - none
 
-### P2 problems/context-drift
+### P1 references/working-effectively-with-legacy-code
 
-- Title: Context Drift
-- Status: seed
-- Source: `src/content/problems/context-drift.md`
-- Route: `/problems/context-drift/`
+- Title: Working Effectively with Legacy Code
+- Status: page
+- Source: `src/content/references/working-effectively-with-legacy-code.md`
+- Route: `/references/#working-effectively-with-legacy-code`
 - Present languages: none
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
-  - ts
+  - none
 - Findings:
-  - No code examples found.
-  - Missing launch language examples: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript.
+  - none
 
-### P2 problems/digging-past-evidence
+### P2 problems/unclear-cache-invalidation
 
-- Title: Digging Past Evidence
+- Title: Unclear Cache Invalidation
 - Status: seed
-- Source: `src/content/problems/digging-past-evidence.md`
-- Route: `/problems/digging-past-evidence/`
-- Present languages: none
+- Source: `src/content/problems/unclear-cache-invalidation.md`
+- Route: `/problems/unclear-cache-invalidation/`
+- Present languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
-  - ts
+  - none
 - Findings:
-  - No code examples found.
-  - Missing launch language examples: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript.
+  - none
 
-### P2 problems/guess-driven-debugging
+### P2 patterns/avoid-premature-agent-architecture
 
-- Title: Guess-Driven Debugging
+- Title: Avoid Premature Agent Architecture
 - Status: seed
-- Source: `src/content/problems/guess-driven-debugging.md`
-- Route: `/problems/guess-driven-debugging/`
-- Present languages: none
+- Source: `src/content/patterns/avoid-premature-agent-architecture.md`
+- Route: `/patterns/avoid-premature-agent-architecture/`
+- Present languages: C#, Java, Python, Rust, TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
-  - ts
+  - none
 - Findings:
-  - No code examples found.
-  - Missing launch language examples: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript.
-
-### P2 problems/repeated-validation-rules
-
-- Title: Repeated validation rules
-- Status: seed
-- Source: `src/content/problems/repeated-validation-rules.md`
-- Route: `/problems/repeated-validation-rules/`
-- Present languages: none
-- Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
-  - ts
-- Findings:
-  - No code examples found.
-  - Missing launch language examples: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript.
-
-### P2 problems/review-comment-lacks-pattern-name
-
-- Title: Review comment lacks a pattern name
-- Status: seed
-- Source: `src/content/problems/review-comment-lacks-pattern-name.md`
-- Route: `/problems/review-comment-lacks-pattern-name/`
-- Present languages: none
-- Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
-  - ts
-- Findings:
-  - No code examples found.
-  - Missing launch language examples: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript.
-
-### P2 problems/solution-before-requirements
-
-- Title: Solution Before Requirements
-- Status: seed
-- Source: `src/content/problems/solution-before-requirements.md`
-- Route: `/problems/solution-before-requirements/`
-- Present languages: none
-- Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
-  - ts
-- Findings:
-  - No code examples found.
-  - Missing launch language examples: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript.
-
-### P2 problems/spec-bent-to-fit-implementation
-
-- Title: Spec Bent to Fit Implementation
-- Status: seed
-- Source: `src/content/problems/spec-bent-to-fit-implementation.md`
-- Route: `/problems/spec-bent-to-fit-implementation/`
-- Present languages: none
-- Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
-  - ts
-- Findings:
-  - No code examples found.
-  - Missing launch language examples: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript.
-
-### P2 problems/tooling-contract-implicit
-
-- Title: Tooling contract implicit
-- Status: seed
-- Source: `src/content/problems/tooling-contract-implicit.md`
-- Route: `/problems/tooling-contract-implicit/`
-- Present languages: none
-- Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
-  - ts
-- Findings:
-  - No code examples found.
-  - Missing launch language examples: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript.
-
-### P2 problems/unclear-done-signal
-
-- Title: Unclear done signal
-- Status: seed
-- Source: `src/content/problems/unclear-done-signal.md`
-- Route: `/problems/unclear-done-signal/`
-- Present languages: none
-- Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
-  - ts
-- Findings:
-  - No code examples found.
-  - Missing launch language examples: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript.
+  - none
 
 ### P2 patterns/choose-change-batch-size
 
@@ -1461,16 +1031,9 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Route: `/patterns/choose-change-batch-size/`
 - Present languages: TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, C#, Go, Java, JavaScript, Python, Rust.
+  - none
 
 ### P2 patterns/constrain-agent-edit-surface
 
@@ -1480,16 +1043,9 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Route: `/patterns/constrain-agent-edit-surface/`
 - Present languages: TypeScript, Markdown
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, C#, Go, Java, JavaScript, Python, Rust.
+  - none
 
 ### P2 patterns/contain-observability-policy
 
@@ -1499,35 +1055,21 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Route: `/patterns/contain-observability-policy/`
 - Present languages: TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, C#, Go, Java, JavaScript, Python, Rust.
+  - none
 
 ### P2 patterns/debug-from-evidence
 
-- Title: Debug From Evidence
+- Title: Debug from Evidence
 - Status: seed
 - Source: `src/content/patterns/debug-from-evidence.md`
 - Route: `/patterns/debug-from-evidence/`
 - Present languages: TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, C#, Go, Java, JavaScript, Python, Rust.
+  - none
 
 ### P2 patterns/delete-dead-code
 
@@ -1537,16 +1079,9 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Route: `/patterns/delete-dead-code/`
 - Present languages: TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, C#, Go, Java, JavaScript, Python, Rust.
+  - none
 
 ### P2 patterns/delete-redundant-comments
 
@@ -1556,16 +1091,9 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Route: `/patterns/delete-redundant-comments/`
 - Present languages: TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, C#, Go, Java, JavaScript, Python, Rust.
+  - none
 
 ### P2 patterns/extract-helper-after-locality
 
@@ -1575,16 +1103,9 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Route: `/patterns/extract-helper-after-locality/`
 - Present languages: TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, C#, Go, Java, JavaScript, Python, Rust.
+  - none
 
 ### P2 patterns/keep-agent-handoff-current
 
@@ -1594,17 +1115,9 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Route: `/patterns/keep-agent-handoff-current/`
 - Present languages: Markdown
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
-  - ts
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript.
+  - none
 
 ### P2 patterns/keep-name-current
 
@@ -1614,16 +1127,9 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Route: `/patterns/keep-name-current/`
 - Present languages: TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, C#, Go, Java, JavaScript, Python, Rust.
+  - none
 
 ### P2 patterns/keep-structure-reversible
 
@@ -1633,16 +1139,9 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Route: `/patterns/keep-structure-reversible/`
 - Present languages: TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, C#, Go, Java, JavaScript, Python, Rust.
+  - none
 
 ### P2 patterns/let-tools-handle-mechanics
 
@@ -1652,16 +1151,9 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Route: `/patterns/let-tools-handle-mechanics/`
 - Present languages: TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, C#, Go, Java, JavaScript, Python, Rust.
+  - none
 
 ### P2 patterns/make-cache-ownership-explicit
 
@@ -1671,16 +1163,9 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Route: `/patterns/make-cache-ownership-explicit/`
 - Present languages: TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, C#, Go, Java, JavaScript, Python, Rust.
+  - none
 
 ### P2 patterns/make-failures-observable
 
@@ -1690,16 +1175,9 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Route: `/patterns/make-failures-observable/`
 - Present languages: TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, C#, Go, Java, JavaScript, Python, Rust.
+  - none
 
 ### P2 patterns/make-parameters-explicit
 
@@ -1709,16 +1187,9 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Route: `/patterns/make-parameters-explicit/`
 - Present languages: TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, C#, Go, Java, JavaScript, Python, Rust.
+  - none
 
 ### P2 patterns/make-stop-conditions-explicit
 
@@ -1728,17 +1199,9 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Route: `/patterns/make-stop-conditions-explicit/`
 - Present languages: Markdown
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
-  - ts
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript.
+  - none
 
 ### P2 patterns/make-validation-policy-explicit
 
@@ -1748,16 +1211,9 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Route: `/patterns/make-validation-policy-explicit/`
 - Present languages: TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, C#, Go, Java, JavaScript, Python, Rust.
+  - none
 
 ### P2 patterns/measure-before-optimizing
 
@@ -1767,16 +1223,9 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Route: `/patterns/measure-before-optimizing/`
 - Present languages: TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, C#, Go, Java, JavaScript, Python, Rust.
+  - none
 
 ### P2 patterns/move-declaration-and-initialization-together
 
@@ -1786,16 +1235,9 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Route: `/patterns/move-declaration-and-initialization-together/`
 - Present languages: TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, C#, Go, Java, JavaScript, Python, Rust.
+  - none
 
 ### P2 patterns/move-domain-rules-inward
 
@@ -1805,16 +1247,9 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Route: `/patterns/move-domain-rules-inward/`
 - Present languages: TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, C#, Go, Java, JavaScript, Python, Rust.
+  - none
 
 ### P2 patterns/name-async-ownership
 
@@ -1824,16 +1259,9 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Route: `/patterns/name-async-ownership/`
 - Present languages: TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, C#, Go, Java, JavaScript, Python, Rust.
+  - none
 
 ### P2 patterns/name-coupling
 
@@ -1843,16 +1271,9 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Route: `/patterns/name-coupling/`
 - Present languages: TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, C#, Go, Java, JavaScript, Python, Rust.
+  - none
 
 ### P2 patterns/normalize-symmetries
 
@@ -1862,16 +1283,9 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Route: `/patterns/normalize-symmetries/`
 - Present languages: TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, C#, Go, Java, JavaScript, Python, Rust.
+  - none
 
 ### P2 patterns/pin-authoritative-context
 
@@ -1881,16 +1295,9 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Route: `/patterns/pin-authoritative-context/`
 - Present languages: TypeScript, Markdown
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, C#, Go, Java, JavaScript, Python, Rust.
+  - none
 
 ### P2 patterns/prepare-the-workspace
 
@@ -1900,16 +1307,9 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Route: `/patterns/prepare-the-workspace/`
 - Present languages: TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, C#, Go, Java, JavaScript, Python, Rust.
+  - none
 
 ### P2 patterns/preserve-error-context
 
@@ -1919,16 +1319,9 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Route: `/patterns/preserve-error-context/`
 - Present languages: TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, C#, Go, Java, JavaScript, Python, Rust.
+  - none
 
 ### P2 patterns/preserve-human-changes
 
@@ -1938,17 +1331,9 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Route: `/patterns/preserve-human-changes/`
 - Present languages: Markdown
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
-  - ts
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript.
+  - none
 
 ### P2 patterns/preserve-the-spec
 
@@ -1958,16 +1343,9 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Route: `/patterns/preserve-the-spec/`
 - Present languages: TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, C#, Go, Java, JavaScript, Python, Rust.
+  - none
 
 ### P2 patterns/report-verification-honestly
 
@@ -1977,16 +1355,9 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Route: `/patterns/report-verification-honestly/`
 - Present languages: TypeScript, Markdown
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, C#, Go, Java, JavaScript, Python, Rust.
+  - none
 
 ### P2 patterns/review-generated-code-normally
 
@@ -1996,36 +1367,33 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Route: `/patterns/review-generated-code-normally/`
 - Present languages: TypeScript, Markdown
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, C#, Go, Java, JavaScript, Python, Rust.
+  - none
 
 ### P2 patterns/separate-exploration-from-editing
 
-- Title: Separate Exploration From Editing
+- Title: Separate Exploration from Editing
 - Status: seed
 - Source: `src/content/patterns/separate-exploration-from-editing.md`
 - Route: `/patterns/separate-exploration-from-editing/`
 - Present languages: Markdown
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
-  - ts
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript.
+  - none
+
+### P2 patterns/split-flag-into-named-operations
+
+- Title: Split Flag into Named Operations
+- Status: seed
+- Source: `src/content/patterns/split-flag-into-named-operations.md`
+- Route: `/patterns/split-flag-into-named-operations/`
+- Present languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
+- Missing languages:
+  - none
+- Findings:
+  - none
 
 ### P2 patterns/state-requirements-before-solutions
 
@@ -2035,16 +1403,9 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Route: `/patterns/state-requirements-before-solutions/`
 - Present languages: TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, C#, Go, Java, JavaScript, Python, Rust.
+  - none
 
 ### P2 patterns/stop-and-reframe
 
@@ -2054,16 +1415,9 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Route: `/patterns/stop-and-reframe/`
 - Present languages: TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, C#, Go, Java, JavaScript, Python, Rust.
+  - none
 
 ### P2 patterns/strengthen-cohesion
 
@@ -2073,16 +1427,9 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Route: `/patterns/strengthen-cohesion/`
 - Present languages: TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, C#, Go, Java, JavaScript, Python, Rust.
+  - none
 
 ### P2 patterns/untangle-before-changing
 
@@ -2092,16 +1439,9 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Route: `/patterns/untangle-before-changing/`
 - Present languages: TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, C#, Go, Java, JavaScript, Python, Rust.
+  - none
 
 ### P2 patterns/write-explaining-comments
 
@@ -2111,16 +1451,9 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Route: `/patterns/write-explaining-comments/`
 - Present languages: TypeScript
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, C#, Go, Java, JavaScript, Python, Rust.
+  - none
 
 ### P2 concepts/change-economics
 
@@ -2130,17 +1463,9 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Route: `/concepts/change-economics/`
 - Present languages: none
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
-  - ts
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript.
+  - none
 
 ### P2 concepts/cohesion
 
@@ -2150,17 +1475,9 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Route: `/concepts/cohesion/`
 - Present languages: none
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
-  - ts
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript.
+  - none
 
 ### P2 concepts/context-hygiene
 
@@ -2170,17 +1487,9 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Route: `/concepts/context-hygiene/`
 - Present languages: none
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
-  - ts
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript.
+  - none
 
 ### P2 concepts/coupling
 
@@ -2190,17 +1499,9 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Route: `/concepts/coupling/`
 - Present languages: none
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
-  - ts
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript.
+  - none
 
 ### P2 concepts/reversibility
 
@@ -2210,17 +1511,9 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Route: `/concepts/reversibility/`
 - Present languages: none
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
-  - ts
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript.
+  - none
 
 ### P2 concepts/review-batch-size
 
@@ -2230,14 +1523,30 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Route: `/concepts/review-batch-size/`
 - Present languages: none
 - Missing languages:
-  - c
-  - cpp
-  - csharp
-  - go
-  - java
-  - js
-  - python
-  - rust
-  - ts
+  - none
 - Findings:
-  - Missing launch language examples: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript.
+  - none
+
+### P2 concepts/time-of-check-to-time-of-use
+
+- Title: Time-Of-Check to Time-Of-Use
+- Status: seed
+- Source: `src/content/concepts/time-of-check-to-time-of-use.md`
+- Route: `/concepts/time-of-check-to-time-of-use/`
+- Present languages: none
+- Missing languages:
+  - none
+- Findings:
+  - none
+
+### P2 concepts/yagni
+
+- Title: YAGNI
+- Status: seed
+- Source: `src/content/concepts/yagni.md`
+- Route: `/concepts/yagni/`
+- Present languages: none
+- Missing languages:
+  - none
+- Findings:
+  - none

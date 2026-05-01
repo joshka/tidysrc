@@ -22,7 +22,7 @@ concepts:
   - "agent-guidance"
 related:
   - "smallest-trustworthy-verification"
-  - "observable-behavior-tests"
+  - "test-observable-behavior"
   - "debug-from-evidence"
 ---
 

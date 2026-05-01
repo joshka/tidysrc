@@ -21,7 +21,7 @@ concepts:
   - "agent-guidance"
   - "boundary-trust"
 related:
-  - "repo-local-instructions-win"
+  - "follow-existing-conventions"
   - "prepare-the-workspace"
   - "preserve-the-spec"
 ---

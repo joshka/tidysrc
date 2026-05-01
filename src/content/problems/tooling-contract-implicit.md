@@ -1,6 +1,6 @@
 ---
 title: >-
-  Tooling contract implicit
+  Tooling Contract Implicit
 status: seed
 category: tooling
 topics:
@@ -10,7 +10,7 @@ topics:
 summary: >-
   Build, format, lint, generation, or release steps depend on unwritten local knowledge.
 relatedPatterns:
-  - repo-local-instructions-win
+  - follow-existing-conventions
   - smallest-trustworthy-verification
   - separate-structure-from-behavior
 relatedConcepts:
@@ -35,7 +35,7 @@ The repo becomes harder to change because the done signal is tribal knowledge.
 - What command proves this kind of change is complete?
 - Where should that command be documented for humans and agents?
 - Are generated artifacts owned by source or by a build step?
-- Can repo-local instructions state the precedence and verification path?
+- Can existing conventions state the precedence and verification path?
 
 ## Approach
 

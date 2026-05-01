@@ -22,9 +22,9 @@ concepts:
   - "cognitive-burden"
   - "agent-guidance"
 related:
-  - "observable-behavior-tests"
+  - "test-observable-behavior"
   - "avoid-premature-agent-architecture"
-  - "repo-local-instructions-win"
+  - "follow-existing-conventions"
 ---
 
 ## Core Idea
@@ -34,8 +34,8 @@ ignore local style, or make future changes harder. The review standard should no
 author is a tool.
 
 The useful distinction is provenance, not quality. A generated diff may need extra scrutiny around
-contracts, examples, and verification because the author can produce plausible code without a
-stable model of the system.
+contracts, examples, and verification because the author can produce plausible code without a stable
+model of the system.
 
 This pattern does not reject generated code. It rejects treating a green check as a substitute for
 reviewing behavior, names, ownership, and future maintenance.

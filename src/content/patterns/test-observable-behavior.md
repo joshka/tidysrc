@@ -1,9 +1,9 @@
 ---
 title: >-
-  Observable Behavior Tests
+  Test Observable Behavior
 summary: >-
   Protect what callers can observe instead of freezing private implementation shape.
-status: stable
+status: reviewed
 tags:
   - "testing"
   - "review"
@@ -13,9 +13,12 @@ audiences:
   - "agents"
   - "learners"
 languages:
+  - "c"
+  - "cpp"
   - "csharp"
   - "go"
   - "java"
+  - "js"
   - "python"
   - "rust"
   - "ts"
@@ -34,6 +37,11 @@ Observable behavior tests protect the contract a caller would notice: returned v
 rendered output, persisted state, events, or boundary side effects. They leave room to rename
 helpers, move code, and simplify internals without rewriting tests. The test should fail when
 behavior changes, not when the private route to that behavior changes.
+
+Characterization tests are one form of observable behavior test: they record what existing code does
+before a risky change, especially in legacy code. Observable behavior testing is the broader habit:
+it also applies to new code and ordinary refactors where the important question is what callers can
+observe.
 
 Reach for this pattern when a test exists mainly to protect behavior through future refactors, so it
 should describe the stable boundary instead of the current implementation path.
@@ -74,6 +82,36 @@ prove a private helper was called unless that helper owns a real contract.
 
 ## Examples
 
+### Parser contract
+
+The test protects the returned parse result instead of asserting which helper consumed each field.
+
+```c title="tests/parser_test.c"
+void test_parse_title_field_sets_record_title(void) {
+    struct record record = {0};
+
+    bool ok = parse_field(&record, "title", "Release Notes");
+
+    assert_true(ok);
+    assert_string_equal(record.title, "Release Notes");
+}
+```
+
+### Exported result
+
+The test verifies the file contract rather than the renderer class or helper path used to build it.
+
+```cpp title="tests/report_export_test.cpp"
+TEST(ReportExport, WritesPdfWithReportTitle) {
+    Report report = Report::with_title("Quarterly Review");
+
+    ExportedFile file = export_pdf_report(report);
+
+    EXPECT_EQ(file.content_type(), "application/pdf");
+    EXPECT_THAT(file.bytes(), ContainsBytes("Quarterly Review"));
+}
+```
+
 ### Test the rendered result
 
 The assertion checks what the rendered catalog exposes instead of pinning which helper sorted the
@@ -87,7 +125,19 @@ it('shows stable patterns first', () => {
 });
 ```
 
-### Assert behavior at the Rust boundary
+### Visible UI state
+
+The test protects what the dashboard renders instead of checking which renderer function was called.
+
+```js title="renderDashboard.test.js"
+it('shows the empty dashboard message', () => {
+  const html = renderDashboard({ widgets: [] });
+
+  expect(html).toContain('No widgets configured');
+});
+```
+
+### Public search boundary
 
 The test protects search behavior through the public search boundary, leaving internal indexing free
 to change.
@@ -101,20 +151,20 @@ fn finds_pattern_by_problem_terms() {
 }
 ```
 
-### Go API behavior instead of internal calls
+### API behavior instead of internal calls
 
 The test checks the returned pattern slugs instead of asserting how the search implementation walks
 its data.
 
 ```go title="search_test.go"
 func TestSearchFindsProblemTerms(t *testing.T) {
-    results := Search(patterns, "mutation inside expressions")
+    results := Search(patterns, "nested validation")
 
-    require.Contains(t, slugs(results), "avoid-premature-agent-architecture")
+    require.Contains(t, slugs(results), "guard-clause")
 }
 ```
 
-### C# asserts the returned contract
+### Returned contract
 
 The test protects the API result instead of the private helper used to sort it.
 
@@ -128,7 +178,7 @@ public void StablePatternsAppearFirst()
 }
 ```
 
-### Java checks the response body
+### Response body
 
 The test leaves repository and mapper internals free to change.
 
@@ -141,7 +191,7 @@ void rendersStablePattern() {
 }
 ```
 
-### Python tests the command result
+### Command result
 
 The assertion checks the behavior the CLI user sees, not which helper built it.
 

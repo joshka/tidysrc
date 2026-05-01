@@ -4,4 +4,4 @@ title: >-
 href: "https://refactoring.guru/refactoring/catalog"
 ---
 
-Illustrated refactoring catalog with mechanics, motivation, and before-after examples.
+Before-after examples, mechanics, and motivation for common refactorings.

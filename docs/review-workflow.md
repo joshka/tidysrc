@@ -88,6 +88,14 @@ The fastest loop is:
 Codex should append notes to `docs/correction-queue.md` without applying corrections unless asked.
 That keeps review moving while implementation can happen later or in a separate background pass.
 
+For problem pages, use `docs/problem-page-review-checklist.md` as the reusable review shape. For
+pattern pages, use `docs/pattern-page-review-checklist.md`; most of the same writing checks apply,
+but the section shape is `Core Idea`, `Use When`, `Guidance`, `Tradeoffs`, `Agent Instruction`,
+`Examples`, and `References`.
+
+The most important current problem-page convention is the section sequence: `Description`,
+`Why It Matters`, `Code Impact`, `Signals`, `Diagnostic Questions`, `Approach`, and `Examples`.
+
 Suggested note shape:
 
 ```md
@@ -116,7 +124,7 @@ Recommended batch boundaries:
 
 ## Priority Rules
 
-- `P0`: page surfaces and reviewed/stable content.
+- `P0`: page surfaces and reviewed content.
 - `P1`: draft content and core concepts that need editorial review.
 - `P2`: seed content and future expansion.
 

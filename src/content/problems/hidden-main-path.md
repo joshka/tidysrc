@@ -10,6 +10,7 @@ summary: The normal path is buried under validation, branching, dense expression
   sequencing.
 relatedPatterns:
   - guard-clause
+  - return-structured-errors
   - chunk-statements
   - explaining-variable
 relatedConcepts:
@@ -17,11 +18,31 @@ relatedConcepts:
   - cognitive-burden
 ---
 
-## Impact
+## Description
 
-Readers spend their attention reconstructing execution order instead of judging whether the behavior
-is correct. That makes small reviews feel larger than they are and encourages agents to rewrite more
-code than the change requires.
+A hidden main path happens when the ordinary successful behavior is present but not visually
+dominant. The reader has to pass through validation, setup, branching, cleanup, or dense expression
+logic before they can see the operation the function exists to perform. That weakens [reader
+locality](/concepts/reader-locality/) because the important path is no longer where the reader
+expects to find it.
+
+This is not only about indentation. A flat expression can hide the main path too when it combines
+filtering, naming, sorting, mutation, and fallback behavior in one block. The common smell is that a
+small change still requires the reader to reconstruct the whole function before they can tell where
+the important path begins.
+
+## Why It Matters
+
+Maintainers need to find the ordinary path before they can judge whether a change preserves it. When
+the main path is hidden, reviews spend attention on control-flow reconstruction instead of behavior.
+That creates unnecessary [cognitive burden](/concepts/cognitive-burden/) and makes small edits feel
+larger than they are.
+
+## Code Impact
+
+The real behavior becomes hard to change because every edit has to preserve a stack of incidental
+conditions. People patch the branch they can see, miss the main path they meant to protect, or add
+another nested exception instead of simplifying the function.
 
 ## Signals
 
@@ -40,12 +61,15 @@ code than the change requires.
 
 ## Approach
 
-- Make the main path visible. Use guard clauses for boring preconditions and keep the valid behavior
-  unindented.
-- Chunk nearby statements into logic paragraphs so phase changes are visible before a reader studies
-  each line.
-- Name intermediate decisions when the name carries domain meaning or removes repeated expression
-  parsing.
+- Make the main path visible. Use [guard clauses](/patterns/guard-clause/) for boring preconditions
+  and keep the valid behavior unindented.
+- [Chunk nearby statements](/patterns/chunk-statements/) into logic paragraphs so phase changes are
+  visible before a reader studies each line.
+- Use an [explaining variable](/patterns/explaining-variable/) when a name carries domain meaning or
+  removes repeated expression parsing.
+- When early exits represent recoverable failures, keep them in a
+  [structured error or result](/patterns/return-structured-errors/) shape instead of burying them in
+  control flow.
 - Stop before extracting broad architecture; a clearer local shape often solves the problem.
 
 ## Examples
@@ -54,33 +78,56 @@ These examples show the problem shape, not the finished refactor. In each case, 
 present, but the reader has to dig through validation, branching, or dense expressions before they
 can see it.
 
-### Problem: C cleanup checks hide the socket read
+### Problem: Protocol checks hide the frame dispatch
 
-The behavior is to read a frame, but the real path is buried under resource checks and manual
-cleanup concerns.
+The behavior is to dispatch a valid frame, but null checks, status checks, and frame validation own
+the visual shape of the function.
 
 ```c title="src/session.c"
-int read_session_frame(struct session *session, struct frame *out) {
+int dispatch_session_frame(struct session *session, const struct frame *frame) {
     if (session != NULL) {
-        if (session->socket >= 0) {
-            if (out != NULL) {
-                int bytes = socket_read(session->socket, out->buffer, FRAME_SIZE);
-                if (bytes > 0) {
-                    out->length = bytes;
+        if (session->state == SESSION_READY) {
+            if (frame != NULL) {
+                if (frame->length > 0 && frame->length <= MAX_FRAME_SIZE) {
                     session_touch(session);
-                    return 0;
+                    return dispatch_frame(session, frame);
                 }
-                return ERR_EMPTY_READ;
+                return ERR_BAD_FRAME;
             }
-            return ERR_MISSING_OUTPUT;
+            return ERR_MISSING_FRAME;
         }
-        return ERR_CLOSED_SOCKET;
+        return ERR_SESSION_NOT_READY;
     }
     return ERR_MISSING_SESSION;
 }
 ```
 
-### Problem: C# request checks bury the handler result
+### Better: Reject invalid cases before dispatch
+
+[Guard clauses](/patterns/guard-clause/) leave the frame dispatch left-aligned after the
+preconditions.
+
+```c title="src/session.c"
+int dispatch_session_frame(struct session *session, const struct frame *frame) {
+    if (session == NULL) {
+        return ERR_MISSING_SESSION;
+    }
+    if (session->state != SESSION_READY) {
+        return ERR_SESSION_NOT_READY;
+    }
+    if (frame == NULL) {
+        return ERR_MISSING_FRAME;
+    }
+    if (frame->length == 0 || frame->length > MAX_FRAME_SIZE) {
+        return ERR_BAD_FRAME;
+    }
+
+    session_touch(session);
+    return dispatch_frame(session, frame);
+}
+```
+
+### Problem: Request checks bury the handler result
 
 The handler should clearly publish the invoice command, but the success path sits inside request,
 customer, and authorization checks.
@@ -106,7 +153,30 @@ public async Task<Result> PublishInvoice(Request request, User user)
 }
 ```
 
-### Problem: C++ setup branches obscure the export
+### Better: Make the publish path visible
+
+[Guard clauses](/patterns/guard-clause/) name each rejection before building and sending the
+command. The `Result` return keeps those failures in a [structured
+shape](/patterns/return-structured-errors/) instead of making callers infer them from strings or
+nested branches.
+
+```csharp title="Billing/InvoiceHandler.cs"
+public async Task<Result> PublishInvoice(Request request, User user)
+{
+    if (request is null)
+        return Result.Denied("missing request");
+    if (request.CustomerId is null)
+        return Result.Denied("missing customer id");
+    if (!user.CanPublishInvoices)
+        return Result.Denied("missing invoice permission");
+
+    var command = new PublishInvoiceCommand(request.CustomerId.Value);
+    await bus.Send(command);
+    return Result.Accepted(command.Id);
+}
+```
+
+### Problem: Setup branches obscure the export
 
 The export operation is the only domain action, but option checks and repository lookup take over
 the function's visual shape.
@@ -126,6 +196,32 @@ ExportResult export_report(const Request& request, Repository& repository) {
         return ExportResult::failed("report not found");
     }
     return ExportResult::failed("missing report id");
+}
+```
+
+### Better: Keep export as the final path
+
+[Guard clauses](/patterns/guard-clause/) return from missing and not-ready cases before rendering
+and recording the export. `ExportResult` keeps the failure cases explicit as a [structured
+result](/patterns/return-structured-errors/).
+
+```cpp title="src/export_report.cpp"
+ExportResult export_report(const Request& request, Repository& repository) {
+    if (!request.report_id.has_value()) {
+        return ExportResult::failed("missing report id");
+    }
+
+    auto report = repository.find_report(*request.report_id);
+    if (!report.has_value()) {
+        return ExportResult::failed("report not found");
+    }
+    if (!report->is_ready()) {
+        return ExportResult::failed("report is not ready");
+    }
+
+    auto file = render_report(*report, request.format);
+    repository.record_export(report->id(), file.path());
+    return ExportResult::ok(file.path());
 }
 ```
 
@@ -150,6 +246,28 @@ func PublishReport(ctx context.Context, report *Report, user User) error {
 }
 ```
 
+### Better: Leave publish at the bottom
+
+[Guard clauses](/patterns/guard-clause/) exit each invalid case before the audit and queue publish
+path.
+
+```go title="internal/report/publish.go"
+func PublishReport(ctx context.Context, report *Report, user User) error {
+    if report == nil {
+        return ErrMissingReport
+    }
+    if !report.Ready {
+        return ErrReportNotReady
+    }
+    if !user.CanPublish(report.ProjectID) {
+        return ErrPermissionDenied
+    }
+
+    audit.Log(ctx, "report.publish", report.ID)
+    return queue.Publish(ctx, report)
+}
+```
+
 ### Problem: The normal approval is hidden behind preconditions
 
 The successful approval is one line, but it is visually less important than the checks around it.
@@ -171,24 +289,82 @@ final class ApprovalService {
 }
 ```
 
-### Problem: Defensive DOM checks own the function shape
+### Better: Make approval the visible result
 
-The event binding is the normal work, but the function makes the reader enter the defensive branch
-before they can see it.
+[Guard clauses](/patterns/guard-clause/) keep the approval path out of the precondition checks. In
+this version, `ApprovalResult` is the [structured result](/patterns/return-structured-errors/) for
+the failure cases. Java code that throws checked exceptions often uses early `throw` statements for
+the same shape before the ordinary result.
 
-```js title="src/search.js"
-export function attachSearch(input, results) {
-  if (input && results) {
-    input.addEventListener('input', () => {
-      const query = input.value.trim().toLowerCase();
-      results.dataset.query = query;
-      renderResults(results, query);
-    });
-  }
+```java title="src/main/java/com/example/ApprovalService.java"
+final class ApprovalService {
+    ApprovalResult approve(Request request, User user) {
+        if (request == null) {
+            return ApprovalResult.denied("missing request");
+        }
+        if (!request.isComplete()) {
+            return ApprovalResult.denied("request is incomplete");
+        }
+        if (!user.hasRole("approver")) {
+            return ApprovalResult.denied("missing approver role");
+        }
+
+        return ApprovalResult.approved(request.id());
+    }
 }
 ```
 
-### Problem: Import validation hides the Python ingestion path
+### Problem: UI state checks hide the render path
+
+The component's normal job is to render the current panel, but loading, permission, and empty-state
+branches take control before the reader reaches the ordinary UI.
+
+```js title="src/DashboardPanel.jsx"
+export function DashboardPanel({ session, widgets }) {
+  if (session) {
+    if (session.user.canViewDashboard) {
+      if (widgets.length > 0) {
+        return (
+          <section>
+            <h2>{session.projectName}</h2>
+            <WidgetGrid widgets={widgets} />
+          </section>
+        );
+      }
+      return <EmptyPanel message="No widgets configured" />;
+    }
+    return <AccessDenied />;
+  }
+  return <LoadingPanel />;
+}
+```
+
+### Better: The UI handles states before rendering the panel
+
+[Guard clauses](/patterns/guard-clause/) make the ordinary dashboard the final render path.
+
+```js title="src/DashboardPanel.jsx"
+export function DashboardPanel({ session, widgets }) {
+  if (!session) {
+    return <LoadingPanel />;
+  }
+  if (!session.user.canViewDashboard) {
+    return <AccessDenied />;
+  }
+  if (widgets.length === 0) {
+    return <EmptyPanel message="No widgets configured" />;
+  }
+
+  return (
+    <section>
+      <h2>{session.projectName}</h2>
+      <WidgetGrid widgets={widgets} />
+    </section>
+  );
+}
+```
+
+### Problem: Import validation hides the ingestion path
 
 The ingestion step is ordinary work, but file validation, schema lookup, and permission checks make
 the reader trace the failure tree before seeing the job creation.
@@ -209,6 +385,30 @@ def import_customers(upload, user, schemas):
     return ImportResult.rejected("missing upload")
 ```
 
+### Better: Show ingestion after the checks
+
+[Guard clauses](/patterns/guard-clause/) make the job creation path visible after file, schema, and
+permission checks. `ImportResult` keeps each rejection in a [structured
+result](/patterns/return-structured-errors/) for callers.
+
+```python title="jobs/import_customers.py"
+def import_customers(upload, user, schemas):
+    if upload is None:
+        return ImportResult.rejected("missing upload")
+    if not upload.filename.endswith(".csv"):
+        return ImportResult.rejected("unsupported file type")
+
+    schema = schemas.get("customers")
+    if schema is None:
+        return ImportResult.rejected("missing customer schema")
+    if not user.can_import_customers:
+        return ImportResult.rejected("missing import permission")
+
+    rows = parse_csv(upload.stream, schema)
+    job = enqueue_customer_import(rows, user.id)
+    return ImportResult.accepted(job.id)
+```
+
 ### Problem: Option handling hides the command execution
 
 The command dispatch is the main path, but the missing-command and authorization cases make the
@@ -226,6 +426,26 @@ pub fn run_command(user: &User, command: Option<Command>) -> Result<Output, Erro
     } else {
         Err(Error::MissingCommand)
     }
+}
+```
+
+### Better: Unwrap preconditions before execution
+
+Rust's `?` operator uses the normal `Result` failure channel for the missing-command case, while a
+local [guard clause](/patterns/guard-clause/) handles the permission check before command execution.
+The `Error` variants are the [structured errors](/patterns/return-structured-errors/); `?` just
+keeps that path out of the main path.
+
+```rust title="src/commands.rs"
+pub fn run_command(user: &User, command: Option<Command>) -> Result<Output, Error> {
+    let command = command.ok_or(Error::MissingCommand)?;
+
+    if !user.can_run(&command) {
+        return Err(Error::PermissionDenied);
+    }
+
+    let output = command.execute()?;
+    Ok(output.with_audit(user.id))
 }
 ```
 
@@ -250,8 +470,26 @@ export function visibleEntries(entries: Entry[], viewer: Viewer): Card[] {
 }
 ```
 
-## Review Notes
+### Better: Name the rule before mapping
 
-This is the first file-backed problem page. Frontmatter carries the routing, maturity, summary, and
-relationships. The Markdown sections are parsed into the structured fields used by the existing
-problem layout.
+[Explaining variables](/patterns/explaining-variable/) name the filtering and ranking rules before
+the final card mapping.
+
+```ts title="src/catalog.ts"
+export function visibleEntries(entries: Entry[], viewer: Viewer): Card[] {
+  const visibleEntries = entries.filter((entry) => {
+    const canSeeEntry = viewer.staff || entry.public;
+    return canSeeEntry && entry.status !== 'seed';
+  });
+
+  const reviewedFirst = (left: Entry, right: Entry) =>
+    Number(right.status === 'reviewed') - Number(left.status === 'reviewed') ||
+    left.title.localeCompare(right.title);
+
+  return visibleEntries.sort(reviewedFirst).map((entry) => ({
+    title: entry.title,
+    badge: entry.status === 'reviewed' ? 'Reviewed' : 'Draft',
+    href: `/entries/${entry.slug}`,
+  }));
+}
+```

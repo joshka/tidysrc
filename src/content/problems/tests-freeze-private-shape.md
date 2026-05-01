@@ -1,6 +1,6 @@
 ---
 title: >-
-  Tests freeze private shape
+  Tests Freeze Private Shape
 status: draft
 category: testing
 topics:
@@ -10,17 +10,32 @@ topics:
 summary: >-
   A test fails when internals move even though the user-visible behavior has not changed.
 relatedPatterns:
-  - observable-behavior-tests
+  - test-observable-behavior
   - smallest-trustworthy-verification
 relatedConcepts:
   - observable-behavior
 ---
 
-## Impact
+## Description
+
+A test fails when internals move even though the user-visible behavior has not changed.
+
+The problem is not the existence of the mechanism itself. It is that the ownership, boundary, or
+contract is implicit enough that each caller can interpret it differently.
+
+## Why It Matters
 
 These tests make code harder to improve. They turn harmless refactors into test rewrites, train
-developers to avoid cleanup, and give agents false confidence because the suite is sensitive to the
-wrong thing.
+
+Reviewers care because the risk is not visible at one call site. They have to reconstruct the
+intended behavior from scattered branches, tests, and boundaries before they can tell whether the
+change is safe.
+
+## Code Impact
+
+The code impact is drift. Related checks, state changes, defaults, errors, or side effects spread
+across files, so a future edit can update one path while leaving another path with the old rule.
+Tests then tend to protect one example rather than the contract that all callers rely on.
 
 ## Signals
 
@@ -49,7 +64,7 @@ wrong thing.
 
 ## Examples
 
-### Problem: C# test verifies a private call
+### Problem: test verifies a private call
 
 The test fails when implementation shape changes but behavior stays the same.
 
@@ -58,7 +73,7 @@ processor.Process(invoice);
 gateway.Verify(x => x.CalculateTax(invoice), Times.Once);
 ```
 
-### Better: C# test verifies the observable result
+### Better: test verifies the observable result
 
 The test protects the invoice total callers see.
 
@@ -68,7 +83,7 @@ Assert.Equal(InvoiceStatus.Ready, result.Status);
 Assert.Equal(110m, result.Total);
 ```
 
-### Problem: Java mock freezes helper order
+### Problem: mock freezes helper order
 
 The test encodes the current call path.
 
@@ -77,7 +92,7 @@ verify(taxCalculator).calculate(invoice);
 verify(totalCalculator).sum(invoice);
 ```
 
-### Better: Java test checks output behavior
+### Better: test checks output behavior
 
 The assertion targets the behavior the caller depends on.
 
@@ -86,7 +101,7 @@ var processed = processor.process(invoice);
 assertThat(processed.total()).isEqualByComparingTo("110.00");
 ```
 
-### Problem: Python test asserts private helper use
+### Problem: test asserts private helper use
 
 Renaming or extracting the helper breaks the test.
 
@@ -95,7 +110,7 @@ processor.process(invoice)
 processor._calculate_tax.assert_called_once_with(invoice)
 ```
 
-### Better: Python test asserts output behavior
+### Better: test asserts output behavior
 
 The internal shape can change without losing coverage.
 
@@ -104,7 +119,7 @@ processed = processor.process(invoice)
 assert processed.total == Decimal("110.00")
 ```
 
-### Problem: Rust test freezes intermediate structure
+### Problem: test freezes intermediate structure
 
 The test depends on how the result is assembled.
 
@@ -112,7 +127,7 @@ The test depends on how the result is assembled.
 assert_eq!(build_steps(invoice), vec!["tax", "total", "status"]);
 ```
 
-### Better: Rust test protects observable output
+### Better: test protects observable output
 
 The assertion checks the behavior the caller receives.
 
@@ -121,7 +136,7 @@ let processed = process_invoice(invoice);
 assert_eq!(processed.total, dec!(110.00));
 ```
 
-### Problem: TypeScript test asserts helper calls
+### Problem: test asserts helper calls
 
 The component cannot be refactored without changing the test.
 
@@ -130,11 +145,91 @@ renderInvoice(invoice);
 expect(formatMoney).toHaveBeenCalledWith(invoice.total);
 ```
 
-### Better: TypeScript test asserts rendered behavior
+### Better: test asserts rendered behavior
 
 The test protects what users see.
 
 ```ts title="src/invoice.test.ts"
 renderInvoice(invoice);
 expect(screen.getByText('$110.00')).toBeVisible();
+```
+
+### Problem: low-level caller repeats the rule
+
+The low-level path updates state without naming the boundary that owns the rule.
+
+```c title="src/example.c"
+if (request_total < 5000 || user_is_manager(user)) {
+    approve_request(request);
+}
+```
+
+### Better: low-level boundary owns the rule
+
+The caller asks a named boundary instead of repeating the condition.
+
+```c title="src/example.c"
+if (approval_policy_can_approve(policy, user, request)) {
+    approve_request(request);
+}
+```
+
+### Problem: object path repeats the rule
+
+The object caller owns a rule that should have a named boundary.
+
+```cpp title="src/example.cpp"
+if (request.total() < Money::from_cents(500000) || user.is_manager()) {
+    approvals.approve(request);
+}
+```
+
+### Better: object boundary owns the rule
+
+The policy names the rule and narrows the future change radius.
+
+```cpp title="src/example.cpp"
+if (approval_policy.can_approve(user, request)) {
+    approvals.approve(request);
+}
+```
+
+### Problem: service path repeats the rule
+
+The service path makes the rule local to one caller, so another caller can drift.
+
+```go title="internal/example/service.go"
+if request.Total < 5000 || user.IsManager {
+    approvals.Approve(request)
+}
+```
+
+### Better: service boundary owns the rule
+
+The caller uses a named policy boundary.
+
+```go title="internal/example/service.go"
+if approvalPolicy.CanApprove(user, request) {
+    approvals.Approve(request)
+}
+```
+
+### Problem: client path repeats the rule
+
+The client path repeats a rule that should have a named boundary.
+
+```js title="src/example.js"
+if (request.total < 5000 || user.role === 'manager') {
+  approve(request);
+}
+```
+
+### Better: client boundary owns the rule
+
+The caller asks the named policy instead of rebuilding the condition.
+
+```js title="src/example.js"
+if (approvalPolicy.canApprove(user, request)) {
+  approve(request);
+}
 ```

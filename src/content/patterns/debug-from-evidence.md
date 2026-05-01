@@ -1,6 +1,6 @@
 ---
 title: >-
-  Debug From Evidence
+  Debug from Evidence
 summary: >-
   Use observed failures to test one hypothesis at a time instead of guessing until green.
 status: seed
@@ -27,78 +27,14 @@ related:
 
 ## Core Idea
 
-Debugging
-is
-model
-correction.
-The
-failure
-tells
-you
-something
-about
-the
-system;
-the
-next
-step
-should
-distinguish
-between
-competing
-explanations.
+Debugging is model correction. The failure tells you something about the system; the next step
+should distinguish between competing explanations.
 
-Guess-driven
-changes
-are
-tempting
-for
-humans
-and
-agents
-because
-each
-edit
-feels
-small.
-The
-result
-is
-often
-a
-diff
-that
-passes
-one
-check
-while
-leaving
-the
-real
-cause
-unnamed.
+Guess-driven changes are tempting for humans and agents because each edit feels small. The result is
+often a diff that passes one check while leaving the real cause unnamed.
 
-The
-tradeoff
-is
-speed.
-A
-quick
-fix
-is
-fine
-when
-evidence
-is
-decisive;
-otherwise
-isolate
-the
-mismatch
-before
-editing
-more
-code.
+The tradeoff is speed. A quick fix is fine when evidence is decisive; otherwise isolate the mismatch
+before editing more code.
 
 ## Use When
 

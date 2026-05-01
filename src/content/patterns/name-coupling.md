@@ -26,70 +26,14 @@ related:
 
 ## Core Idea
 
-Coupling
-is
-not
-automatically
-bad.
-It
-is
-a
-relationship.
-The
-review
-question
-is
-whether
-the
-relationship
-is
-beneficial,
-accidental,
-or
-hidden.
+Coupling is not automatically bad. It is a relationship. The review question is whether the
+relationship is beneficial, accidental, or hidden.
 
-Name
-the
-coupling
-before
-decoupling
-it.
-Sometimes
-the
-right
-move
-is
-to
-make
-the
-relationship
-more
-direct;
-sometimes
-it
-is
-to
-introduce
-a
-boundary.
+Name the coupling before decoupling it. Sometimes the right move is to make the relationship more
+direct; sometimes it is to introduce a boundary.
 
-The
-tradeoff
-is
-abstraction
-cost.
-Decoupling
-too
-early
-can
-replace
-a
-clear
-dependency
-with
-an
-unclear
-protocol.
+The tradeoff is abstraction cost. Decoupling too early can replace a clear dependency with an
+unclear protocol.
 
 ## Use When
 
@@ -130,4 +74,4 @@ type PatternCard = {
 
 ## References
 
-- Tidy First? chapter themes: use as inspiration, not a direct content source.
+- [Tidy First?: Coupling](https://www.oreilly.com/library/view/tidy-first/9781098151232/ch29.html)

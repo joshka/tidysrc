@@ -1,5 +1,5 @@
 export type Audience = 'reviewers' | 'agents' | 'learners';
-export type Status = 'seed' | 'draft' | 'reviewed' | 'stable';
+export type Status = 'seed' | 'draft' | 'reviewed';
 
 export type CodeExample = {
   title: string;

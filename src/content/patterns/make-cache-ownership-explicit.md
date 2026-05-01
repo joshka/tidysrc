@@ -22,7 +22,7 @@ concepts:
 related:
   - "make-state-transitions-explicit"
   - "centralize-configuration-policy"
-  - "observable-behavior-tests"
+  - "test-observable-behavior"
 ---
 
 ## Core Idea
@@ -31,8 +31,8 @@ A cache is shared state with a freshness policy. The code should make clear who 
 which writes affect the cache, and what stale-read behavior is acceptable.
 
 Use this pattern when cache updates are scattered, best-effort, or implied by naming. The reader
-should not have to inspect every caller to learn whether a write path refreshes, clears, or tolerates
-stale data.
+should not have to inspect every caller to learn whether a write path refreshes, clears, or
+tolerates stale data.
 
 The tradeoff is that some caches are intentionally approximate. That is fine when the stale-read
 policy is named and tested where callers depend on it.

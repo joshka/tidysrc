@@ -28,82 +28,14 @@ related:
 
 ## Core Idea
 
-Continuing
-can
-be
-the
-wrong
-move.
-When
-each
-patch
-creates
-another
-failure,
-the
-useful
-action
-is
-to
-stop,
-summarize
-evidence,
-and
-choose
-a
-new
-plan.
+Continuing can be the wrong move. When each patch creates another failure, the useful action is to
+stop, summarize evidence, and choose a new plan.
 
-This
-is
-not
-only
-an
-agent
-problem.
-Humans
-also
-keep
-digging
-when
-they
-have
-sunk
-cost
-in
-an
-approach
-or
-when
-the
-failure
-looks
-one
-edit
-away.
+This is not only an agent problem. Humans also keep digging when they have sunk cost in an approach
+or when the failure looks one edit away.
 
-The
-tradeoff
-is
-interruption.
-Stop
-too
-early
-and
-you
-waste
-momentum;
-stop
-too
-late
-and
-the
-diff
-becomes
-a
-pile
-of
-guesses.
+The tradeoff is interruption. Stop too early and you waste momentum; stop too late and the diff
+becomes a pile of guesses.
 
 ## Use When
 

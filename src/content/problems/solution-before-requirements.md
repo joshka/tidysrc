@@ -11,7 +11,7 @@ summary: >-
   Implementation begins before constraints, non-goals, and success checks are clear.
 relatedPatterns:
   - "state-requirements-before-solutions"
-  - "repo-local-instructions-win"
+  - "follow-existing-conventions"
   - "avoid-premature-agent-architecture"
 relatedConcepts:
   - "boundary-trust"

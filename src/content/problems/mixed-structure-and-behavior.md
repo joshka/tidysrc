@@ -20,10 +20,27 @@ relatedConcepts:
   - observable-behavior
 ---
 
-## Impact
+## Description
+
+A single change mixes formatting, movement, renaming, behavior, tests, and cleanup until review
+cannot isolate the risk.
+
+The problem is not the existence of the mechanism itself. It is that the ownership, boundary, or
+contract is implicit enough that each caller can interpret it differently.
+
+## Why It Matters
 
 Mixed diffs make reviewers compare too many possible causes at once. Even when the final code is
-better, the diff hides behavioral changes and makes regressions harder to blame.
+
+Reviewers care because the risk is not visible at one call site. They have to reconstruct the
+intended behavior from scattered branches, tests, and boundaries before they can tell whether the
+change is safe.
+
+## Code Impact
+
+The code impact is drift. Related checks, state changes, defaults, errors, or side effects spread
+across files, so a future edit can update one path while leaving another path with the old rule.
+Tests then tend to protect one example rather than the contract that all callers rely on.
 
 ## Signals
 
@@ -49,7 +66,7 @@ better, the diff hides behavioral changes and makes regressions harder to blame.
 
 ## Examples
 
-### Problem: C# rename and rule change land together
+### Problem: rename and rule change land together
 
 The reviewer has to separate the vocabulary change from the discount change.
 
@@ -60,7 +77,7 @@ decimal CustomerDiscount(Order order)
 }
 ```
 
-### Better: C# behavior change is isolated
+### Better: behavior change is isolated
 
 The rename can land separately from the rule change.
 
@@ -71,7 +88,7 @@ decimal LoyaltyDiscount(Order order)
 }
 ```
 
-### Problem: Java move hides a condition change
+### Problem: move hides a condition change
 
 A method extraction and behavior edit become one review question.
 
@@ -83,7 +100,7 @@ BigDecimal discount(Order order) {
 }
 ```
 
-### Better: Java structure changes before behavior
+### Better: structure changes before behavior
 
 This version keeps the old behavior so the extraction can be checked first.
 
@@ -93,7 +110,7 @@ BigDecimal loyaltyDiscount(Order order) {
 }
 ```
 
-### Problem: Python rename and behavior change land together
+### Problem: rename and behavior change land together
 
 The reviewer cannot tell whether the new condition or the surrounding movement caused a regression.
 
@@ -104,7 +121,7 @@ def customer_discount(order):
     return Decimal("0")
 ```
 
-### Better: Python behavior change is isolated
+### Better: behavior change is isolated (2)
 
 The structural rename can land first; the rule change is a separate review question.
 
@@ -115,7 +132,7 @@ def loyalty_discount(order):
     return Decimal("0")
 ```
 
-### Problem: Rust cleanup and behavior change mix risks
+### Problem: cleanup and behavior change mix risks
 
 The guard rewrite and threshold change need different review evidence.
 
@@ -129,7 +146,7 @@ pub fn discount(order: &Order) -> Decimal {
 }
 ```
 
-### Better: Rust structure-only step keeps behavior stable
+### Better: structure-only step keeps behavior stable
 
 The extraction can be verified before changing the rule.
 
@@ -142,7 +159,7 @@ pub fn discount(order: &Order) -> Decimal {
 }
 ```
 
-### Problem: TypeScript formatting churn hides behavior
+### Problem: formatting churn hides behavior
 
 The condition changed while the surrounding diff also moved and reformatted code.
 
@@ -152,12 +169,92 @@ export function discount(order: Order) {
 }
 ```
 
-### Better: TypeScript change asks one question
+### Better: change asks one question
 
 The behavior under review is visible without surrounding churn.
 
 ```ts title="src/discounts.ts"
 export function discount(order: Order) {
   return order.customer.isVip ? 0.1 : 0;
+}
+```
+
+### Problem: low-level caller repeats the rule
+
+The low-level path updates state without naming the boundary that owns the rule.
+
+```c title="src/example.c"
+if (request_total < 5000 || user_is_manager(user)) {
+    approve_request(request);
+}
+```
+
+### Better: low-level boundary owns the rule
+
+The caller asks a named boundary instead of repeating the condition.
+
+```c title="src/example.c"
+if (approval_policy_can_approve(policy, user, request)) {
+    approve_request(request);
+}
+```
+
+### Problem: object path repeats the rule
+
+The object caller owns a rule that should have a named boundary.
+
+```cpp title="src/example.cpp"
+if (request.total() < Money::from_cents(500000) || user.is_manager()) {
+    approvals.approve(request);
+}
+```
+
+### Better: object boundary owns the rule
+
+The policy names the rule and narrows the future change radius.
+
+```cpp title="src/example.cpp"
+if (approval_policy.can_approve(user, request)) {
+    approvals.approve(request);
+}
+```
+
+### Problem: service path repeats the rule
+
+The service path makes the rule local to one caller, so another caller can drift.
+
+```go title="internal/example/service.go"
+if request.Total < 5000 || user.IsManager {
+    approvals.Approve(request)
+}
+```
+
+### Better: service boundary owns the rule
+
+The caller uses a named policy boundary.
+
+```go title="internal/example/service.go"
+if approvalPolicy.CanApprove(user, request) {
+    approvals.Approve(request)
+}
+```
+
+### Problem: client path repeats the rule
+
+The client path repeats a rule that should have a named boundary.
+
+```js title="src/example.js"
+if (request.total < 5000 || user.role === 'manager') {
+  approve(request);
+}
+```
+
+### Better: client boundary owns the rule
+
+The caller asks the named policy instead of rebuilding the condition.
+
+```js title="src/example.js"
+if (approvalPolicy.canApprove(user, request)) {
+  approve(request);
 }
 ```

@@ -26,87 +26,14 @@ related:
 
 ## Core Idea
 
-Repeated
-validation
-rules
-drift
-because
-each
-caller
-owns
-a
-slightly
-different
-interpretation.
-A
-named
-policy
-gives
-the
-rule
-one
-place
-to
-change
-and
-one
-set
-of
-errors
-to
-review.
+Repeated validation rules drift because each caller owns a slightly different interpretation. A
+named policy gives the rule one place to change and one set of errors to review.
 
-Use
-this
-when
-the
-same
-field,
-state,
-or
-permission
-is
-checked
-across
-boundaries
-and
-the
-checks
-are
-not
-naturally
-replaced
-by
-a
-precise
-type
-yet.
+Use this when the same field, state, or permission is checked across boundaries and the checks are
+not naturally replaced by a precise type yet.
 
-The
-tradeoff
-is
-overlap
-with
-parsing.
-If
-the
-rule
-creates
-a
-trusted
-value,
-parse
-it.
-If
-the
-rule
-decides
-a
-workflow
-policy,
-name
-the
-policy.
+The tradeoff is overlap with parsing. If the rule creates a trusted value, parse it. If the rule
+decides a workflow policy, name the policy.
 
 ## Use When
 
@@ -145,4 +72,4 @@ export function validatePublishReady(pattern: Pattern): ValidationResult {
 
 ## References
 
-- Tidy First? chapter themes: use as inspiration, not a direct content source.
+- None yet.

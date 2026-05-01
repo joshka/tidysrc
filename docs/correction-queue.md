@@ -20,3 +20,15 @@ Review notes:
   content.
 - [x] Remove repeated leading phrases like "These concepts cover..." and get directly to the
   subject.
+
+## Home Page
+
+- Source: `src/pages/index.astro`
+- URL: `http://localhost:4321/`
+- Status: revisit later
+
+Review notes:
+
+- Come back to the home page near the end of review, after the core problems, patterns, and
+  concepts settle. The home page should represent the final content priorities rather than drive
+  them too early.

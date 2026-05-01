@@ -6,6 +6,7 @@ import { parseProblemContent } from './problemContent';
 export type PatternEntry = CollectionEntry<'patterns'>;
 export type ConceptEntry = CollectionEntry<'concepts'>;
 export type ProblemEntry = CollectionEntry<'problems'>;
+export type ReferenceEntry = CollectionEntry<'references'>;
 
 export function patternHref(pattern: PatternEntry | string): string {
   const slug = typeof pattern === 'string' ? pattern : pattern.id;
@@ -46,8 +47,6 @@ export function sortedProblems(problems: ProblemEntry[]): ProblemEntry[] {
 
 export function statusRank(status: PatternEntry['data']['status']): number {
   switch (status) {
-    case 'stable':
-      return 4;
     case 'reviewed':
       return 3;
     case 'draft':
@@ -99,6 +98,17 @@ const languageNames = new Map([
   ['markdown', 'Markdown'],
 ]);
 
+const problemCategoryNames = new Map([
+  ['agent-workflow', 'Workflow drift'],
+  ['architecture', 'Architecture'],
+  ['boundaries', 'Boundaries'],
+  ['change-risk', 'Change risk'],
+  ['readability', 'Reading friction'],
+  ['state', 'State and effects'],
+  ['testing', 'Tests and evidence'],
+  ['tooling', 'Tooling contract'],
+]);
+
 function languageRank(language: string): number {
   return languageOrder.get(language.toLowerCase()) ?? Number.MAX_SAFE_INTEGER;
 }
@@ -109,6 +119,10 @@ export function isKnownLanguage(language: string): boolean {
 
 export function languageLabel(language: string): string {
   return languageNames.get(language.toLowerCase()) ?? language;
+}
+
+export function problemCategoryLabel(category: string): string {
+  return problemCategoryNames.get(category.toLowerCase()) ?? category;
 }
 
 export function sortedLanguageCodes(languages: string[]): string[] {
@@ -164,6 +178,7 @@ export function problemSearchText(problem: ProblemEntry): string {
     problem.data.summary,
     problem.data.status,
     problem.data.category,
+    problemCategoryLabel(problem.data.category),
     problem.data.topics.join(' '),
     parsed.impact,
     parsed.signals.join(' '),
@@ -173,5 +188,26 @@ export function problemSearchText(problem: ProblemEntry): string {
     problem.data.relatedConcepts.join(' '),
   ]
     .join(' ')
+    .toLowerCase();
+}
+
+export function conceptSearchText(concept: ConceptEntry): string {
+  return [
+    concept.data.title,
+    concept.data.summary,
+    concept.data.status,
+    concept.data.tags.join(' '),
+    concept.data.relatedPatterns.join(' '),
+    concept.body ?? '',
+  ]
+    .join(' ')
+    .replace(/\s+/g, ' ')
+    .toLowerCase();
+}
+
+export function referenceSearchText(reference: ReferenceEntry): string {
+  return [reference.data.title, reference.data.href, reference.body ?? '']
+    .join(' ')
+    .replace(/\s+/g, ' ')
     .toLowerCase();
 }

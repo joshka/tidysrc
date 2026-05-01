@@ -59,7 +59,6 @@ Use plural, stable routes:
 /concepts/        deeper teaching anchors
 /concepts/:slug/  individual concept page
 /agents/          agent-facing guidance
-/configs/         reusable config files and explanations
 /references/      influences and prior art
 ```
 
@@ -70,7 +69,7 @@ future problem pages straightforward.
 The primary navigation should be:
 
 ```text
-Patterns  Concepts  Agents  Configs  References  Search
+Problems  Patterns  Concepts  Agents  References  Search
 ```
 
 Do not make source tree layout determine public URLs. The public URL shape is a long-term contract.
@@ -85,7 +84,7 @@ It should include:
 
 - A direct statement of what TidySrc is.
 - A search entry point.
-- Links to patterns, concepts, agents, configs, and references.
+- Links to problems, patterns, concepts, agents, and references.
 - A small set of featured patterns.
 - A short explanation that the site is for review links, agent guidance, and everyday source-change
   decisions.
@@ -156,7 +155,7 @@ The agent page should be concise and operational.
 It should include:
 
 - A reusable instruction snippet.
-- Guidance on how repo-local instructions override TidySrc.
+- Guidance on how existing project conventions override general guidance.
 - Links to agent-relevant patterns.
 - Short consolidated rules for common agent failure modes.
 - A plan for `llms.txt` or equivalent machine-readable summary content.
@@ -197,7 +196,7 @@ Use lightweight status values:
 
 - `seed`: early page that proves the content shape.
 - `draft`: useful but still incomplete or lightly validated.
-- `stable`: ready to cite without caveats.
+- `reviewed`: ready to cite without caveats.
 
 Start with 8 to 12 patterns. That is enough to prove the catalog, metadata, related links, and
 example presentation without pretending to be complete.
@@ -339,7 +338,7 @@ That includes code shape, tests, documentation, review, local workflows, and age
 - Create the first 8 to 12 pattern pages.
 - Create a few concept anchors.
 - Create the agent guidance page.
-- Create references and configs pages.
+- Create references and deferred config guidance.
 - Ensure every pattern has useful-minimum metadata.
 
 ### Milestone 3: Discovery

@@ -26,85 +26,14 @@ related:
 
 ## Core Idea
 
-Explicit
-parameters
-show
-what
-a
-function
-needs
-to
-do
-its
-work.
-Hidden
-reads
-from
-globals,
-context
-objects,
-or
-process
-state
-make
-tests
-and
-review
-depend
-on
-invisible
-setup.
+Explicit parameters show what a function needs to do its work. Hidden reads from globals, context
+objects, or process state make tests and review depend on invisible setup.
 
-Use
-this
-when
-the
-dependency
-is
-part
-of
-the
-decision
-being
-reviewed.
-Passing
-a
-narrow
-value
-is
-usually
-clearer
-than
-passing
-a
-broad
-context
-bag.
+Use this when the dependency is part of the decision being reviewed. Passing a narrow value is
+usually clearer than passing a broad context bag.
 
-The
-tradeoff
-is
-parameter
-noise.
-If
-the
-list
-grows,
-the
-code
-may
-need
-a
-named
-policy
-object
-or
-boundary
-type
-rather
-than
-another
-argument.
+The tradeoff is parameter noise. If the list grows, the code may need a named policy object or
+boundary type rather than another argument.
 
 ## Use When
 
@@ -143,4 +72,4 @@ export function renderPattern(pattern: Pattern, policy: RenderPolicy) {
 
 ## References
 
-- Tidy First? chapter themes: use as inspiration, not a direct content source.
+- [Tidy First?: Explicit Parameters](https://www.oreilly.com/library/view/tidy-first/9781098151232/ch10.html)

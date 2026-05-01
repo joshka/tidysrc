@@ -47,7 +47,7 @@ These concepts should carry the "why" behind small tidying moves so pattern page
 
 ## Follow-Up Questions
 
-- Which seed entries overlap too much with existing stable patterns?
+- Which seed entries overlap too much with existing reviewed patterns?
 - Which entries need examples before they can move from `seed` to `draft`?
 - Should change economics become a stronger concept page before launch?
 - Are any Tidy First chapter ideas better kept as references instead of TidySrc pages?

@@ -12,7 +12,7 @@ summary: >-
   requirement.
 relatedPatterns:
   - "preserve-the-spec"
-  - "observable-behavior-tests"
+  - "test-observable-behavior"
   - "characterize-before-changing"
 relatedConcepts:
   - "observable-behavior"

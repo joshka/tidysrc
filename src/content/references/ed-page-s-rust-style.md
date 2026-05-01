@@ -4,5 +4,5 @@ title: >-
 href: "https://epage.github.io/dev/rust-style/"
 ---
 
-Rust style notes from Ed Page (epage), including item ordering and caller-before-callee
-organization.
+Rust organization advice from Ed Page (epage), especially for API code that is getting harder to
+read locally.

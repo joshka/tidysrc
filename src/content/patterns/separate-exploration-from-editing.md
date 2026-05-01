@@ -1,6 +1,6 @@
 ---
 title: >-
-  Separate Exploration From Editing
+  Separate Exploration from Editing
 summary: >-
   Let an agent read, search, and summarize before it starts changing files.
 status: seed
@@ -22,7 +22,7 @@ concepts:
 related:
   - "debug-from-evidence"
   - "state-requirements-before-solutions"
-  - "repo-local-instructions-win"
+  - "follow-existing-conventions"
 ---
 
 ## Core Idea

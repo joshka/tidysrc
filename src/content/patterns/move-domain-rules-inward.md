@@ -23,7 +23,7 @@ concepts:
 related:
   - "name-cross-layer-contracts"
   - "cap-change-radius"
-  - "observable-behavior-tests"
+  - "test-observable-behavior"
 ---
 
 ## Core Idea

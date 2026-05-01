@@ -23,7 +23,7 @@ concepts:
 related:
   - "return-structured-errors"
   - "make-failures-observable"
-  - "observable-behavior-tests"
+  - "test-observable-behavior"
 ---
 
 ## Core Idea

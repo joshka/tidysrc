@@ -9,7 +9,7 @@ it helps.
 | AI Blindspots article | Current TidySrc fit | Notes |
 | --- | --- | --- |
 | Stop Digging | `stop-and-reframe`, `make-stop-conditions-explicit` | Use when evidence says the current approach is wrong. |
-| Black Box Testing | `observable-behavior-tests`, `report-verification-honestly` | Fold into behavior-focused verification guidance. |
+| Black Box Testing | `test-observable-behavior`, `report-verification-honestly` | Fold into behavior-focused verification guidance. |
 | Preparatory Refactoring | `separate-structure-from-behavior`, `untangle-before-changing` | Keep tidying distinct from behavior change. |
 | Requirements, not Solutions | `state-requirements-before-solutions`, `constrain-agent-edit-surface` | Use constraints and non-goals before implementation. |
 | Respect the Spec | `preserve-the-spec`, `review-generated-code-normally` | Do not make tests pass by weakening the contract. |
@@ -31,7 +31,7 @@ it helps.
 
 | AI Blindspots article | Current TidySrc fit | Notes |
 | --- | --- | --- |
-| Use Automatic Code Formatting | `let-tools-handle-mechanics`, `/configs/` | Mechanical formatting should not consume review attention. |
+| Use Automatic Code Formatting | `let-tools-handle-mechanics`, future config guidance | Mechanical formatting should not consume review attention. |
 | Use Static Types | `make-invalid-states-hard-to-express` | Useful support, but not always a standalone pattern. |
 | Keep Files Small | `reader-locality`, `cognitive-burden` | Needs careful framing to avoid file-count rules. |
 

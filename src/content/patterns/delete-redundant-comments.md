@@ -25,72 +25,14 @@ related:
 
 ## Core Idea
 
-A
-redundant
-comment
-makes
-the
-reader
-compare
-two
-sources
-of
-truth.
-If
-the
-comment
-only
-restates
-the
-next
-line,
-it
-adds
-work
-without
-adding
-knowledge.
+A redundant comment makes the reader compare two sources of truth. If the comment only restates the
+next line, it adds work without adding knowledge.
 
-Delete
-comments
-that
-repeat
-code,
-preserve
-old
-code,
-or
-describe
-behavior
-that
-is
-now
-obvious
-from
-a
-better
-name.
+Delete comments that repeat code, preserve old code, or describe behavior that is now obvious from a
+better name.
 
-The
-tradeoff
-is
-losing
-history.
-Keep
-comments
-that
-explain
-external
-constraints
-or
-surprising
-decisions;
-delete
-comments
-that
-merely
-narrate
-syntax.
+The tradeoff is losing history. Keep comments that explain external constraints or surprising
+decisions; delete comments that merely narrate syntax.
 
 ## Use When
 
@@ -128,4 +70,4 @@ publishPattern(pattern);
 
 ## References
 
-- Tidy First? chapter themes: use as inspiration, not a direct content source.
+- [Tidy First?: Delete Redundant Comments](https://www.oreilly.com/library/view/tidy-first/9781098151232/ch15.html)

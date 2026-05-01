@@ -3,7 +3,7 @@ title: >-
   Use a Guard Clause
 summary: >-
   Exit early when a boring precondition would otherwise indent or obscure the main path.
-status: stable
+status: reviewed
 tags:
   - "readability"
   - "control-flow"
@@ -14,12 +14,15 @@ audiences:
   - "agents"
   - "learners"
 languages:
+  - "c"
+  - "cpp"
   - "csharp"
   - "go"
   - "java"
   - "js"
   - "python"
   - "rust"
+  - "ts"
 problems:
   - "The normal case is buried under validation, empty cases, or unsupported modes."
 concepts:
@@ -37,8 +40,9 @@ wrapping the main behavior in conditionals, it handles empty input, invalid stat
 modes, or no-op cases and then gets out of the way. The result should make the normal behavior more
 prominent, not merely replace one confusing branch shape with another.
 
-Reach for this pattern when the branch handles an empty case, invalid input, unsupported mode, or
-no-op that is less important than the behavior that follows.
+This is a [reader-locality](/concepts/reader-locality/) move for the [hidden main
+path](/problems/hidden-main-path/) problem: reject the cases that are not the main story, then leave
+the ordinary work flat.
 
 The main tradeoff is that too many guards can hide a missing input type or parser; repeated
 validation may belong at a construction boundary instead.
@@ -76,24 +80,39 @@ otherwise indent the main path. Keep the normal behavior visually prominent.
 
 ## Examples
 
-### Before: hide the valid path behind a branch
+### Reject missing parser input
 
-This version is correct, but the useful parsing result sits inside the branch while the empty-input
-case controls the shape of the function.
+The parser cannot produce a useful record without input, so the guard exits before allocation and
+leaves the parse path direct.
 
-```rust title="src/parser.rs"
-pub fn parse_name(input: &str) -> Option<Name> {
-    let trimmed = input.trim();
-
-    if !trimmed.is_empty() {
-        Some(Name::new(trimmed))
-    } else {
-        None
+```c title="src/parser.c"
+struct record *parse_record(const char *input) {
+    if (input == NULL || input[0] == '\0') {
+        return NULL;
     }
+
+    struct record *record = record_new();
+    record_parse_fields(record, input);
+    return record;
 }
 ```
 
-### After: guard invalid input before parsing
+### Reject unsupported format
+
+The export path supports one format today, so the unsupported mode exits before the PDF work starts.
+
+```cpp title="src/export_report.cpp"
+std::optional<ExportedFile> export_report(const Report& report, Format format) {
+    if (format != Format::Pdf) {
+        return std::nullopt;
+    }
+
+    auto rendered = render_pdf(report);
+    return upload_export(rendered);
+}
+```
+
+### Guard invalid input before parsing
 
 The parser rejects blank input before constructing a name, leaving the valid parsing path flat.
 
@@ -125,6 +144,22 @@ export function attachSearch(input, results) {
 }
 ```
 
+### Reject missing route params
+
+The route needs a slug before it can fetch the pattern, so the guard keeps the normal fetch and
+render path unindented.
+
+```ts title="src/routes/pattern.ts"
+export async function loadPattern(params: { slug?: string }) {
+  if (!params.slug) {
+    return { status: 404 };
+  }
+
+  const pattern = await catalog.findBySlug(params.slug);
+  return { status: 200, pattern };
+}
+```
+
 ### Guard empty work before allocating
 
 The empty report case needs no allocation or summarization, so returning early keeps the normal
@@ -141,7 +176,7 @@ func BuildReport(rows []Row) Report {
 }
 ```
 
-### C# rejects missing input before the main work
+### Reject missing input before the main work
 
 The guard makes the unsupported request pay its cost before the publish path starts.
 
@@ -156,7 +191,7 @@ public Result Publish(Pattern? pattern)
 }
 ```
 
-### Java returns before the valid path
+### Return before the valid path
 
 The main send path stays flat after the missing-recipient case is ruled out.
 
@@ -170,7 +205,7 @@ SendResult send(Recipient recipient, Message message) {
 }
 ```
 
-### Python guards empty work
+### Guard empty work
 
 The function exits before building indexes that cannot be used for an empty batch.
 
@@ -185,4 +220,4 @@ def build_index(patterns):
 
 ## References
 
-- Tidy First: guard clauses as small structural changes.
+- [Tidy First?: Guard Clauses](https://www.oreilly.com/library/view/tidy-first/9781098151232/ch01.html)

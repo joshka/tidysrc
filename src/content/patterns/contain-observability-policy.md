@@ -26,67 +26,14 @@ related:
 
 ## Core Idea
 
-Observability
-is
-a
-side
-effect
-with
-policy.
-Scattered
-logs
-and
-metrics
-can
-make
-code
-noisy
-without
-helping
-maintainers
-answer
-what
-happened.
+Observability is a side effect with policy. Scattered logs and metrics can make code noisy without
+helping maintainers answer what happened.
 
-Contain
-the
-policy
-where
-the
-boundary
-owns
-the
-signal:
-request
-handling,
-job
-execution,
-external
-calls,
-or
-state
-transitions.
+Contain the policy where the boundary owns the signal: request handling, job execution, external
+calls, or state transitions.
 
-The
-tradeoff
-is
-detail.
-Too
-little
-signal
-hides
-failures;
-too
-much
-signal
-makes
-every
-change
-harder
-to
-read
-and
-operate.
+The tradeoff is detail. Too little signal hides failures; too much signal makes every change harder
+to read and operate.
 
 ## Use When
 
@@ -125,4 +72,4 @@ logger.info('pattern_import_completed', {
 
 ## References
 
-- Tidy First? chapter themes: use as inspiration, not a direct content source.
+- None yet.

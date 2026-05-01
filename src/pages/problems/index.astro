@@ -8,6 +8,7 @@ import {
   type PatternEntry,
   patternHref,
   problemHref,
+  problemCategoryLabel,
   problemSearchText,
   sortedProblems,
 } from '../../lib/catalog';
@@ -28,39 +29,54 @@ const problemPathways = [
     title: 'Reading and Review Friction',
     category: 'readability',
     summary:
-      'Start here when the code technically works, but the reviewer cannot quickly find the main path, name the idea, or explain the change.',
+      'The code technically works, but the main path, name, or reason for the change is hard to find.',
   },
   {
     title: 'Tests and Evidence',
     category: 'testing',
     summary:
-      'Use this path when a change is risky because the verification signal is brittle, private, flaky, or not tied to the behavior that matters.',
+      'The risk sits in the proof: brittle assertions, private-shape tests, flakes, or checks that miss the behavior users rely on.',
   },
   {
     title: 'Boundaries and Contracts',
     category: 'boundaries',
     summary:
-      'Use these problems when raw input, foreign vocabulary, specs, or validation rules leak across layers without a clear owner.',
+      'Raw input, foreign vocabulary, specifications, or validation rules cross layers without a clear owner.',
   },
   {
     title: 'State, Effects, and Time',
     category: 'state',
     summary:
-      'Use this path when flags, transitions, caches, async ownership, or side effects make future behavior hard to predict.',
+      'Flags, transitions, caches, async ownership, mutation, or side effects make future behavior hard to predict.',
   },
   {
     title: 'Change Risk',
     category: 'change-risk',
     summary:
-      'Use these when the problem is not one line of code, but the shape of the change: blast radius, mixed intent, or unclear reversibility.',
+      'The risk comes from the shape of the change: blast radius, mixed intent, migration order, or reversibility.',
   },
   {
-    title: 'Human and Agent Workflow',
+    title: 'Architecture Pressure',
+    category: 'architecture',
+    summary:
+      'A local change starts carrying broader design concepts before the repeated pressure justifies them.',
+  },
+  {
+    title: 'Workflow Drift',
     category: 'agent-workflow',
     summary:
-      'Use these when a human or coding agent is likely to drift from requirements, keep digging, or optimize for a weak done signal.',
+      'The work keeps moving after its constraints, evidence, or done signal have gone stale. Agent-written changes can make the same drift look more confident and complete.',
   },
 ];
+const categoryLabels = Object.fromEntries(
+  categories.map((category) => [category, problemCategoryLabel(category)]),
+);
+const categoryCounts = new Map(
+  categories.map((category) => [
+    category,
+    problems.filter((problem) => problem.data.category === category).length,
+  ]),
+);
 const initialVisibility = new Map(
   problems.map((problem) => {
     const matchesQuery =
@@ -83,12 +99,12 @@ const visibleProblemCount = [...initialVisibility.values()].filter(Boolean).leng
     <div class="page-hero">
       <div class="page-hero-main">
         <p class="eyebrow">Problem index</p>
-        <h1>Start from the source-change problem you are actually seeing.</h1>
+        <h1>Name the source-change problem.</h1>
       </div>
       <div class="page-hero-side">
         <p class="lede">
-          Problems connect review symptoms to patterns. A vague concern such as “this feels risky”
-          or “this is hard to read” can become a concrete refactoring move.
+          Vague concerns such as “this feels risky” or “this is hard to read” become easier to act
+          on when the underlying source-change problem has a name.
         </p>
       </div>
     </div>
@@ -97,10 +113,10 @@ const visibleProblemCount = [...initialVisibility.values()].filter(Boolean).leng
   <section class="section-tight shell">
     <div class="pathway-head">
       <p class="eyebrow">Problem pathways</p>
-      <h2>Diagnose by the pressure the code puts on the next change.</h2>
+      <h2>Diagnose the pressure on the next change.</h2>
       <p>
-        The categories are a fast first pass, not a taxonomy wall. Pick the closest pressure, then
-        use the related patterns and examples to decide whether the diagnosis holds.
+        Categories group recurring pressures in source changes: reading friction, weak evidence,
+        leaky boundaries, hidden state, change risk, and workflow drift.
       </p>
     </div>
     <div class="pathway-grid" role="tablist" aria-label="Problem pathways">
@@ -111,7 +127,7 @@ const visibleProblemCount = [...initialVisibility.values()].filter(Boolean).leng
             type="button"
             data-problem-category-tab={pathway.category}
           >
-            <span>{pathway.category}</span>
+            <span>{categoryCounts.get(pathway.category) ?? 0} problems</span>
             <strong>{pathway.title}</strong>
             <small>{pathway.summary}</small>
           </button>
@@ -132,13 +148,12 @@ const visibleProblemCount = [...initialVisibility.values()].filter(Boolean).leng
         />
       </label>
       <div class="filter-note">
-        Search reads titles, symptoms, diagnostic questions, approaches, and related pattern ids.
+        Search for the symptom, the affected code shape, or the pattern you expect to apply.
       </div>
       <label>
         Status
         <select data-problem-status>
           <option value="" selected={selectedStatus === ''}>Any status</option>
-          <option value="stable" selected={selectedStatus === 'stable'}>Stable</option>
           <option value="reviewed" selected={selectedStatus === 'reviewed'}>Reviewed</option>
           <option value="draft" selected={selectedStatus === 'draft'}>Draft</option>
           <option value="seed" selected={selectedStatus === 'seed'}>Seed</option>
@@ -151,7 +166,7 @@ const visibleProblemCount = [...initialVisibility.values()].filter(Boolean).leng
           {
             categories.map((category) => (
               <option value={category} selected={selectedCategory === category}>
-                {category}
+                {problemCategoryLabel(category)}
               </option>
             ))
           }
@@ -193,6 +208,7 @@ const visibleProblemCount = [...initialVisibility.values()].filter(Boolean).leng
                   </h2>
                   <Chips
                     items={cardChips}
+                    labels={categoryLabels}
                     links={chipLinks}
                     status={problem.data.status}
                     statusHref={`/problems/?status=${encodeURIComponent(problem.data.status)}`}
@@ -333,13 +349,13 @@ const visibleProblemCount = [...initialVisibility.values()].filter(Boolean).leng
 
   .pathway-card {
     display: grid;
-    gap: 0.6rem;
-    min-height: 190px;
+    align-content: start;
+    gap: 0.7rem;
     border: 2px solid var(--border);
     border-radius: 0;
     background: var(--surface);
     color: var(--text);
-    padding: 1rem;
+    padding: 1.15rem;
     font: inherit;
     text-align: left;
     cursor: pointer;
@@ -364,11 +380,14 @@ const visibleProblemCount = [...initialVisibility.values()].filter(Boolean).leng
   }
 
   .pathway-card strong {
+    display: block;
     font-size: 1.08rem;
+    line-height: 1.15;
     text-transform: uppercase;
   }
 
   .pathway-card small {
+    display: block;
     color: var(--muted);
     font-size: 0.95rem;
     line-height: 1.45;

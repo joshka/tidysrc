@@ -5,7 +5,7 @@ import { z } from 'astro/zod';
 const patternSchema = z.object({
   title: z.string(),
   summary: z.string(),
-  status: z.enum(['seed', 'draft', 'reviewed', 'stable']),
+  status: z.enum(['seed', 'draft', 'reviewed']),
   tags: z.array(z.string()),
   audiences: z.array(z.enum(['reviewers', 'agents', 'learners'])),
   languages: z.array(z.string()),
@@ -17,7 +17,7 @@ const patternSchema = z.object({
 const conceptSchema = z.object({
   title: z.string(),
   summary: z.string(),
-  status: z.enum(['seed', 'draft', 'reviewed', 'stable']),
+  status: z.enum(['seed', 'draft', 'reviewed']),
   tags: z.array(z.string()),
   relatedPatterns: z.array(z.string()),
 });
@@ -25,7 +25,7 @@ const conceptSchema = z.object({
 const problemSchema = z.object({
   title: z.string(),
   summary: z.string(),
-  status: z.enum(['seed', 'draft', 'reviewed', 'stable']),
+  status: z.enum(['seed', 'draft', 'reviewed']),
   category: z.enum([
     'agent-workflow',
     'architecture',

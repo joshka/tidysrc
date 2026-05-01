@@ -37,7 +37,6 @@ markdown files. It is a queue for human review, not a claim that the pattern set
 
 ## Maturity Notes
 
-- `stable` currently means "central and reasonably coherent," not "fully publication-reviewed."
 - `draft` means the pattern is useful enough to show in the catalog but still needs editorial and
   example review.
 - `seed` means the catalog probably needs the idea, but the shape, examples, naming, and related
@@ -47,9 +46,10 @@ markdown files. It is a queue for human review, not a claim that the pattern set
 
 ### Avoid Premature Agent Architecture
 
-Good pattern, but the title is narrower than the current problem framing because humans overbuild
-too. Consider whether this should become "Avoid Premature Architecture" or stay agent-specific while
-the problem page handles the broader framing.
+Demoted to seed during the premature-architecture review. The current title and shape are too close
+to "your problem is premature architecture; do not do premature architecture with agents." Rework
+only if there is a distinct agent-specific move that is not already covered by repo-local
+instructions, stop conditions, or keeping the behavior local.
 
 ### Cap Change Radius
 
@@ -137,7 +137,7 @@ a domain or application policy.
 Strong pattern. Review examples for DTO overuse. The page should say "name the contract when the
 language changes," not "always add a mapper."
 
-### Observable Behavior Tests
+### Test Observable Behavior
 
 Stable and central. Needs careful examples so it does not imply only high-level tests are valuable.
 The phrase "cheapest trustworthy boundary" should probably appear somewhere.
@@ -165,7 +165,7 @@ Examples should keep local boolean facts separate from boundary-crossing behavio
 ### Repo-Local Instructions Win
 
 Useful for agent workflow, but less like a code pattern than most entries. Consider whether it
-belongs under agents rather than the main pattern catalog, or keep it as stable because it is central
+belongs under agents rather than the main pattern catalog, or keep it as reviewed because it is central
 to how TidySrc should be used.
 
 ### New Seed Patterns From Tidy First Themes

@@ -1,6 +1,6 @@
 ---
 title: >-
-  Configuration drift
+  Configuration Drift
 status: draft
 category: boundaries
 topics:
@@ -19,10 +19,27 @@ relatedConcepts:
   - change-radius
 ---
 
-## Impact
+## Description
+
+Defaults, feature flags, environment variables, and magic values are interpreted differently across
+callers.
+
+The problem is not the existence of the mechanism itself. It is that the ownership, boundary, or
+contract is implicit enough that each caller can interpret it differently.
+
+## Why It Matters
 
 The running system can behave differently depending on which path read the config. A small policy
-change becomes a search-and-edit task with hidden edge cases.
+
+Reviewers care because the risk is not visible at one call site. They have to reconstruct the
+intended behavior from scattered branches, tests, and boundaries before they can tell whether the
+change is safe.
+
+## Code Impact
+
+The code impact is drift. Related checks, state changes, defaults, errors, or side effects spread
+across files, so a future edit can update one path while leaving another path with the old rule.
+Tests then tend to protect one example rather than the contract that all callers rely on.
 
 ## Signals
 
@@ -47,7 +64,7 @@ change becomes a search-and-edit task with hidden edge cases.
 
 ## Examples
 
-### Problem: C# callers parse the same setting
+### Problem: callers parse the same setting
 
 Each caller can choose a different default or parsing rule.
 
@@ -58,7 +75,7 @@ int RetryLimit(IConfiguration config)
 }
 ```
 
-### Better: C# config is parsed into a policy
+### Better: config is parsed into a policy
 
 Business code receives the policy, not the raw configuration key.
 
@@ -69,7 +86,7 @@ public static PaymentPolicy Load(IConfiguration config) =>
     new(int.Parse(config["PAYMENT_RETRIES"] ?? "3"));
 ```
 
-### Problem: Java defaults are repeated in services
+### Problem: defaults are repeated in services
 
 The timeout default can drift across call sites.
 
@@ -79,7 +96,7 @@ Duration paymentTimeout(Config config) {
 }
 ```
 
-### Better: Java exposes a named policy
+### Better: exposes a named policy
 
 The raw config key stays at the boundary.
 
@@ -101,7 +118,6 @@ Two paths can disagree about defaults because raw environment access leaks inwar
 def retry_limit():
     return int(os.getenv("PAYMENT_RETRIES", "3"))
 
-
 def can_retry(attempts):
     return attempts < int(os.getenv("PAYMENT_RETRIES", "5"))
 ```
@@ -115,12 +131,11 @@ The raw value is interpreted once at the boundary.
 class PaymentPolicy:
     retry_limit: int
 
-
 def load_payment_policy(env: Mapping[str, str]) -> PaymentPolicy:
     return PaymentPolicy(retry_limit=int(env.get("PAYMENT_RETRIES", "3")))
 ```
 
-### Problem: Rust callers read raw environment
+### Problem: callers read raw environment
 
 The default and parse error behavior can differ in every caller.
 
@@ -133,7 +148,7 @@ pub fn retry_limit() -> usize {
 }
 ```
 
-### Better: Rust parses config once
+### Better: parses config once
 
 The rest of the app receives a typed policy.
 
@@ -149,7 +164,7 @@ pub fn load_payment_policy(env: &Env) -> Result<PaymentPolicy, ConfigError> {
 }
 ```
 
-### Problem: TypeScript callers read flags directly
+### Problem: callers read flags directly
 
 Raw config leaks into business logic and repeats the default.
 
@@ -159,7 +174,7 @@ export function canRetry(attempts: number) {
 }
 ```
 
-### Better: TypeScript callers receive a policy
+### Better: callers receive a policy
 
 The parser owns precedence and defaults.
 
@@ -170,5 +185,85 @@ export type PaymentPolicy = {
 
 export function loadPaymentPolicy(env: NodeJS.ProcessEnv): PaymentPolicy {
   return { retryLimit: Number(env.PAYMENT_RETRIES ?? '3') };
+}
+```
+
+### Problem: low-level caller repeats the rule
+
+The low-level path updates state without naming the boundary that owns the rule.
+
+```c title="src/example.c"
+if (request_total < 5000 || user_is_manager(user)) {
+    approve_request(request);
+}
+```
+
+### Better: low-level boundary owns the rule
+
+The caller asks a named boundary instead of repeating the condition.
+
+```c title="src/example.c"
+if (approval_policy_can_approve(policy, user, request)) {
+    approve_request(request);
+}
+```
+
+### Problem: object path repeats the rule
+
+The object caller owns a rule that should have a named boundary.
+
+```cpp title="src/example.cpp"
+if (request.total() < Money::from_cents(500000) || user.is_manager()) {
+    approvals.approve(request);
+}
+```
+
+### Better: object boundary owns the rule
+
+The policy names the rule and narrows the future change radius.
+
+```cpp title="src/example.cpp"
+if (approval_policy.can_approve(user, request)) {
+    approvals.approve(request);
+}
+```
+
+### Problem: service path repeats the rule
+
+The service path makes the rule local to one caller, so another caller can drift.
+
+```go title="internal/example/service.go"
+if request.Total < 5000 || user.IsManager {
+    approvals.Approve(request)
+}
+```
+
+### Better: service boundary owns the rule
+
+The caller uses a named policy boundary.
+
+```go title="internal/example/service.go"
+if approvalPolicy.CanApprove(user, request) {
+    approvals.Approve(request)
+}
+```
+
+### Problem: client path repeats the rule
+
+The client path repeats a rule that should have a named boundary.
+
+```js title="src/example.js"
+if (request.total < 5000 || user.role === 'manager') {
+  approve(request);
+}
+```
+
+### Better: client boundary owns the rule
+
+The caller asks the named policy instead of rebuilding the condition.
+
+```js title="src/example.js"
+if (approvalPolicy.canApprove(user, request)) {
+  approve(request);
 }
 ```

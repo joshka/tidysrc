@@ -14,9 +14,12 @@ audiences:
   - "agents"
   - "learners"
 languages:
+  - "c"
+  - "cpp"
   - "csharp"
   - "go"
   - "java"
+  - "js"
   - "python"
   - "rust"
   - "ts"
@@ -26,7 +29,7 @@ concepts:
   - "observable-behavior"
   - "boundary-trust"
 related:
-  - "observable-behavior-tests"
+  - "test-observable-behavior"
   - "parse-dont-validate"
 ---
 
@@ -147,3 +150,33 @@ class CatalogError(Exception):
 ## References
 
 - None yet.
+
+### Low-level boundary names the rule
+
+The caller delegates the rule to a named boundary instead of repeating mechanics inline.
+
+```c title="src/example.c"
+if (approval_policy_can_approve(policy, user, request)) {
+    approve_request(request);
+}
+```
+
+### Object boundary names the rule
+
+The object caller asks a boundary that owns the rule.
+
+```cpp title="src/example.cpp"
+if (approval_policy.can_approve(user, request)) {
+    approvals.approve(request);
+}
+```
+
+### Client boundary names the rule
+
+The client code uses a named boundary instead of rebuilding the rule.
+
+```js title="src/example.js"
+if (approvalPolicy.canApprove(user, request)) {
+  approve(request);
+}
+```

@@ -1,6 +1,6 @@
 ---
 title: >-
-  Weak abstractions hide context
+  Weak Abstractions Hide Context
 status: draft
 category: architecture
 topics:
@@ -20,11 +20,27 @@ relatedConcepts:
   - cognitive-burden
 ---
 
-## Impact
+## Description
+
+A helper, provider, strategy, registry, or module boundary makes readers jump without carrying
+enough meaning.
+
+The problem is not the existence of the mechanism itself. It is that the ownership, boundary, or
+contract is implicit enough that each caller can interpret it differently.
+
+## Why It Matters
 
 The code looks more organized but is harder to understand locally. Each extra name and file adds a
-live fact the reader must remember, and agents often multiply these abstractions when repo-local
-guidance is absent.
+
+Reviewers care because the risk is not visible at one call site. They have to reconstruct the
+intended behavior from scattered branches, tests, and boundaries before they can tell whether the
+change is safe.
+
+## Code Impact
+
+The code impact is drift. Related checks, state changes, defaults, errors, or side effects spread
+across files, so a future edit can update one path while leaving another path with the old rule.
+Tests then tend to protect one example rather than the contract that all callers rely on.
 
 ## Signals
 
@@ -51,7 +67,7 @@ guidance is absent.
 
 ## Examples
 
-### Problem: C# helper hides the only useful context
+### Problem: helper hides the only useful context
 
 The helper is used once and its name does not carry the rule.
 
@@ -59,7 +75,7 @@ The helper is used once and its name does not carry the rule.
 decimal Discount(Order order) => discountRules.Apply(order);
 ```
 
-### Better: C# keeps the weak rule local
+### Better: keeps the weak rule local
 
 The condition is visible where the behavior is reviewed.
 
@@ -68,7 +84,7 @@ decimal Discount(Order order) =>
     order.Customer.IsVip ? 0.10m : 0m;
 ```
 
-### Problem: Java strategy adds a concept for one branch
+### Problem: strategy adds a concept for one branch
 
 The new interface makes readers jump without reducing complexity.
 
@@ -78,7 +94,7 @@ BigDecimal discount(Order order) {
 }
 ```
 
-### Better: Java keeps the rule beside the caller
+### Better: keeps the rule beside the caller
 
 The local branch is easier to review than the new abstraction.
 
@@ -88,7 +104,7 @@ BigDecimal discount(Order order) {
 }
 ```
 
-### Problem: Python helper name does not explain enough
+### Problem: helper name does not explain enough
 
 The reader has to open the helper to learn the rule.
 
@@ -97,7 +113,7 @@ def discount(order):
     return apply_rule(order)
 ```
 
-### Better: Python names the local decision
+### Better: names the local decision
 
 The variable carries the domain fact without a jump.
 
@@ -107,7 +123,7 @@ def discount(order):
     return Decimal("0.10") if loyalty_discount_applies else Decimal("0")
 ```
 
-### Problem: Rust trait exists for one implementation
+### Problem: trait exists for one implementation
 
 The trait adds architecture before there is a second policy.
 
@@ -117,7 +133,7 @@ pub fn discount(order: &Order, policy: &dyn DiscountPolicy) -> Decimal {
 }
 ```
 
-### Better: Rust keeps the rule local until pressure repeats
+### Better: keeps the rule local until pressure repeats
 
 The function has fewer concepts to hold.
 
@@ -127,7 +143,7 @@ pub fn discount(order: &Order) -> Decimal {
 }
 ```
 
-### Problem: TypeScript provider hides a local rule
+### Problem: provider hides a local rule
 
 The provider boundary makes one branch harder to inspect.
 
@@ -137,12 +153,92 @@ export function discount(order: Order) {
 }
 ```
 
-### Better: TypeScript keeps the rule in the workflow
+### Better: keeps the rule in the workflow
 
 The code stays local until the domain concept earns a boundary.
 
 ```ts title="src/billing/discounts.ts"
 export function discount(order: Order) {
   return order.customer.isVip ? 0.1 : 0;
+}
+```
+
+### Problem: low-level caller repeats the rule
+
+The low-level path updates state without naming the boundary that owns the rule.
+
+```c title="src/example.c"
+if (request_total < 5000 || user_is_manager(user)) {
+    approve_request(request);
+}
+```
+
+### Better: low-level boundary owns the rule
+
+The caller asks a named boundary instead of repeating the condition.
+
+```c title="src/example.c"
+if (approval_policy_can_approve(policy, user, request)) {
+    approve_request(request);
+}
+```
+
+### Problem: object path repeats the rule
+
+The object caller owns a rule that should have a named boundary.
+
+```cpp title="src/example.cpp"
+if (request.total() < Money::from_cents(500000) || user.is_manager()) {
+    approvals.approve(request);
+}
+```
+
+### Better: object boundary owns the rule
+
+The policy names the rule and narrows the future change radius.
+
+```cpp title="src/example.cpp"
+if (approval_policy.can_approve(user, request)) {
+    approvals.approve(request);
+}
+```
+
+### Problem: service path repeats the rule
+
+The service path makes the rule local to one caller, so another caller can drift.
+
+```go title="internal/example/service.go"
+if request.Total < 5000 || user.IsManager {
+    approvals.Approve(request)
+}
+```
+
+### Better: service boundary owns the rule
+
+The caller uses a named policy boundary.
+
+```go title="internal/example/service.go"
+if approvalPolicy.CanApprove(user, request) {
+    approvals.Approve(request)
+}
+```
+
+### Problem: client path repeats the rule
+
+The client path repeats a rule that should have a named boundary.
+
+```js title="src/example.js"
+if (request.total < 5000 || user.role === 'manager') {
+  approve(request);
+}
+```
+
+### Better: client boundary owns the rule
+
+The caller asks the named policy instead of rebuilding the condition.
+
+```js title="src/example.js"
+if (approvalPolicy.canApprove(user, request)) {
+  approve(request);
 }
 ```

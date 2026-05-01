@@ -83,6 +83,45 @@ Good problem writing:
 Avoid making problem pages into generic advice. If the prose could apply to any software problem,
 add a concrete signal, example, or failure mode.
 
+## AI and Agent Material
+
+AI-related entries should still be source-change entries. The page should name the behavior,
+contract, review risk, context failure, or verification gap that appears in the code or workflow.
+The fact that an agent produced the patch is often context, not the problem itself.
+
+Many agent failures are intensified versions of human failures:
+
+- overbuilding architecture from one example
+- changing scope after seeing nearby affordances
+- weakening tests to make a patch pass
+- guessing from stale or generic context
+- reporting confidence that the evidence does not support
+- overwriting unrelated work while trying to make a patch clean
+
+Write those as general source-change problems unless the agent-specific mechanism matters. For
+example, "premature architecture" is broader than agents, while "preserve human changes" depends on
+the shared working tree and agent handoff context.
+
+Good AI and agent writing:
+
+- names the concrete source-change failure before naming the agent behavior
+- states what evidence should constrain or verify the change
+- gives existing project conventions priority over model memory or generic advice
+- explains how a human reviewer should read the patch
+- avoids treating generated code as a different kind of code
+
+Avoid:
+
+- AI mystique: `the model understands`, `the agent knows`, `AI reasoning`
+- agent-only framing for problems humans also create
+- generic productivity claims about agents
+- long summaries of AI articles instead of TidySrc names and examples
+- blaming the agent instead of naming the observable failure
+
+When using AI Blindspots or similar sources, distill the idea into a durable TidySrc name and cite
+the source only when it helps the reader continue. Do not create one page per article unless the
+article names a distinct source-change problem that is worth linking in review.
+
 ## Concept Entries
 
 Concept pages carry explanation that would overload pattern pages. They can be more narrative than
@@ -121,7 +160,7 @@ and what evidence to report.
 
 A good agent instruction:
 
-- gives repo-local instructions priority
+- gives existing project conventions priority
 - names the narrow change
 - rejects premature architecture when the change does not need it
 - asks for verification tied to the risk

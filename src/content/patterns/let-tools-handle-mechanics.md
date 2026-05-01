@@ -27,85 +27,15 @@ related:
 
 ## Core Idea
 
-Mechanical
-work
-should
-be
-delegated
-to
-tools
-when
-a
-tool
-can
-state
-the
-rule
-better
-than
-a
-human
-edit.
-Formatting,
-import
-order,
-type
-checks,
-and
-lint
-fixes
-are
-often
-review
-noise
-when
-done
+Mechanical work should be delegated to tools when a tool can state the rule better than a human
+edit. Formatting, import order, type checks, and lint fixes are often review noise when done
 manually.
 
-Humans
-and
-agents
-both
-waste
-attention
-hand-tuning
-mechanics.
-Tool-backed
-changes
-are
-easier
-to
-review
-because
-the
-rule
-is
-external
-and
-repeatable.
+Humans and agents both waste attention hand-tuning mechanics. Tool-backed changes are easier to
+review because the rule is external and repeatable.
 
-The
-tradeoff
-is
-tool
-authority.
-Tools
-can
-be
-wrong,
-too
-broad,
-or
-misconfigured;
-apply
-them
-in
-batches
-that
-match
-the
-review
-risk.
+The tradeoff is tool authority. Tools can be wrong, too broad, or misconfigured; apply them in
+batches that match the review risk.
 
 ## Use When
 

@@ -3,7 +3,7 @@ title: >-
   Smallest Trustworthy Verification
 summary: >-
   Run the cheapest check that can catch the likely failure before claiming the change is done.
-status: stable
+status: reviewed
 tags:
   - "workflow"
   - "testing"
@@ -25,7 +25,7 @@ concepts:
   - "observable-behavior"
   - "agent-guidance"
 related:
-  - "observable-behavior-tests"
+  - "test-observable-behavior"
   - "separate-structure-from-behavior"
 ---
 
@@ -140,4 +140,4 @@ def test_guard_clause_page_renders(client):
 
 ## References
 
-- Tidy First: behavior-preserving changes should stay small and easy to verify.
+- [Tidy First?: Batch Sizes](https://www.oreilly.com/library/view/tidy-first/9781098151232/ch18.html)

@@ -3,6 +3,7 @@ import { getCollection } from 'astro:content';
 
 import Chips from '../../components/Chips.astro';
 import CodeExamples from '../../components/CodeExamples.astro';
+import InlineMarkdown from '../../components/InlineMarkdown.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { patternHref } from '../../lib/catalog';
 import { parseConceptContent } from '../../lib/conceptContent';
@@ -44,7 +45,7 @@ const conceptMetrics = ['Cognitive load', 'Review time', 'Change radius'];
             >
               <p class="eyebrow">Concept block {String(index + 1).padStart(2, '0')}</p>
               <h2>{section.title}</h2>
-              {section.body.map((paragraph) => <p>{paragraph}</p>)}
+              {section.body.map((paragraph) => <p><InlineMarkdown text={paragraph} /></p>)}
             </section>
           ))
         }

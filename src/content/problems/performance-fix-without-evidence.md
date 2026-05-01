@@ -1,6 +1,6 @@
 ---
 title: >-
-  Performance fix without evidence
+  Performance Fix Without Evidence
 status: draft
 category: change-risk
 topics:
@@ -21,10 +21,27 @@ relatedConcepts:
   - cognitive-burden
 ---
 
-## Impact
+## Description
+
+A change adds caching, concurrency, allocation tricks, or broad rewrites without a measured
+bottleneck.
+
+The problem is not the existence of the mechanism itself. It is that the ownership, boundary, or
+contract is implicit enough that each caller can interpret it differently.
+
+## Why It Matters
 
 Performance work can add state, invalidation, timing, and concurrency risks. Without evidence, the
-code may get harder to change while the real bottleneck remains elsewhere.
+
+Reviewers care because the risk is not visible at one call site. They have to reconstruct the
+intended behavior from scattered branches, tests, and boundaries before they can tell whether the
+change is safe.
+
+## Code Impact
+
+The code impact is drift. Related checks, state changes, defaults, errors, or side effects spread
+across files, so a future edit can update one path while leaving another path with the old rule.
+Tests then tend to protect one example rather than the contract that all callers rely on.
 
 ## Signals
 
@@ -50,7 +67,7 @@ code may get harder to change while the real bottleneck remains elsewhere.
 
 ## Examples
 
-### Problem: C# cache is added without a measured bottleneck
+### Problem: cache is added without a measured bottleneck
 
 The change adds freshness risk before proving this path is slow.
 
@@ -61,7 +78,7 @@ public Pattern GetPattern(string id)
 }
 ```
 
-### Better: C# optimization starts with a measurement
+### Better: optimization starts with a measurement
 
 The claim can be reviewed before adding state.
 
@@ -70,7 +87,7 @@ The claim can be reviewed before adding state.
 public Pattern LoadPattern() => repository.Load(patternId);
 ```
 
-### Problem: Java parallelism changes ordering without evidence
+### Problem: parallelism changes ordering without evidence
 
 The rewrite adds concurrency risk before showing a throughput problem.
 
@@ -78,7 +95,7 @@ The rewrite adds concurrency risk before showing a throughput problem.
 reports.parallelStream().forEach(report -> publisher.publish(report));
 ```
 
-### Better: Java keeps behavior stable while measuring
+### Better: keeps behavior stable while measuring
 
 The benchmark targets the suspected bottleneck.
 
@@ -89,7 +106,7 @@ public void publishReports() {
 }
 ```
 
-### Problem: Python memoization hides stale data
+### Problem: memoization hides stale data
 
 The cache changes behavior without evidence that loading dominates runtime.
 
@@ -99,7 +116,7 @@ def load_pattern(pattern_id):
     return repository.load(pattern_id)
 ```
 
-### Better: Python profile names the hotspot first
+### Better: profile names the hotspot first
 
 The optimization can be chosen from evidence.
 
@@ -109,7 +126,7 @@ with cProfile.Profile() as profile:
         repository.load(pattern_id)
 ```
 
-### Problem: Rust allocation trick obscures the main path
+### Problem: allocation trick obscures the main path
 
 The rewrite changes ownership before proving allocation cost matters.
 
@@ -119,7 +136,7 @@ pub fn titles(patterns: Vec<Pattern>) -> Vec<String> {
 }
 ```
 
-### Better: Rust benchmark isolates the claim
+### Better: benchmark isolates the claim
 
 The benchmark shows whether title collection is worth optimizing.
 
@@ -129,7 +146,7 @@ fn titles_benchmark(c: &mut Criterion) {
 }
 ```
 
-### Problem: TypeScript cache changes freshness without evidence
+### Problem: cache changes freshness without evidence
 
 The cache may serve stale results and the performance claim is unmeasured.
 
@@ -142,7 +159,7 @@ export async function loadPattern(id: string) {
 }
 ```
 
-### Better: TypeScript measurement precedes the cache
+### Better: measurement precedes the cache
 
 The timing captures the path before changing behavior.
 
@@ -151,4 +168,84 @@ performance.mark('load-pattern-start');
 await api.loadPattern(id);
 performance.mark('load-pattern-end');
 performance.measure('load-pattern', 'load-pattern-start', 'load-pattern-end');
+```
+
+### Problem: low-level caller repeats the rule
+
+The low-level path updates state without naming the boundary that owns the rule.
+
+```c title="src/example.c"
+if (request_total < 5000 || user_is_manager(user)) {
+    approve_request(request);
+}
+```
+
+### Better: low-level boundary owns the rule
+
+The caller asks a named boundary instead of repeating the condition.
+
+```c title="src/example.c"
+if (approval_policy_can_approve(policy, user, request)) {
+    approve_request(request);
+}
+```
+
+### Problem: object path repeats the rule
+
+The object caller owns a rule that should have a named boundary.
+
+```cpp title="src/example.cpp"
+if (request.total() < Money::from_cents(500000) || user.is_manager()) {
+    approvals.approve(request);
+}
+```
+
+### Better: object boundary owns the rule
+
+The policy names the rule and narrows the future change radius.
+
+```cpp title="src/example.cpp"
+if (approval_policy.can_approve(user, request)) {
+    approvals.approve(request);
+}
+```
+
+### Problem: service path repeats the rule
+
+The service path makes the rule local to one caller, so another caller can drift.
+
+```go title="internal/example/service.go"
+if request.Total < 5000 || user.IsManager {
+    approvals.Approve(request)
+}
+```
+
+### Better: service boundary owns the rule
+
+The caller uses a named policy boundary.
+
+```go title="internal/example/service.go"
+if approvalPolicy.CanApprove(user, request) {
+    approvals.Approve(request)
+}
+```
+
+### Problem: client path repeats the rule
+
+The client path repeats a rule that should have a named boundary.
+
+```js title="src/example.js"
+if (request.total < 5000 || user.role === 'manager') {
+  approve(request);
+}
+```
+
+### Better: client boundary owns the rule
+
+The caller asks the named policy instead of rebuilding the condition.
+
+```js title="src/example.js"
+if (approvalPolicy.canApprove(user, request)) {
+  approve(request);
+}
 ```

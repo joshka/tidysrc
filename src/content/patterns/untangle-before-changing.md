@@ -26,62 +26,13 @@ related:
 
 ## Core Idea
 
-Untangling
-is
-preparatory
-structure
-work.
-It
-separates
-concerns
-just
-enough
-that
-the
-real
-behavior
-change
-becomes
-local
-and
-reviewable.
+Untangling is preparatory structure work. It separates concerns just enough that the real behavior
+change becomes local and reviewable.
 
-Use
-this
-when
-a
-feature
-or
-fix
-would
-otherwise
-touch
-validation,
-formatting,
-persistence,
-side
-effects,
-and
-domain
-policy
-all
-at
-once.
+Use this when a feature or fix would otherwise touch validation, formatting, persistence, side
+effects, and domain policy all at once.
 
-The
-tradeoff
-is
-speculative
-cleanup.
-Untangle
-only
-the
-knot
-that
-blocks
-the
-current
-change.
+The tradeoff is speculative cleanup. Untangle only the knot that blocks the current change.
 
 ## Use When
 
@@ -119,4 +70,4 @@ const view = renderPublishState(canPublish);
 
 ## References
 
-- Tidy First? chapter themes: use as inspiration, not a direct content source.
+- [Tidy First?: Getting Untangled](https://www.oreilly.com/library/view/tidy-first/9781098151232/ch20.html)

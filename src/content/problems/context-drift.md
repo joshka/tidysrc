@@ -12,7 +12,7 @@ summary: >-
   matches the task.
 relatedPatterns:
   - "prepare-the-workspace"
-  - "repo-local-instructions-win"
+  - "follow-existing-conventions"
   - "state-requirements-before-solutions"
 relatedConcepts:
   - "context-hygiene"

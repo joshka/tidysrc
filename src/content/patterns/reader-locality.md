@@ -2,21 +2,24 @@
 title: >-
   Reader Locality
 summary: >-
-  Keep related concepts close to the code that needs them, especially when the abstraction is
-  weak.
-status: stable
+  Keep helper functions and related concepts close to the code that needs them, especially when the
+  abstraction is weak.
+status: reviewed
 tags:
   - "readability"
   - "organization"
-  - "rust"
   - "review"
 audiences:
   - "reviewers"
   - "agents"
   - "learners"
 languages:
+  - "c"
+  - "cpp"
   - "csharp"
+  - "go"
   - "java"
+  - "js"
   - "python"
   - "rust"
   - "ts"
@@ -28,7 +31,7 @@ concepts:
 related:
   - "chunk-statements"
   - "explaining-variable"
-  - "avoid-premature-agent-architecture"
+  - "extract-helper-after-locality"
 ---
 
 ## Core Idea
@@ -38,8 +41,13 @@ change. A helper, type, or module earns distance only when its name and contract
 meaning on their own. When an abstraction is weak, keeping it near the caller is often clearer than
 moving it into a shared layer that forces every reader to reconstruct the context.
 
-Reach for this pattern when a helper, type, or module only makes sense beside one caller, and moving
-it away would make the caller harder to read.
+This shows up in ordinary code review: a one-off formatter moved into `utils`, a parser used by one
+import path moved into a shared package, or a tiny helper extracted below a vague name like
+`processRows`. The code is not always worse because it has more lines. It is worse when the reader
+has to leave the workflow to learn a helper that only makes sense in that workflow.
+
+A helper, type, or module should usually stay near one caller when moving it away would make that
+caller harder to read.
 
 The main tradeoff is that strong reusable concepts can live farther away if their contract is clear
 enough that callers do not need to inspect the implementation.
@@ -55,8 +63,8 @@ enough that callers do not need to inspect the implementation.
 
 ## Guidance
 
-- Put the central item first, then place weak helpers near the caller that gives them meaning so the
-  reader can follow the workflow top to bottom.
+- Put the central item first, then place weak helper functions near the caller that gives them
+  meaning so the reader can follow the workflow top to bottom.
 - Extract only concepts that have semantic coherence and can be understood locally from their name,
   inputs, outputs, and surrounding module.
 - Keep small repetition when it leaves less review work than a distant abstraction.
@@ -76,6 +84,39 @@ Before extracting or moving code, check whether the new location reduces the rea
 Keep weak helpers near their caller and prefer repo-local organization over generic architecture.
 
 ## Examples
+
+### Keep the parser beside the import path
+
+The parser only explains this import path, so keeping it local avoids a distant weak helper.
+
+```c title="src/import_users.c"
+ImportResult import_users(const char *csv) {
+    UserRows rows = parse_user_rows(csv);
+    return save_users(rows);
+}
+
+static UserRows parse_user_rows(const char *csv) {
+    return user_rows_from_csv(csv);
+}
+```
+
+### Keep the formatter beside the response
+
+The formatter belongs to one endpoint response, not a shared utility namespace.
+
+```cpp title="src/pattern_endpoint.cpp"
+PatternResponse response_for(const Pattern& pattern) {
+    return PatternResponse{
+        pattern.slug(),
+        display_title(pattern),
+        pattern.summary(),
+    };
+}
+
+static std::string display_title(const Pattern& pattern) {
+    return pattern.status_label() + ": " + pattern.title();
+}
+```
 
 ### Keep the helper beside the workflow it explains
 
@@ -115,7 +156,7 @@ export function patternSearchText(pattern: Pattern): string {
 }
 ```
 
-### C# keeps the private parser beside its caller
+### Keep the private parser beside its caller
 
 The parser only explains this import path, so keeping it local avoids a distant weak helper.
 
@@ -132,7 +173,26 @@ static IReadOnlyList<UserRow> ParseRows(string csv)
 }
 ```
 
-### Java keeps the formatter near the endpoint
+### Keep the grouping helper near the report
+
+The helper describes one report and stays beside the workflow that gives it meaning.
+
+```go title="reports/publish.go"
+func RenderPublishReport(rows []Row) string {
+    grouped := groupByOwner(rows)
+    return renderTable(grouped)
+}
+
+func groupByOwner(rows []Row) map[Owner][]Row {
+    grouped := map[Owner][]Row{}
+    for _, row := range rows {
+        grouped[row.Owner] = append(grouped[row.Owner], row)
+    }
+    return grouped
+}
+```
+
+### Keep the response formatter near the endpoint
 
 The formatter belongs to one endpoint response, not a shared utility package.
 
@@ -150,7 +210,23 @@ private String displayTitle(Pattern pattern) {
 }
 ```
 
-### Python keeps a local grouping helper local
+### Keep a page-local formatter local
+
+The search text formatter belongs to the catalog page, so keeping it local avoids a generic utility
+for one behavior.
+
+```js title="src/patterns/format.js"
+export function patternSearchText(pattern) {
+  return [
+    pattern.title,
+    pattern.summary,
+    pattern.tags.join(' '),
+    pattern.problems.join(' '),
+  ].join(' ').toLowerCase();
+}
+```
+
+### Keep a grouping helper near its report
 
 The helper describes one report and stays beside the workflow that gives it meaning.
 
@@ -159,11 +235,18 @@ def render_publish_report(rows):
     grouped = group_by_owner(rows)
     return render_table(grouped)
 
-
 def group_by_owner(rows):
-    return {owner: list(items) for owner, items in itertools.groupby(rows, key=lambda row: row.owner)}
+    return {
+        owner: list(items)
+        for owner, items in itertools.groupby(rows, key=lambda row: row.owner)
+    }
 ```
 
 ## References
 
-- Ed Page’s Rust Style: put the central item first and order helpers caller-before-callee.
+- [Ed Page’s Rust Style: Central item first
+  (M-ITEM-TOC)](https://epage.github.io/dev/rust-style/#m-item-toc)
+- [Ed Page’s Rust Style: Caller then callee
+  (M-CALLER-CALLEE)](https://epage.github.io/dev/rust-style/#m-caller-callee)
+- [Tidy First?: Reading Order](https://www.oreilly.com/library/view/tidy-first/9781098151232/ch05.html)
+- [Tidy First?: Cohesion Order](https://www.oreilly.com/library/view/tidy-first/9781098151232/ch06.html)

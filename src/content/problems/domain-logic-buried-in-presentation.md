@@ -13,17 +13,34 @@ relatedPatterns:
   - move-domain-rules-inward
   - name-cross-layer-contracts
   - cap-change-radius
-  - observable-behavior-tests
+  - test-observable-behavior
 relatedConcepts:
   - boundary-trust
   - change-radius
   - observable-behavior
 ---
 
-## Impact
+## Description
+
+A business rule lives inside component rendering, presenters, serializers, or controllers where
+other callers cannot reuse or verify it.
+
+The problem is not the existence of the mechanism itself. It is that the ownership, boundary, or
+contract is implicit enough that each caller can interpret it differently.
+
+## Why It Matters
 
 The rule becomes easy to miss and hard to test without rendering the presentation path. Other
-surfaces may implement a different version because the actual policy has no named boundary.
+
+Reviewers care because the risk is not visible at one call site. They have to reconstruct the
+intended behavior from scattered branches, tests, and boundaries before they can tell whether the
+change is safe.
+
+## Code Impact
+
+The code impact is drift. Related checks, state changes, defaults, errors, or side effects spread
+across files, so a future edit can update one path while leaving another path with the old rule.
+Tests then tend to protect one example rather than the contract that all callers rely on.
 
 ## Signals
 
@@ -48,7 +65,7 @@ surfaces may implement a different version because the actual policy has no name
 
 ## Examples
 
-### Problem: C# controller owns an approval rule
+### Problem: controller owns an approval rule
 
 The API response path decides who can approve, so other callers can drift.
 
@@ -60,7 +77,7 @@ public IActionResult Show(Request request, User user)
 }
 ```
 
-### Better: C# controller receives policy output
+### Better: controller receives policy output
 
 The controller presents the decision instead of owning it.
 
@@ -72,7 +89,7 @@ public IActionResult Show(Request request, User user)
 }
 ```
 
-### Problem: Java presenter owns a shipping rule
+### Problem: presenter owns a shipping rule
 
 The view model hides domain behavior inside presentation assembly.
 
@@ -83,7 +100,7 @@ OrderView toView(Order order) {
 }
 ```
 
-### Better: Java presenter receives domain policy
+### Better: presenter receives domain policy
 
 The policy can be tested without the presenter.
 
@@ -93,7 +110,7 @@ OrderView toView(Order order) {
 }
 ```
 
-### Problem: Python serializer owns a business rule
+### Problem: serializer owns a business rule
 
 The API serializer decides eligibility while other callers need the same rule.
 
@@ -105,7 +122,7 @@ def serialize_order(order):
     }
 ```
 
-### Better: Python serializer receives a policy result
+### Better: serializer receives a policy result
 
 The serializer only shapes output.
 
@@ -117,7 +134,7 @@ def serialize_order(order, shipping_policy):
     }
 ```
 
-### Problem: Rust response mapping owns a domain decision
+### Problem: response mapping owns a domain decision
 
 The HTTP layer decides whether an order can ship.
 
@@ -130,7 +147,7 @@ pub fn order_response(order: &Order) -> OrderResponse {
 }
 ```
 
-### Better: Rust response mapping receives domain policy
+### Better: response mapping receives domain policy
 
 The response layer presents the decision made by the domain boundary.
 
@@ -162,5 +179,85 @@ Pricing happens before rendering, and the component only displays the result.
 ```tsx title="src/cart/CartSummary.tsx"
 export function CartSummary({ summary }: { summary: CartSummaryView }) {
   return <span>Total: {formatMoney(summary.totalAfterDiscount)}</span>;
+}
+```
+
+### Problem: low-level caller repeats the rule
+
+The low-level path updates state without naming the boundary that owns the rule.
+
+```c title="src/example.c"
+if (request_total < 5000 || user_is_manager(user)) {
+    approve_request(request);
+}
+```
+
+### Better: low-level boundary owns the rule
+
+The caller asks a named boundary instead of repeating the condition.
+
+```c title="src/example.c"
+if (approval_policy_can_approve(policy, user, request)) {
+    approve_request(request);
+}
+```
+
+### Problem: object path repeats the rule
+
+The object caller owns a rule that should have a named boundary.
+
+```cpp title="src/example.cpp"
+if (request.total() < Money::from_cents(500000) || user.is_manager()) {
+    approvals.approve(request);
+}
+```
+
+### Better: object boundary owns the rule
+
+The policy names the rule and narrows the future change radius.
+
+```cpp title="src/example.cpp"
+if (approval_policy.can_approve(user, request)) {
+    approvals.approve(request);
+}
+```
+
+### Problem: service path repeats the rule
+
+The service path makes the rule local to one caller, so another caller can drift.
+
+```go title="internal/example/service.go"
+if request.Total < 5000 || user.IsManager {
+    approvals.Approve(request)
+}
+```
+
+### Better: service boundary owns the rule
+
+The caller uses a named policy boundary.
+
+```go title="internal/example/service.go"
+if approvalPolicy.CanApprove(user, request) {
+    approvals.Approve(request)
+}
+```
+
+### Problem: client path repeats the rule
+
+The client path repeats a rule that should have a named boundary.
+
+```js title="src/example.js"
+if (request.total < 5000 || user.role === 'manager') {
+  approve(request);
+}
+```
+
+### Better: client boundary owns the rule
+
+The caller asks the named policy instead of rebuilding the condition.
+
+```js title="src/example.js"
+if (approvalPolicy.canApprove(user, request)) {
+  approve(request);
 }
 ```

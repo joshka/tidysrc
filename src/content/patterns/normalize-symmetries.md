@@ -26,71 +26,13 @@ related:
 
 ## Core Idea
 
-Symmetry
-lets
-a
-reader
-compare
-code
-by
-intent
-instead
-of
-formatting,
-naming,
-or
-ordering
-accidents.
-Similar
-concepts
-should
-use
-similar
-names,
-statement
-order,
-and
-shape.
+Symmetry lets a reader compare code by intent instead of formatting, naming, or ordering accidents.
+Similar concepts should use similar names, statement order, and shape.
 
-Use
-this
-before
-changing
-one
-member
-of
-a
-family.
-Once
-the
-family
-is
-normalized,
-the
-behavior
-change
-becomes
-easier
-to
-see.
+Use this before changing one member of a family. Once the family is normalized, the behavior change
+becomes easier to see.
 
-The
-risk
-is
-false
-symmetry.
-Do
-not
-force
-code
-to
-match
-when
-the
-differences
-express
-real
-domain
+The risk is false symmetry. Do not force code to match when the differences express real domain
 distinctions.
 
 ## Use When
@@ -138,4 +80,4 @@ function renderProblem(problem: Problem) {
 
 ## References
 
-- Tidy First? chapter themes: use as inspiration, not a direct content source.
+- [Tidy First?: Normalize Symmetries](https://www.oreilly.com/library/view/tidy-first/9781098151232/ch03.html)

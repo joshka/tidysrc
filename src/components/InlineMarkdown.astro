@@ -1,0 +1,27 @@
+---
+import { parseInlineMarkdown } from '../lib/problemContent';
+
+type Props = {
+  text: string;
+};
+
+const { text } = Astro.props;
+const parts = parseInlineMarkdown(text);
+---
+
+{
+  parts.map((part) => {
+    switch (part.type) {
+      case 'link':
+        return <a href={part.href}>{part.text}</a>;
+      case 'code':
+        return <code>{part.text}</code>;
+      case 'strong':
+        return <strong>{part.text}</strong>;
+      case 'emphasis':
+        return <em>{part.text}</em>;
+      default:
+        return part.text;
+    }
+  })
+}

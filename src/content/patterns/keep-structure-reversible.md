@@ -26,68 +26,14 @@ related:
 
 ## Core Idea
 
-A
-reversible
-structure
-change
-preserves
-options.
-It
-makes
-the
-next
-change
-easier
-without
-committing
-the
-codebase
-to
-a
-broad
-architecture
-too
-early.
+A reversible structure change preserves options. It makes the next change easier without committing
+the codebase to a broad architecture too early.
 
-Use
-reversible
-moves
-while
-evidence
-is
-still
-forming:
-rename,
-move,
-group,
-split,
-and
-clarify
-before
-introducing
-hard
-compatibility
-boundaries.
+Use reversible moves while evidence is still forming: rename, move, group, split, and clarify before
+introducing hard compatibility boundaries.
 
-The
-tradeoff
-is
-that
-public
-APIs
-and
-data
-migrations
-are
-often
-less
-reversible;
-those
-need
-stronger
-evidence
-and
-review.
+The tradeoff is that public APIs and data migrations are often less reversible; those need stronger
+evidence and review.
 
 ## Use When
 
@@ -126,4 +72,4 @@ function patternSearchText(pattern: Pattern) {
 
 ## References
 
-- Tidy First? chapter themes: use as inspiration, not a direct content source.
+- [Tidy First?: Reversible Structure Changes](https://www.oreilly.com/library/view/tidy-first/9781098151232/ch28.html)

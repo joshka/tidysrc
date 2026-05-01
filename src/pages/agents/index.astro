@@ -13,7 +13,7 @@ const workflowGroups = [
     title: 'Prepare',
     summary:
       'Give the agent the local rules, context sources, commands, and workspace state that should constrain the work.',
-    patterns: ['repo-local-instructions-win', 'pin-authoritative-context', 'prepare-the-workspace'],
+    patterns: ['follow-existing-conventions', 'pin-authoritative-context', 'prepare-the-workspace'],
   },
   {
     title: 'Constrain',
@@ -82,7 +82,7 @@ trustworthy verification before claiming the work is done.`;
       <section class="panel">
         <h2>Operational Defaults</h2>
         <ul>
-          <li>Read repo-local instructions before applying general TidySrc guidance.</li>
+          <li>Read existing conventions before applying general TidySrc guidance.</li>
           <li>Make the smallest coherent change that satisfies the request.</li>
           <li>Prefer observable behavior tests over private implementation tests.</li>
           <li>Do not invent architecture from one or two local examples.</li>

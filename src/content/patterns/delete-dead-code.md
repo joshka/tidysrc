@@ -26,79 +26,14 @@ related:
 
 ## Core Idea
 
-Dead
-code
-is
-not
-free
-documentation.
-It
-adds
-names,
-branches,
-tests,
-and
-possibilities
-the
-reader
-must
-rule
-out
-before
-trusting
-the
-live
-path.
+Dead code is not free documentation. It adds names, branches, tests, and possibilities the reader
+must rule out before trusting the live path.
 
-Delete
-it
-when
-the
-project
-has
-enough
-evidence
-that
-the
-path
-is
-unused.
-Keep
-the
-deletion
-reviewable
-and
-separate
-when
-removal
-could
-alter
-observable
-behavior.
+Delete it when the project has enough evidence that the path is unused. Keep the deletion reviewable
+and separate when removal could alter observable behavior.
 
-The
-tradeoff
-is
-recovery.
-Source
-control
-already
-remembers
-old
-code,
-but
-public
-compatibility,
-migrations,
-and
-feature
-flags
-may
-need
-a
-deliberate
-retirement
-path.
+The tradeoff is recovery. Source control already remembers old code, but public compatibility,
+migrations, and feature flags may need a deliberate retirement path.
 
 ## Use When
 
@@ -139,4 +74,4 @@ return renderPattern(pattern);
 
 ## References
 
-- Tidy First? chapter themes: use as inspiration, not a direct content source.
+- [Tidy First?: Dead Code](https://www.oreilly.com/library/view/tidy-first/9781098151232/ch02.html)

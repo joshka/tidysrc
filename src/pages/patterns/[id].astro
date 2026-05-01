@@ -4,6 +4,7 @@ import { getCollection } from 'astro:content';
 import Chips from '../../components/Chips.astro';
 import CodeExamples from '../../components/CodeExamples.astro';
 import CopyBox from '../../components/CopyBox.astro';
+import InlineMarkdown from '../../components/InlineMarkdown.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import {
   conceptHref,
@@ -67,6 +68,7 @@ const referenceTargets = [
 ] as const;
 const referenceHref = (reference: string) =>
   referenceTargets.find(([label]) => reference.startsWith(label))?.[1];
+const hasInlineMarkdownLink = (reference: string) => /\[[^\]]+\]\([^)]+\)/.test(reference);
 const isExternalReference = (href: string) => href.startsWith('http');
 const reviewProblem = pattern.data.problems[0] ?? relatedProblems[0]?.data.summary ?? pattern.data.summary;
 const reviewMove = patternContent.guidance[0] ?? pattern.data.summary;
@@ -103,28 +105,28 @@ const displayTags = pattern.data.tags.filter((tag) => {
     <article class="article">
       <section class="narrative-card" id="narrative">
         <h2>Core Idea</h2>
-        {patternContent.narrative.map((paragraph) => <p>{paragraph}</p>)}
+        {patternContent.narrative.map((paragraph) => <p><InlineMarkdown text={paragraph} /></p>)}
       </section>
 
       <div class="bento-grid">
         <section class="bento-card" id="use-when">
           <h2>Use When</h2>
           <ul>
-            {patternContent.useWhen.map((item) => <li>{item}</li>)}
+            {patternContent.useWhen.map((item) => <li><InlineMarkdown text={item} /></li>)}
           </ul>
         </section>
 
         <section class="bento-card muted" id="guidance">
           <h2>Guidance</h2>
           <ul>
-            {patternContent.guidance.map((item) => <li>{item}</li>)}
+            {patternContent.guidance.map((item) => <li><InlineMarkdown text={item} /></li>)}
           </ul>
         </section>
 
         <section class="bento-card" id="tradeoffs">
           <h2>Tradeoffs</h2>
           <ul>
-            {patternContent.tradeoffs.map((item) => <li>{item}</li>)}
+            {patternContent.tradeoffs.map((item) => <li><InlineMarkdown text={item} /></li>)}
           </ul>
         </section>
       </div>
@@ -132,7 +134,6 @@ const displayTags = pattern.data.tags.filter((tag) => {
       <section id="examples">
         <div class="section-bar">
           <h2>Implementation</h2>
-          <span>{languageChoiceLabels.join(' / ')}</span>
         </div>
         <div class="implementation-tabs">
           <CodeExamples examples={patternContent.examples} />
@@ -193,7 +194,9 @@ const displayTags = pattern.data.tags.filter((tag) => {
               const href = referenceHref(reference);
               return (
                 <li>
-                  {href ? (
+                  {hasInlineMarkdownLink(reference) ? (
+                    <InlineMarkdown text={reference} />
+                  ) : href ? (
                     <a
                       href={href}
                       rel={isExternalReference(href) ? 'noreferrer' : undefined}
@@ -289,9 +292,12 @@ const displayTags = pattern.data.tags.filter((tag) => {
     text-transform: uppercase;
   }
 
-  .narrative-card p:last-child {
+  .narrative-card p {
     max-width: 900px;
-    font-size: clamp(1.05rem, 2vw, 1.25rem);
+    font-size: 1rem;
+  }
+
+  .narrative-card p:last-child {
     margin-bottom: 0;
   }
 

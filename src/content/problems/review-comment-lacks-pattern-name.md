@@ -1,6 +1,6 @@
 ---
 title: >-
-  Review comment lacks a pattern name
+  Review Comment Lacks a Pattern Name
 status: seed
 category: agent-workflow
 topics:

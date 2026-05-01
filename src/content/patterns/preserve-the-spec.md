@@ -21,92 +21,21 @@ concepts:
   - "observable-behavior"
   - "boundary-trust"
 related:
-  - "observable-behavior-tests"
+  - "test-observable-behavior"
   - "characterize-before-changing"
   - "separate-structure-from-behavior"
 ---
 
 ## Core Idea
 
-A
-spec
-is
-the
-boundary
-the
-change
-must
-respect.
-It
-can
-be
-a
-test,
-public
-API,
-documented
-behavior,
-file
-format,
-CLI
-output,
-or
-maintainer
-instruction.
+A spec is the boundary the change must respect. It can be a test, public API, documented behavior,
+file format, CLI output, or maintainer instruction.
 
-Humans
-and
-agents
-both
-weaken
-specs
-when
-they
-are
-stuck:
-deleting
-a
-failing
-assertion,
-renaming
-a
-public
-field,
-changing
-a
-route
-shape,
-or
-adjusting
-expected
-output
-to
-match
-a
-bug.
+Humans and agents both weaken specs when they are stuck: deleting a failing assertion, renaming a
+public field, changing a route shape, or adjusting expected output to match a bug.
 
-The
-tradeoff
-is
-that
-specs
-can
-be
-wrong.
-When
-the
-spec
-is
-wrong,
-change
-it
-deliberately
-and
-make
-that
-behavior
-change
-visible.
+The tradeoff is that specs can be wrong. When the spec is wrong, change it deliberately and make
+that behavior change visible.
 
 ## Use When
 

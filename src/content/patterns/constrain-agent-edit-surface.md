@@ -23,7 +23,7 @@ concepts:
   - "review-batch-size"
 related:
   - "cap-change-radius"
-  - "repo-local-instructions-win"
+  - "follow-existing-conventions"
   - "choose-change-batch-size"
 ---
 

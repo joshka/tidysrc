@@ -1,12 +1,13 @@
 ---
 type Props = {
   items: string[];
+  labels?: Record<string, string>;
   links?: Record<string, string>;
   status?: string;
   statusHref?: string;
 };
 
-const { items, links = {}, status, statusHref } = Astro.props;
+const { items, labels = {}, links = {}, status, statusHref } = Astro.props;
 ---
 
 <div class="chip-list">
@@ -24,10 +25,10 @@ const { items, links = {}, status, statusHref } = Astro.props;
     items.map((item) =>
       links[item] ? (
         <a class="chip" href={links[item]}>
-          {item}
+          {labels[item] ?? item}
         </a>
       ) : (
-        <span class="chip">{item}</span>
+        <span class="chip">{labels[item] ?? item}</span>
       ),
     )
   }

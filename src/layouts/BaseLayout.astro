@@ -59,9 +59,14 @@ const pageTitle = title === 'TidySrc' ? title : `${title} | TidySrc`;
           <a href="/patterns/">Patterns</a>
           <a href="/concepts/">Concepts</a>
           <a href="/agents/">Agents</a>
-          <a href="/configs/">Configs</a>
           <a href="/references/">References</a>
+          <a class="nav-search-link" href="/search/">Search</a>
         </div>
+        <form class="nav-search" action="/search/" role="search">
+          <label class="sr-only" for="site-search">Search TidySrc</label>
+          <input id="site-search" name="q" type="search" placeholder="Search" />
+          <button class="sr-only" type="submit">Search</button>
+        </form>
         <button
           class="theme-toggle"
           type="button"
@@ -154,8 +159,6 @@ const pageTitle = title === 'TidySrc' ? title : `${title} | TidySrc`;
     --accent-strong: #7c4300;
     --accent-soft: #f7dfba;
     --warning-soft: #fff0c7;
-    --stable-soft: #e4edd8;
-    --stable-text: #334d1f;
     --draft-soft: #eee0c8;
     --draft-text: #68430c;
     --seed-soft: #eadfd1;
@@ -186,8 +189,6 @@ const pageTitle = title === 'TidySrc' ? title : `${title} | TidySrc`;
     --accent-strong: #ffc174;
     --accent-soft: #281f12;
     --warning-soft: #261b0e;
-    --stable-soft: #2a2412;
-    --stable-text: #ffc174;
     --draft-soft: #242823;
     --draft-text: #d5d1c8;
     --seed-soft: #1d211f;
@@ -269,7 +270,7 @@ const pageTitle = title === 'TidySrc' ? title : `${title} | TidySrc`;
   .nav {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-start;
     min-height: 58px;
     width: 100%;
   }
@@ -288,6 +289,7 @@ const pageTitle = title === 'TidySrc' ? title : `${title} | TidySrc`;
 
   .nav-links {
     display: flex;
+    flex: 0 1 auto;
     flex-wrap: wrap;
     justify-content: flex-end;
     align-self: stretch;
@@ -311,6 +313,42 @@ const pageTitle = title === 'TidySrc' ? title : `${title} | TidySrc`;
     color: var(--accent-text);
   }
 
+  .nav-links .nav-search-link {
+    display: none;
+  }
+
+  .nav-search {
+    align-self: stretch;
+    display: flex;
+    align-items: center;
+    border-left: 2px solid var(--border);
+    margin-left: auto;
+    padding-inline: 12px;
+  }
+
+  .nav-search input {
+    width: 210px;
+    border: 2px solid var(--border);
+    background: var(--surface-muted);
+    color: var(--text);
+    font: inherit;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    min-height: 34px;
+    padding: 0 10px;
+  }
+
+  .nav-search input::placeholder {
+    color: var(--muted);
+    opacity: 1;
+  }
+
+  .nav-search input:focus {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
   .theme-toggle {
     align-self: stretch;
     border: 0;
@@ -329,6 +367,18 @@ const pageTitle = title === 'TidySrc' ? title : `${title} | TidySrc`;
   .theme-toggle:hover {
     background: var(--accent);
     color: var(--accent-text);
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
   }
 
   .section {
@@ -484,11 +534,6 @@ const pageTitle = title === 'TidySrc' ? title : `${title} | TidySrc`;
     border-color: var(--accent);
     background: var(--accent);
     color: var(--accent-text);
-  }
-
-  .status-stable {
-    background: var(--stable-soft);
-    color: var(--stable-text);
   }
 
   .status-reviewed {
@@ -731,6 +776,14 @@ const pageTitle = title === 'TidySrc' ? title : `${title} | TidySrc`;
       min-height: 48px;
       padding-inline: 12px;
       white-space: nowrap;
+    }
+
+    .nav-links .nav-search-link {
+      display: flex;
+    }
+
+    .nav-search {
+      display: none;
     }
 
     .theme-toggle {

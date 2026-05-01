@@ -1,6 +1,6 @@
 ---
 title: >-
-  Unclear done signal
+  Unclear Done Signal
 status: seed
 category: testing
 topics:
@@ -11,7 +11,7 @@ summary: >-
   The change is considered complete without evidence that the relevant behavior still works.
 relatedPatterns:
   - smallest-trustworthy-verification
-  - observable-behavior-tests
+  - test-observable-behavior
 relatedConcepts:
   - observable-behavior
   - agent-guidance

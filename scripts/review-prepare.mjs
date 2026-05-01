@@ -30,6 +30,7 @@ const currentFile = path.join(reviewDir, 'current.json');
 const coverageReportFile = path.join('docs', 'content-coverage-report.md');
 const correctionQueueFile = path.join('docs', 'correction-queue.md');
 const args = new Set(process.argv.slice(2));
+const reviewedPageIds = new Set(['search/index']);
 const coreConceptIds = new Set([
   'agent-guidance',
   'cognitive-burden',
@@ -52,11 +53,19 @@ const pageNarrationPatterns = [
     label: 'Avoid interface instructions; describe the content directly.',
   },
   {
+    pattern: /\b(start here|use this path|use these(?: problems)?) when\b/i,
+    label: 'Avoid pathway instructions; describe the content directly.',
+  },
+  {
+    pattern: /\buse these\b/i,
+    label: 'Avoid collection instructions; name the concrete content or situation.',
+  },
+  {
     pattern: /\bthe rest of this page\b/i,
     label: 'Avoid page-structure narration; move straight to the content.',
   },
   {
-    pattern: /\bthese (concepts|patterns|problems|references|configs|agents) (cover|explain|show|collect)\b/i,
+    pattern: /\bthese (concepts|patterns|problems|references|agents) (cover|explain|show|collect)\b/i,
     label: 'Avoid collection narration; state the underlying idea directly.',
   },
   {
@@ -106,24 +115,27 @@ console.log(`Prepared ${queue.length} review items in ${reviewDir}/.`);
 console.log(`Next: pnpm review:next`);
 
 function contentEntries(type) {
-  return markdownFiles(`src/content/${type}`).map((file) => {
+  return markdownFiles(`src/content/${type}`).flatMap((file) => {
     const id = idFor(file);
     const source = fs.readFileSync(file, 'utf8');
     const data = parseFrontmatter(source, file);
+    if (data.status === 'reviewed') {
+      return [];
+    }
     const presentLanguages = exampleLanguages(source);
     const missingLanguages =
-      ['concepts', 'references'].includes(type) && !section(source, 'Examples')
+      data.status === 'seed' || type === 'references'
+        ? []
+        : type === 'concepts' && !section(source, 'Examples')
         ? [...requiredExampleLanguages]
-        : type === 'references'
-          ? []
-          : missingRequiredLanguages(presentLanguages);
+        : missingRequiredLanguages(presentLanguages);
     const sections = headings(source);
     const findings = findingsFor(type, data, source, presentLanguages, missingLanguages);
     const priority = priorityFor(type, id, data.status, findings);
     const reviewFocus = reviewFocusFor(type, findings, data.status);
     const route = routeForEntry(type, id);
 
-    return {
+    return [{
       id: `${type}/${id}`,
       slug: id,
       type,
@@ -142,7 +154,7 @@ function contentEntries(type) {
       presentLanguages,
       missingLanguages,
       summary: data.summary ?? summaryFromBody(stripFrontmatter(source)),
-    };
+    }];
   });
 }
 
@@ -193,22 +205,25 @@ function pageEntries() {
       ],
     },
     {
-      id: 'configs/index',
-      route: '/configs/',
-      source: 'src/pages/configs/index.astro',
-      title: 'Configs Index',
-      focus: ['Are templates useful without being too prescriptive?', 'Are config examples scoped?'],
-    },
-    {
       id: 'references/index',
       route: '/references/',
       source: 'src/pages/references/index.astro',
       title: 'References Index',
       focus: ['Do reference groups explain source roles?', 'Are any links too narrow or missing?'],
     },
+    {
+      id: 'search/index',
+      route: '/search/',
+      source: 'src/pages/search/index.astro',
+      title: 'Search Index',
+      focus: [
+        'Does global search find problems, patterns, concepts, and references?',
+        'Do result labels make it clear what kind of entry will open?',
+      ],
+    },
   ];
 
-  return pages.map((page) => {
+  return pages.filter((page) => !reviewedPageIds.has(page.id)).map((page) => {
     const source = fs.readFileSync(page.source, 'utf8');
     const findings = writingFindings(source);
     return {
@@ -268,13 +283,25 @@ function findingsFor(type, data, source, presentLanguages, missingLanguages) {
   }
 
   if (type === 'problems') {
-    for (const required of ['Impact', 'Signals', 'Diagnostic Questions', 'Approach']) {
+    for (const required of [
+      'Description',
+      'Why It Matters',
+      'Code Impact',
+      'Signals',
+      'Diagnostic Questions',
+      'Approach',
+    ]) {
       if (!section(source, required)) {
         findings.push(`Missing section: ${required}`);
       }
     }
-    if ((section(source, 'Impact') ?? '').length < 180 && data.status !== 'seed') {
-      findings.push('Impact may be too short to explain why this is a problem.');
+    const whyItMatters = section(source, 'Why It Matters') ?? section(source, 'Impact') ?? '';
+    const codeImpact = section(source, 'Code Impact') ?? section(source, 'Impact') ?? '';
+    if (whyItMatters.length < 180 && data.status !== 'seed') {
+      findings.push('Why It Matters may be too short to explain why this is a problem.');
+    }
+    if (codeImpact.length < 180 && data.status !== 'seed') {
+      findings.push('Code Impact may be too short to explain what this does to code.');
     }
   }
 
@@ -325,7 +352,7 @@ function priorityFor(type, id, status, findings) {
   if (type === 'references') {
     return 'P1';
   }
-  if (status === 'stable' || status === 'reviewed') {
+  if (status === 'reviewed') {
     return 'P0';
   }
   if (type === 'concepts' && coreConceptIds.has(id)) {
@@ -345,7 +372,7 @@ function reviewFocusFor(type, findings, status) {
     focus.push('Is the agent instruction narrow enough to apply safely?');
   } else if (type === 'problems') {
     focus.push('Does the title name a problem you would use in review?');
-    focus.push('Does impact explain the consequence clearly?');
+    focus.push('Do Why It Matters and Code Impact explain distinct consequences clearly?');
     focus.push('Do examples show the problem shape in each required language?');
   } else if (type === 'concepts') {
     focus.push('Does the concept carry useful "why" beyond pattern cards?');
@@ -412,7 +439,7 @@ ${
 
 - Accuracy:
 - Naming:
-- Impact / why it matters:
+- Why it matters / code impact:
 - Examples:
 - Language idioms:
 - Status decision:
@@ -469,12 +496,18 @@ function nextCurrentState(queue) {
 
   const current = readJson(currentFile);
   if (!current.itemId) {
-    return { index: Math.min(current.index ?? 0, queue.length - 1) };
+    const index = Math.min(current.index ?? 0, queue.length - 1);
+    if (index === 0) {
+      return { index };
+    }
+    const previousIndex = index - 1;
+    return { index: previousIndex, itemId: queue[previousIndex]?.id };
   }
 
   const index = queue.findIndex((entry) => entry.id === current.itemId);
   if (index === -1) {
-    return { index: 0 };
+    const previousIndex = Math.max(0, Math.min((current.index ?? 0) - 1, queue.length - 1));
+    return { index: previousIndex, itemId: queue[previousIndex]?.id };
   }
 
   return { ...current, index };

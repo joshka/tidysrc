@@ -28,80 +28,13 @@ related:
 
 ## Core Idea
 
-Extracting
-a
-helper
-is
-useful
-when
-the
-helper
-name
-lets
-the
-reader
-skip
-implementation
-detail.
-It
-is
-not
-useful
-when
-it
-only
-moves
-confusing
-code
-somewhere
-else.
+Extracting a helper is useful when the helper name lets the reader skip implementation detail. It is
+not useful when it only moves confusing code somewhere else.
 
-Start
-with
-locality.
-If
-the
-helper
-only
-explains
-one
-caller,
-keep
-it
-beside
-that
-caller.
-Move
-it
-farther
-away
-only
-when
-the
-concept
-becomes
-strong
-enough
-to
-stand
-alone.
+Start with locality. If the helper only explains one caller, keep it beside that caller. Move it
+farther away only when the concept becomes strong enough to stand alone.
 
-The
-tradeoff
-is
-fragmentation.
-Too
-many
-tiny
-helpers
-can
-turn
-one
-readable
-flow
-into
-a
-scavenger
+The tradeoff is fragmentation. Too many tiny helpers can turn one readable flow into a scavenger
 hunt.
 
 ## Use When
@@ -140,4 +73,4 @@ function canPublish(pattern: Pattern) {
 
 ## References
 
-- Tidy First? chapter themes: use as inspiration, not a direct content source.
+- [Tidy First?: Extract Helper](https://www.oreilly.com/library/view/tidy-first/9781098151232/ch12.html)

@@ -9,38 +9,56 @@ const referenceGroups = [
   {
     title: 'Refactoring Catalogs',
     summary:
-      'Use these when TidySrc needs a durable refactoring name, before-after mechanics, or a known code-smell vocabulary.',
+      'Durable refactoring names, before-after mechanics, and code-smell vocabulary for precise review comments.',
     references: ['refactoring-com', 'refactoring-com-catalog', 'refactoring-guru-catalog'],
   },
   {
     title: 'Pattern-Language Sources',
     summary:
-      'Use these for catalog structure, naming discipline, and the older pattern-language tradition behind compact linked entries.',
-    references: ['portland-pattern-repository', 'hillside-patterns', 'patterns-dev'],
+      'Catalog structure, naming discipline, and the older pattern-language tradition behind compact linked entries.',
+    references: [
+      'portland-pattern-repository',
+      'hillside-patterns',
+      'architectural-metapatterns',
+    ],
   },
   {
     title: 'Legacy-Code Practice',
     summary:
-      'Use these for characterization, seams, incremental change tactics, and maintenance-shaped examples.',
-    references: ['understand-legacy-code-articles', 'sourcemaking-code-smells'],
+      'Characterization, seams, incremental change tactics, and maintenance-shaped examples.',
+    references: [
+      'working-effectively-with-legacy-code',
+      'understand-legacy-code-articles',
+      'sourcemaking-code-smells',
+    ],
   },
   {
     title: 'Source-Change Economics',
     summary:
-      'Use these for small tidying moves, reversibility, cohesion, coupling, and reviewable change batch size.',
-    references: ['tidy-first', 'laws-of-software-engineering', 'ed-page-s-rust-style'],
+      'Small tidying moves, reversibility, cohesion, coupling, and reviewable change batch size.',
+    references: ['tidy-first', 'geepaw-large-scale-refactoring', 'laws-of-software-engineering'],
+  },
+  {
+    title: 'Rust API Design',
+    summary:
+      'Rust-specific checklists for public API shape, naming, type safety, documentation, ergonomics, and reviewable crate boundaries.',
+    references: [
+      'ed-page-s-rust-style',
+      'rust-api-guidelines-checklist',
+      'microsoft-pragmatic-rust-checklist',
+    ],
   },
   {
     title: 'Interfaces and User Burden',
     summary:
-      'Use these when the pattern touches API shape, interface refactoring, reader burden, or human-centered heuristics.',
-    references: ['interface-refactoring-catalog', 'laws-of-ux'],
+      'API shape, interface refactoring, reader burden, and human-centered heuristics.',
+    references: ['patterns-dev', 'interface-refactoring-catalog', 'laws-of-ux'],
   },
   {
     title: 'Agent Tooling and Failure Modes',
     summary:
-      'Use these for agent workflow, context hygiene, stop conditions, and verification expectations around AI-assisted edits.',
-    references: ['ai-blindspots'],
+      'Agent workflow, context hygiene, stop conditions, and verification expectations around AI-assisted edits.',
+    references: ['ai-blindspots', 'agentpatterns-ai'],
   },
 ];
 ---
@@ -50,13 +68,12 @@ const referenceGroups = [
     <div class="page-hero">
       <div class="page-hero-main">
         <p class="eyebrow">References</p>
-        <h1>Influences, not authorities.</h1>
+        <h1>Sources behind the pattern language.</h1>
       </div>
       <div class="page-hero-side">
         <p class="lede">
-          TidySrc borrows from refactoring catalogs, pattern languages, legacy-code practice, UX
-          heuristics, and design discussions. The catalog treats them as context, not as a rule
-          hierarchy.
+          Refactoring catalogs, pattern-language history, legacy-code practice, UX heuristics, and
+          agent-tooling notes provide names, examples, and tradeoffs for source-change discussions.
         </p>
       </div>
     </div>
@@ -67,7 +84,7 @@ const referenceGroups = [
       referenceGroups.map((group) => (
         <section class="panel reference-group">
           <div class="reference-group-head">
-            <div>
+            <div class="reference-group-title">
               <p class="eyebrow">Reference group</p>
               <h2>{group.title}</h2>
             </div>
@@ -108,20 +125,36 @@ const referenceGroups = [
 
   .reference-group-head {
     display: grid;
+    align-items: center;
     grid-template-columns: minmax(0, 0.38fr) minmax(0, 0.62fr);
     gap: 1rem;
     border-bottom: 2px solid var(--border);
     background: var(--surface-muted);
-    padding: 1rem;
+    min-height: 118px;
+    padding: 1.25rem 1rem;
+  }
+
+  .reference-group-title {
+    display: grid;
+    gap: 0.6rem;
+  }
+
+  .reference-group-head .eyebrow,
+  .reference-group-head h2 {
+    margin: 0;
   }
 
   .reference-group-head h2 {
     font-size: clamp(1.3rem, 2.4vw, 2rem);
+    line-height: 1.05;
     text-transform: uppercase;
   }
 
   .reference-group-head p:last-child {
+    align-self: center;
     color: var(--muted);
+    margin: 0;
+    padding-top: 0.8rem;
   }
 
   .reference-grid {

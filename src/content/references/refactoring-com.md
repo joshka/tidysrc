@@ -4,4 +4,4 @@ title: >-
 href: "https://refactoring.com/"
 ---
 
-Martin Fowler’s refactoring home base, including articles and catalog links.
+Martin Fowler's refactoring articles, catalog links, and terminology.

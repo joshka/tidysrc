@@ -4,4 +4,5 @@ title: >-
 href: "https://understandlegacycode.com/all-articles/"
 ---
 
-Legacy-code articles focused on characterization, refactoring, and concrete change tactics.
+Concrete legacy-code tactics around characterization, seams, refactoring, and safe incremental
+change.

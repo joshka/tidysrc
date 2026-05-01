@@ -27,76 +27,13 @@ related:
 
 ## Core Idea
 
-Batch
-size
-is
-a
-review
-design
-choice.
-A
-good
-batch
-has
-one
-reason
-to
-exist,
-one
-verification
-story,
-and
-enough
-context
-to
-understand
-the
-result.
+Batch size is a review design choice. A good batch has one reason to exist, one verification story,
+and enough context to understand the result.
 
-Split
-batches
-when
-structure
-and
-behavior
-blur
-together,
-when
-verification
-differs,
-or
-when
-rollback
-should
-be
-independent.
-Combine
-tiny
-edits
-when
-separating
-them
-would
-hide
-the
-actual
-move.
+Split batches when structure and behavior blur together, when verification differs, or when rollback
+should be independent. Combine tiny edits when separating them would hide the actual move.
 
-The
-tradeoff
-is
-coordination.
-Too
-many
-tiny
-changes
-create
-process
-noise;
-one
-broad
-change
-hides
+The tradeoff is coordination. Too many tiny changes create process noise; one broad change hides
 risk.
 
 ## Use When
@@ -134,4 +71,4 @@ The rename and rule change deserve different batches because they fail different
 
 ## References
 
-- Tidy First? chapter themes: use as inspiration, not a direct content source.
+- [Tidy First?: Batch Sizes](https://www.oreilly.com/library/view/tidy-first/9781098151232/ch18.html)

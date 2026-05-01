@@ -20,7 +20,7 @@ concepts:
   - "agent-guidance"
   - "change-radius"
 related:
-  - "repo-local-instructions-win"
+  - "follow-existing-conventions"
   - "constrain-agent-edit-surface"
   - "keep-structure-reversible"
 ---
@@ -31,8 +31,8 @@ Agents share a working tree with the user. Files can change between the agent's 
 next edit. Those changes are not noise; they are potentially the user's current work.
 
 Preserving human changes keeps the agent from turning source control hygiene into data loss. The
-agent should work around unrelated edits, reread files it will touch, and ask before replacing
-state it did not create.
+agent should work around unrelated edits, reread files it will touch, and ask before replacing state
+it did not create.
 
 This pattern matters for humans too. Reviewers should be suspicious when a diff "cleans up" nearby
 work that was not part of the request.

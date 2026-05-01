@@ -20,76 +20,21 @@ concepts:
   - "boundary-trust"
   - "cognitive-burden"
 related:
-  - "repo-local-instructions-win"
+  - "follow-existing-conventions"
   - "make-parameters-explicit"
   - "smallest-trustworthy-verification"
 ---
 
 ## Core Idea
 
-A
-solution
-fills
-missing
-requirements
-with
-defaults.
-That
-can
-look
-productive
-while
-silently
-choosing
-architecture,
-compatibility,
-and
-verification
-constraints.
+A solution fills missing requirements with defaults. That can look productive while silently
+choosing architecture, compatibility, and verification constraints.
 
-Humans
-do
-this
-when
-they
-jump
-to
-a
-favorite
-abstraction.
-Agents
-do
-it
-when
-prompts
-omit
-non-goals,
-local
-conventions,
-or
-success
-checks.
+Humans do this when they jump to a favorite abstraction. Agents do it when prompts omit non-goals,
+local conventions, or success checks.
 
-The
-tradeoff
-is
-overhead.
-Small
-obvious
-fixes
-do
-not
-need
-a
-ceremony,
-but
-ambiguous
-work
-needs
-explicit
-constraints
-before
-implementation.
+The tradeoff is overhead. Small obvious fixes do not need a ceremony, but ambiguous work needs
+explicit constraints before implementation.
 
 ## Use When
 

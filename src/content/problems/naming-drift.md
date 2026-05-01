@@ -1,6 +1,6 @@
 ---
 title: >-
-  Naming drift
+  Naming Drift
 status: draft
 category: readability
 topics:
@@ -20,10 +20,26 @@ relatedConcepts:
   - cognitive-burden
 ---
 
-## Impact
+## Description
+
+Names keep their old words after behavior, ownership, or domain meaning changes.
+
+The problem is not the existence of the mechanism itself. It is that the ownership, boundary, or
+contract is implicit enough that each caller can interpret it differently.
+
+## Why It Matters
 
 Stale names mislead readers and agents. The code compiles, but every review requires reconciling
-what the name claims with what the implementation actually does.
+
+Reviewers care because the risk is not visible at one call site. They have to reconstruct the
+intended behavior from scattered branches, tests, and boundaries before they can tell whether the
+change is safe.
+
+## Code Impact
+
+The code impact is drift. Related checks, state changes, defaults, errors, or side effects spread
+across files, so a future edit can update one path while leaving another path with the old rule.
+Tests then tend to protect one example rather than the contract that all callers rely on.
 
 ## Signals
 
@@ -49,7 +65,7 @@ what the name claims with what the implementation actually does.
 
 ## Examples
 
-### Problem: C# name preserves an old implementation
+### Problem: name preserves an old implementation
 
 The helper now checks eligibility, but the name still talks about the old role flag.
 
@@ -60,7 +76,7 @@ bool IsVip(Customer customer)
 }
 ```
 
-### Better: C# name says the current domain fact
+### Better: name says the current domain fact
 
 The reviewer can discuss eligibility without remembering the old implementation.
 
@@ -71,7 +87,7 @@ bool IsEligibleForLoyaltyDiscount(Customer customer)
 }
 ```
 
-### Problem: Java name describes mechanics
+### Problem: name describes mechanics
 
 The method name says how the value used to be stored, not what it means.
 
@@ -81,7 +97,7 @@ boolean hasFlag(Account account) {
 }
 ```
 
-### Better: Java name describes domain meaning
+### Better: name describes domain meaning
 
 The name carries the rule's role at the call site.
 
@@ -91,7 +107,7 @@ boolean qualifiesForLoyaltyDiscount(Account account) {
 }
 ```
 
-### Problem: Python name keeps stale vocabulary
+### Problem: name keeps stale vocabulary
 
 The rule no longer means only VIP status.
 
@@ -100,7 +116,7 @@ def is_vip(customer):
     return customer.tier == "gold" and customer.account_age.days > 365
 ```
 
-### Better: Python name follows current behavior
+### Better: name follows current behavior
 
 Tests and callers can use the same vocabulary.
 
@@ -109,7 +125,7 @@ def is_eligible_for_loyalty_discount(customer):
     return customer.tier == "gold" and customer.account_age.days > 365
 ```
 
-### Problem: Rust name hides the domain decision
+### Problem: name hides the domain decision
 
 The predicate name is too broad for the rule it carries.
 
@@ -119,7 +135,7 @@ pub fn is_active(customer: &Customer) -> bool {
 }
 ```
 
-### Better: Rust name narrows the meaning
+### Better: name narrows the meaning
 
 The predicate says what future branches are deciding.
 
@@ -129,7 +145,7 @@ pub fn qualifies_for_loyalty_discount(customer: &Customer) -> bool {
 }
 ```
 
-### Problem: TypeScript name keeps old terminology
+### Problem: name keeps old terminology
 
 The name says VIP, but the rule now includes account age.
 
@@ -139,12 +155,92 @@ export function isVip(customer: Customer) {
 }
 ```
 
-### Better: TypeScript name matches the rule
+### Better: name matches the rule
 
 The call site can talk about the actual domain decision.
 
 ```ts title="src/billing/discounts.ts"
 export function isEligibleForLoyaltyDiscount(customer: Customer) {
   return customer.tier === 'gold' && customer.accountAgeDays > 365;
+}
+```
+
+### Problem: low-level caller repeats the rule
+
+The low-level path updates state without naming the boundary that owns the rule.
+
+```c title="src/example.c"
+if (request_total < 5000 || user_is_manager(user)) {
+    approve_request(request);
+}
+```
+
+### Better: low-level boundary owns the rule
+
+The caller asks a named boundary instead of repeating the condition.
+
+```c title="src/example.c"
+if (approval_policy_can_approve(policy, user, request)) {
+    approve_request(request);
+}
+```
+
+### Problem: object path repeats the rule
+
+The object caller owns a rule that should have a named boundary.
+
+```cpp title="src/example.cpp"
+if (request.total() < Money::from_cents(500000) || user.is_manager()) {
+    approvals.approve(request);
+}
+```
+
+### Better: object boundary owns the rule
+
+The policy names the rule and narrows the future change radius.
+
+```cpp title="src/example.cpp"
+if (approval_policy.can_approve(user, request)) {
+    approvals.approve(request);
+}
+```
+
+### Problem: service path repeats the rule
+
+The service path makes the rule local to one caller, so another caller can drift.
+
+```go title="internal/example/service.go"
+if request.Total < 5000 || user.IsManager {
+    approvals.Approve(request)
+}
+```
+
+### Better: service boundary owns the rule
+
+The caller uses a named policy boundary.
+
+```go title="internal/example/service.go"
+if approvalPolicy.CanApprove(user, request) {
+    approvals.Approve(request)
+}
+```
+
+### Problem: client path repeats the rule
+
+The client path repeats a rule that should have a named boundary.
+
+```js title="src/example.js"
+if (request.total < 5000 || user.role === 'manager') {
+  approve(request);
+}
+```
+
+### Better: client boundary owns the rule
+
+The caller asks the named policy instead of rebuilding the condition.
+
+```js title="src/example.js"
+if (approvalPolicy.canApprove(user, request)) {
+  approve(request);
 }
 ```

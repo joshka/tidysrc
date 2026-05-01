@@ -26,71 +26,13 @@ related:
 
 ## Core Idea
 
-Names
-are
-local
-documentation.
-When
-responsibility
-changes
-and
-names
-do
-not,
-the
-reader
-has
-to
-choose
-between
-trusting
-the
-word
-or
-reading
-the
-implementation.
+Names are local documentation. When responsibility changes and names do not, the reader has to
+choose between trusting the word or reading the implementation.
 
-Rename
-as
-part
-of
-the
-structure
-change
-that
-reveals
-the
-new
-responsibility.
-Keep
-the
-rename
-separate
-from
-behavior
-when
-it
-would
-otherwise
-hide
-the
-real
-change.
+Rename as part of the structure change that reveals the new responsibility. Keep the rename separate
+from behavior when it would otherwise hide the real change.
 
-The
-tradeoff
-is
-churn.
-Public
-names
-and
-widely
-used
-APIs
-need
-migration
-care.
+The tradeoff is churn. Public names and widely used APIs need migration care.
 
 ## Use When
 
@@ -126,4 +68,4 @@ const visiblePatterns = patterns.filter(canShowInCatalog);
 
 ## References
 
-- Tidy First? chapter themes: use as inspiration, not a direct content source.
+- None yet.

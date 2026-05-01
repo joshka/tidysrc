@@ -1,7 +1,7 @@
 ---
 title: >-
-  Portland Pattern Repository
-href: "https://c2.com/ppr/wiki/"
+  Portland Pattern Repository (C2)
+href: "https://c2.com/ppr/"
 ---
 
-Early wiki archive for pattern language, design patterns, and adjacent software design writing.
+Early software pattern-language material and the wiki tradition behind linked pattern entries.

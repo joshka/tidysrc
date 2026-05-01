@@ -2,14 +2,32 @@
 import { getCollection } from 'astro:content';
 
 import Chips from '../components/Chips.astro';
-import PatternList from '../components/PatternList.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { patternHref, problemHref, sortedPatterns, sortedProblems } from '../lib/catalog';
+import { conceptHref, patternHref, problemHref, sortedProblems } from '../lib/catalog';
 
 const patterns = await getCollection('patterns');
 const concepts = await getCollection('concepts');
 const problems = sortedProblems(await getCollection('problems'));
-const featured = sortedPatterns(patterns).slice(0, 4);
+const representativeProblemIds = [
+  'hidden-main-path',
+  'tests-freeze-private-shape',
+  'premature-architecture',
+];
+const representativePatternIds = [
+  'guard-clause',
+  'test-observable-behavior',
+  'reader-locality',
+];
+const representativeConceptIds = ['cognitive-burden', 'change-radius', 'observable-behavior'];
+const byId = <T extends { id: string }>(entries: T[]) =>
+  new Map(entries.map((entry) => [entry.id, entry]));
+const entriesById = <T extends { id: string }>(entries: T[], ids: string[]) => {
+  const lookup = byId(entries);
+  return ids.map((id) => lookup.get(id)).filter((entry): entry is T => entry !== undefined);
+};
+const representativeProblems = entriesById(problems, representativeProblemIds);
+const representativePatterns = entriesById(patterns, representativePatternIds);
+const representativeConcepts = entriesById(concepts, representativeConceptIds);
 ---
 
 <BaseLayout title="TidySrc">
@@ -18,20 +36,26 @@ const featured = sortedPatterns(patterns).slice(0, 4);
       <p class="eyebrow">Pattern language for everyday source change</p>
       <h1>TidySrc is a pattern language for making source code easier to change.</h1>
       <p class="lede">
-        Use it to name patterns in review, give coding agents durable fallback guidance, and teach
-        source-change habits without turning every answer into a long style guide.
+        Paste a canonical link into review when a source-change problem needs a shared name. The
+        page gives reviewers and coding agents the same vocabulary for the risk, the pattern, and
+        the fix.
       </p>
-      <form class="hero-search" action="/patterns/">
-        <label for="home-search">Find a pattern</label>
+      <form class="hero-search" action="/search/">
+        <label for="home-search">Search TidySrc</label>
         <div>
-          <input id="home-search" name="q" type="search" placeholder="guard clause, legacy tests, agents" />
+          <input
+            id="home-search"
+            name="q"
+            type="search"
+            placeholder="hidden main path, guard clause, observable behavior"
+          />
           <button class="button primary" type="submit">Search</button>
         </div>
       </form>
     </div>
   </section>
 
-  <section class="section-tight shell grid grid-4" aria-label="Primary sections">
+  <section class="section-tight shell grid grid-3 primary-grid" aria-label="Primary sections">
     <a class="panel nav-panel" href="/problems/">
       <strong>Problems</strong>
       <span>Diagnose the source-change smell before choosing the pattern.</span>
@@ -48,19 +72,52 @@ const featured = sortedPatterns(patterns).slice(0, 4);
       <strong>Agents</strong>
       <span>Copyable operating guidance for coding agents.</span>
     </a>
+    <a class="panel nav-panel" href="/references/">
+      <strong>References</strong>
+      <span>Influences, catalogs, and prior art behind the pattern language.</span>
+    </a>
+    <a class="panel nav-panel" href="#why-this-exists">
+      <strong>Why TidySrc</strong>
+      <span>The repeated review feedback this site turns into shared language.</span>
+    </a>
+  </section>
+
+  <section class="section-tight shell" id="why-this-exists">
+    <div class="panel why-band">
+      <div>
+        <p class="eyebrow">Why this exists</p>
+        <h2>Repeated review feedback should become shared language.</h2>
+      </div>
+      <div>
+        <p>
+          The same comments come up again and again: the main path is buried, tests freeze private
+          shape, an abstraction arrived before the second example, or a rule is scattered across too
+          many files.
+        </p>
+        <p>
+          Some of that feedback can become automated checks. The rest is judgment about reader
+          burden, change radius, behavior contracts, and tradeoffs. TidySrc turns those recurring
+          source-change concerns into linkable problems and patterns.
+        </p>
+      </div>
+    </div>
   </section>
 
   <section class="section shell">
     <div class="section-head">
       <div>
         <p class="eyebrow">Problem index</p>
-        <h2>The symptom points to the pattern.</h2>
+        <h2>Find the review comment you keep rewriting.</h2>
+        <p>
+          These examples are deliberately ordinary: hard-to-find main logic, brittle tests, and
+          architecture added before the code earns it.
+        </p>
       </div>
       <a class="button" href="/problems/">Browse all {problems.length}</a>
     </div>
     <div class="grid grid-3 feature-grid">
       {
-        problems.slice(0, 3).map((problem) => (
+        representativeProblems.map((problem) => (
           <a class="panel feature" href={problemHref(problem)}>
             <p class="eyebrow">Problem</p>
             <h3>{problem.data.title}</h3>
@@ -75,13 +132,17 @@ const featured = sortedPatterns(patterns).slice(0, 4);
     <div class="section-head">
       <div>
         <p class="eyebrow">Featured patterns</p>
-        <h2>Concrete source-change moves.</h2>
+        <h2>Practical patterns for improving code.</h2>
+        <p>
+          The first patterns should handle common review feedback without requiring a new framework:
+          flatten the path, protect behavior, and keep related ideas close.
+        </p>
       </div>
       <a class="button" href="/patterns/">Browse all {patterns.length}</a>
     </div>
     <div class="grid grid-3 feature-grid">
       {
-        featured.map((pattern) => (
+        representativePatterns.map((pattern) => (
           <a class="panel feature" href={patternHref(pattern)}>
             <Chips items={pattern.data.tags.slice(0, 2)} status={pattern.data.status} />
             <h3>{pattern.data.title}</h3>
@@ -95,24 +156,18 @@ const featured = sortedPatterns(patterns).slice(0, 4);
   <section class="section shell">
     <div class="section-head">
       <div>
-        <p class="eyebrow">Catalog preview</p>
-        <h2>Search by the problem you are seeing.</h2>
-      </div>
-    </div>
-    <PatternList patterns={patterns.slice(0, 6)} />
-  </section>
-
-  <section class="section shell">
-    <div class="section-head">
-      <div>
         <p class="eyebrow">Concept anchors</p>
-        <h2>Depth lives behind the concise entries.</h2>
+        <h2>Core ideas behind maintainable source changes.</h2>
+        <p>
+          Repeated comments often point to the same pressures: limited reader attention, change
+          radius, and behavior that tests should protect.
+        </p>
       </div>
     </div>
     <div class="grid grid-3">
       {
-        concepts.slice(0, 3).map((concept) => (
-          <a class="panel feature" href={`/concepts/${concept.id}/`}>
+        representativeConcepts.map((concept) => (
+          <a class="panel feature" href={conceptHref(concept)}>
             <h3>{concept.data.title}</h3>
             <p>{concept.data.summary}</p>
           </a>
@@ -175,7 +230,7 @@ const featured = sortedPatterns(patterns).slice(0, 4);
   .nav-panel {
     display: grid;
     gap: 0.35rem;
-    min-height: 120px;
+    min-height: 190px;
   }
 
   .nav-panel strong,
@@ -196,11 +251,44 @@ const featured = sortedPatterns(patterns).slice(0, 4);
     margin-bottom: 1rem;
   }
 
+  .section-head p:last-child {
+    color: var(--muted);
+    margin: 0.45rem 0 0;
+    max-width: 760px;
+  }
+
   .feature {
     display: grid;
     align-content: start;
     gap: 0.7rem;
     min-height: 190px;
+  }
+
+  .why-band {
+    display: grid;
+    grid-template-columns: minmax(0, 0.38fr) minmax(0, 0.62fr);
+    gap: 1.5rem;
+    background: var(--surface-muted);
+  }
+
+  .why-band h2 {
+    margin-bottom: 0;
+    text-transform: uppercase;
+  }
+
+  .why-band p:last-child {
+    margin-bottom: 0;
+  }
+
+  .problem-entry {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  .problem-entry p:last-child {
+    margin-bottom: 0;
   }
 
   .support-panel {
@@ -227,11 +315,13 @@ const featured = sortedPatterns(patterns).slice(0, 4);
   @media (max-width: 720px) {
     .hero-search div,
     .section-head,
+    .why-band,
     .support-panel {
       align-items: stretch;
       flex-direction: column;
     }
 
+    .why-band,
     .support-panel {
       grid-template-columns: 1fr;
     }

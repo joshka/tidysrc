@@ -8,75 +8,86 @@ import { allLanguages, allTags, languageLabel } from '../../lib/catalog';
 const patterns = await getCollection('patterns');
 const tags = allTags(patterns);
 const languages = allLanguages(patterns);
+const tagCounts = new Map(
+  tags.map((tag) => [tag, patterns.filter((pattern) => pattern.data.tags.includes(tag)).length]),
+);
 const pathways = [
   {
     title: 'Readability and Local Shape',
     tag: 'readability',
     summary:
-      'Use these when the code works, but the next reader has to hold too many jumps, names, branches, or hidden facts at once.',
+      'Reduce the live facts a reader must hold: jumps, vague names, nested branches, distant setup, and hidden context.',
   },
   {
     title: 'Boundaries and Contracts',
     tag: 'boundaries',
     summary:
-      'Use these when raw data, configuration, errors, or layer vocabulary crosses farther than it should.',
+      'Keep raw data, configuration, errors, and layer vocabulary behind explicit owners and translation points.',
   },
   {
     title: 'Testing and Verification',
     tag: 'testing',
     summary:
-      'Use these when the question is what behavior is protected and which check is trustworthy enough for the change.',
+      'Protect observable behavior with checks matched to the risk of the change.',
   },
   {
-    title: 'Workflow and Review',
+    title: 'Change Shape and Review',
     tag: 'workflow',
     summary:
-      'Use these when the risk is in change shape: batching, structure versus behavior, reversibility, or agent handoff.',
+      'Shape the diff so batching, reversibility, structure versus behavior, and handoff risk stay visible.',
   },
   {
     title: 'State, Effects, and Async',
     tag: 'side-effects',
     summary:
-      'Use these when mutation, time, background work, failure, or state transitions need to become visible.',
+      'Make mutation, time, background work, failure, and state transitions visible in the code.',
   },
   {
-    title: 'Agent-Resistant Defaults',
+    title: 'Agentic Failure Modes',
     tag: 'agent-guidance',
     summary:
-      'Use these when a human or coding agent is likely to overbuild, drift from local rules, or keep patching without evidence.',
+      'Overbuilding, stale context, and weak verification are ordinary workflow failures that coding agents can make look polished.',
   },
 ];
 ---
 
 <BaseLayout title="Patterns" description="Searchable TidySrc pattern catalog.">
   <section class="section shell">
-    <p class="eyebrow">Pattern catalog</p>
-    <h1>Short, addressable patterns for source change.</h1>
-    <p class="lede">
-      Search by pattern name, problem, tag, audience, or language. Each entry gives reviewers and
-      agents a shared name, a concrete trigger, and implementation examples.
-    </p>
+    <div class="page-hero">
+      <div class="page-hero-main">
+        <p class="eyebrow">Pattern catalog</p>
+        <h1>Choose a source-change pattern.</h1>
+      </div>
+      <div class="page-hero-side">
+        <p class="lede">
+          Patterns name repeatable changes: flatten a branch, protect behavior, move a boundary, or
+          shrink a risky diff. The useful pattern is small enough to review and concrete enough to
+          implement.
+        </p>
+      </div>
+    </div>
   </section>
 
   <section class="section-tight shell">
     <div class="pathway-head">
-      <p class="eyebrow">Choose an entry point</p>
-      <h2>Start with the kind of change pressure you see.</h2>
+      <p class="eyebrow">Pattern families</p>
+      <h2>Match the fix to the review pressure.</h2>
       <p>
-        These are not separate catalogs. They are review paths through the same pattern language, so
-        a problem can move from readability to verification or boundaries as the evidence sharpens.
+        Reader burden, weak evidence, leaky boundaries, hidden effects, and workflow drift usually
+        call for different fixes. A useful pattern reduces one pressure without widening the change
+        more than necessary.
       </p>
     </div>
     <div class="pathway-grid" role="tablist" aria-label="Pattern pathways">
       {
         pathways.map((pathway) => (
           <button
-            class="pathway-card"
+            class="pathway-card with-tag"
             type="button"
             data-quick-filter="tags"
             data-value={pathway.tag}
           >
-            <span>{pathway.tag}</span>
+            <span>{tagCounts.get(pathway.tag) ?? 0} patterns</span>
             <strong>{pathway.title}</strong>
             <small>{pathway.summary}</small>
           </button>
@@ -96,7 +107,7 @@ const pathways = [
         Status
         <select data-catalog-filter="status">
           <option value="">Any status</option>
-          <option value="stable">Stable</option>
+          <option value="reviewed">Reviewed</option>
           <option value="draft">Draft</option>
           <option value="seed">Seed</option>
         </select>
@@ -239,17 +250,26 @@ const pathways = [
   }
 
   .pathway-card {
-    display: grid;
-    gap: 0.6rem;
-    min-height: 190px;
+    display: flex;
+    min-height: 160px;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 1.25rem;
+    align-items: flex-start;
     border: 2px solid var(--border);
     border-radius: 0;
     background: var(--surface);
     color: var(--text);
-    padding: 1rem;
+    padding: 1.15rem;
     font: inherit;
     text-align: left;
     cursor: pointer;
+  }
+
+  .pathway-card.with-tag {
+    min-height: 190px;
+    justify-content: flex-start;
+    gap: 0.7rem;
   }
 
   .pathway-card:hover,
@@ -271,11 +291,14 @@ const pathways = [
   }
 
   .pathway-card strong {
+    display: block;
     font-size: 1.08rem;
+    line-height: 1.15;
     text-transform: uppercase;
   }
 
   .pathway-card small {
+    display: block;
     color: var(--muted);
     font-size: 0.95rem;
     line-height: 1.45;

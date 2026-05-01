@@ -11,6 +11,7 @@
     "build": "astro check && astro build",
     "check": "astro check",
     "check:site": "node scripts/check-content.mjs && pnpm build && node scripts/check-site.mjs",
+    "check:languages": "node scripts/check-language-coverage.mjs",
     "review:next": "node scripts/review-next.mjs",
     "review:prepare": "node scripts/review-prepare.mjs",
     "review:status": "node scripts/review-status.mjs",

@@ -1,10 +1,10 @@
 ---
 title: >-
-  Separate Structure From Behavior
+  Separate Structure from Behavior
 summary: >-
   Keep tidying changes separate from behavior changes when mixing them would make review or
   rollback harder.
-status: stable
+status: reviewed
 tags:
   - "workflow"
   - "review"
@@ -25,6 +25,7 @@ problems:
 concepts:
   - "structure-vs-behavior"
 related:
+  - "preparatory-refactor"
   - "characterize-before-changing"
   - "smallest-trustworthy-verification"
 ---
@@ -141,4 +142,4 @@ rows = render_rows(stable_patterns(patterns))
 
 ## References
 
-- Tidy First: separate tidying from behavior changes.
+- [Tidy First?: Separate Tidying](https://www.oreilly.com/library/view/tidy-first/9781098151232/ch16.html)

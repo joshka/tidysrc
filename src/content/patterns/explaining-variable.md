@@ -14,7 +14,10 @@ audiences:
   - "agents"
   - "learners"
 languages:
+  - "c"
+  - "cpp"
   - "csharp"
+  - "go"
   - "java"
   - "js"
   - "python"
@@ -158,4 +161,35 @@ if (shouldOpenProblem) {
 
 ## References
 
-- Tidy First: explaining variables and constants.
+- [Tidy First?: Explaining Variables](https://www.oreilly.com/library/view/tidy-first/9781098151232/ch08.html)
+- [Tidy First?: Explaining Constants](https://www.oreilly.com/library/view/tidy-first/9781098151232/ch09.html)
+
+### Low-level boundary names the rule
+
+The caller delegates the rule to a named boundary instead of repeating mechanics inline.
+
+```c title="src/example.c"
+if (approval_policy_can_approve(policy, user, request)) {
+    approve_request(request);
+}
+```
+
+### Object boundary names the rule
+
+The object caller asks a boundary that owns the rule.
+
+```cpp title="src/example.cpp"
+if (approval_policy.can_approve(user, request)) {
+    approvals.approve(request);
+}
+```
+
+### Service boundary names the rule
+
+The service keeps the rule behind one named operation.
+
+```go title="internal/example/service.go"
+if approvalPolicy.CanApprove(user, request) {
+    approvals.Approve(request)
+}
+```

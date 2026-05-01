@@ -1,6 +1,6 @@
 ---
 title: >-
-  Repeated validation rules
+  Repeated Validation Rules
 status: seed
 category: boundaries
 topics:

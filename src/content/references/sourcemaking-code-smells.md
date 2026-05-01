@@ -4,4 +4,4 @@ title: >-
 href: "https://sourcemaking.com/refactoring/smells"
 ---
 
-Code smell catalog organized around symptoms that often point to refactoring moves.
+Code smell vocabulary for symptoms that are easier to name before choosing a refactoring.

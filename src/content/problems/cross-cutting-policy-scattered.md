@@ -1,6 +1,6 @@
 ---
 title: >-
-  Cross-cutting policy scattered
+  Cross-Cutting Policy Scattered
 status: draft
 category: architecture
 topics:
@@ -20,10 +20,27 @@ relatedConcepts:
   - observable-behavior
 ---
 
-## Impact
+## Description
+
+Authorization, retries, rate limits, logging, validation, or formatting rules are copied across
+unrelated paths.
+
+The problem is not the existence of the mechanism itself. It is that the ownership, boundary, or
+contract is implicit enough that each caller can interpret it differently.
+
+## Why It Matters
 
 Each copy can drift. Reviewers must inspect every path to know whether the policy still applies
-consistently, and a small policy change turns into a wide edit.
+
+Reviewers care because the risk is not visible at one call site. They have to reconstruct the
+intended behavior from scattered branches, tests, and boundaries before they can tell whether the
+change is safe.
+
+## Code Impact
+
+The code impact is drift. Related checks, state changes, defaults, errors, or side effects spread
+across files, so a future edit can update one path while leaving another path with the old rule.
+Tests then tend to protect one example rather than the contract that all callers rely on.
 
 ## Signals
 
@@ -65,7 +82,7 @@ public IActionResult Publish(Guid reportId)
 }
 ```
 
-### Problem: Java controllers copy authorization checks
+### Problem: controllers copy authorization checks
 
 Each handler can drift when the publishing policy changes.
 
@@ -80,7 +97,7 @@ Response publish(User user, ReportId reportId) {
 }
 ```
 
-### Better: Java boundary names the policy
+### Better: boundary names the policy
 
 The handler keeps the protected action visible while the rule has one owner.
 
@@ -95,7 +112,7 @@ Response publish(User user, ReportId reportId) {
 }
 ```
 
-### Problem: Python routes repeat the same permission rule
+### Problem: routes repeat the same permission rule
 
 The rule is easy to copy and hard to update consistently.
 
@@ -106,7 +123,7 @@ def publish_report(user, report_id):
     reports.publish(report_id)
 ```
 
-### Better: Python route calls a named policy
+### Better: route calls a named policy
 
 The route still shows the decision point without owning the rule.
 
@@ -117,7 +134,7 @@ def publish_report(user, report_id):
     reports.publish(report_id)
 ```
 
-### Problem: Rust handlers repeat the same guard
+### Problem: handlers repeat the same guard
 
 The permission check becomes a scattered policy instead of a boundary decision.
 
@@ -132,7 +149,7 @@ pub fn publish(user: &User, report_id: ReportId) -> Result<Response, Error> {
 }
 ```
 
-### Better: Rust handler names the policy
+### Better: handler names the policy
 
 The policy boundary owns how permissions map to this action.
 
@@ -144,7 +161,7 @@ pub fn publish(user: &User, report_id: ReportId) -> Result<Response, Error> {
 }
 ```
 
-### Problem: TypeScript handlers copy authorization logic
+### Problem: handlers copy authorization logic
 
 Every endpoint has to remember the same role and permission combination.
 
@@ -158,7 +175,7 @@ export async function publishReport(user: User, reportId: string) {
 }
 ```
 
-### Better: TypeScript handler calls the policy
+### Better: handler calls the policy
 
 The endpoint names the protected action and leaves the rule in one place.
 
@@ -183,5 +200,85 @@ public IActionResult Publish(Guid reportId)
 
     reports.Publish(reportId);
     return Accepted();
+}
+```
+
+### Problem: low-level caller repeats the rule
+
+The low-level path updates state without naming the boundary that owns the rule.
+
+```c title="src/example.c"
+if (request_total < 5000 || user_is_manager(user)) {
+    approve_request(request);
+}
+```
+
+### Better: low-level boundary owns the rule
+
+The caller asks a named boundary instead of repeating the condition.
+
+```c title="src/example.c"
+if (approval_policy_can_approve(policy, user, request)) {
+    approve_request(request);
+}
+```
+
+### Problem: object path repeats the rule
+
+The object caller owns a rule that should have a named boundary.
+
+```cpp title="src/example.cpp"
+if (request.total() < Money::from_cents(500000) || user.is_manager()) {
+    approvals.approve(request);
+}
+```
+
+### Better: object boundary owns the rule
+
+The policy names the rule and narrows the future change radius.
+
+```cpp title="src/example.cpp"
+if (approval_policy.can_approve(user, request)) {
+    approvals.approve(request);
+}
+```
+
+### Problem: service path repeats the rule
+
+The service path makes the rule local to one caller, so another caller can drift.
+
+```go title="internal/example/service.go"
+if request.Total < 5000 || user.IsManager {
+    approvals.Approve(request)
+}
+```
+
+### Better: service boundary owns the rule
+
+The caller uses a named policy boundary.
+
+```go title="internal/example/service.go"
+if approvalPolicy.CanApprove(user, request) {
+    approvals.Approve(request)
+}
+```
+
+### Problem: client path repeats the rule
+
+The client path repeats a rule that should have a named boundary.
+
+```js title="src/example.js"
+if (request.total < 5000 || user.role === 'manager') {
+  approve(request);
+}
+```
+
+### Better: client boundary owns the rule
+
+The caller asks the named policy instead of rebuilding the condition.
+
+```js title="src/example.js"
+if (approvalPolicy.canApprove(user, request)) {
+  approve(request);
 }
 ```

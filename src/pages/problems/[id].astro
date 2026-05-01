@@ -3,12 +3,14 @@ import { getCollection } from 'astro:content';
 
 import Chips from '../../components/Chips.astro';
 import CodeExamples from '../../components/CodeExamples.astro';
+import InlineMarkdown from '../../components/InlineMarkdown.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import {
   type ConceptEntry,
   type PatternEntry,
   conceptHref,
   patternHref,
+  problemCategoryLabel,
   problemHref,
 } from '../../lib/catalog';
 import { parseProblemContent } from '../../lib/problemContent';
@@ -24,6 +26,7 @@ export async function getStaticPaths() {
 const { problem } = Astro.props;
 const problemContent = parseProblemContent(problem.body ?? '', problem.id);
 const problemChips = [problem.data.category, ...problem.data.topics];
+const chipLabels = { [problem.data.category]: problemCategoryLabel(problem.data.category) };
 const chipLinks = Object.fromEntries([
   [problem.data.category, `/problems/?category=${encodeURIComponent(problem.data.category)}`],
   ...problem.data.topics.map((topic) => [
@@ -67,6 +70,7 @@ const adjacentProblems = allProblems
         <p class="lede">{problem.data.summary}</p>
         <Chips
           items={problemChips}
+          labels={chipLabels}
           links={chipLinks}
           status={problem.data.status}
           statusHref={`/problems/?status=${encodeURIComponent(problem.data.status)}`}
@@ -78,9 +82,32 @@ const adjacentProblems = allProblems
 
   <section class="section-tight shell problem-detail">
     <article class="problem-main">
-      <section class="panel impact-panel">
-        <p class="eyebrow">Why it matters</p>
-        <p>{problemContent.impact}</p>
+      {
+        problemContent.description.length > 0 && (
+          <section class="panel description-panel">
+            <div class="section-label">
+              <p class="eyebrow">Description</p>
+              <h2>The problem shape</h2>
+            </div>
+            {problemContent.description.map((paragraph) => <p><InlineMarkdown text={paragraph} /></p>)}
+          </section>
+        )
+      }
+
+      <section class="panel why-panel">
+        <div class="section-label">
+          <p class="eyebrow">Why it matters</p>
+          <h2>Why reviewers care</h2>
+        </div>
+        <p><InlineMarkdown text={problemContent.whyItMatters} /></p>
+      </section>
+
+      <section class="panel code-impact-panel">
+        <div class="section-label">
+          <p class="eyebrow">Code impact</p>
+          <h2>What it does to the code</h2>
+        </div>
+        <p><InlineMarkdown text={problemContent.codeImpact} /></p>
       </section>
 
       <section class="panel checklist-panel">
@@ -89,7 +116,7 @@ const adjacentProblems = allProblems
           <h2>What you are seeing</h2>
         </div>
         <ul>
-          {problemContent.signals.map((signal) => <li>{signal}</li>)}
+          {problemContent.signals.map((signal) => <li><InlineMarkdown text={signal} /></li>)}
         </ul>
       </section>
 
@@ -99,7 +126,9 @@ const adjacentProblems = allProblems
           <h2>Questions to ask before choosing a pattern</h2>
         </div>
         <ol>
-          {problemContent.diagnosticQuestions.map((question) => <li>{question}</li>)}
+          {problemContent.diagnosticQuestions.map((question) => (
+            <li><InlineMarkdown text={question} /></li>
+          ))}
         </ol>
       </section>
 
@@ -113,7 +142,7 @@ const adjacentProblems = allProblems
             problemContent.approach.map((step, index) => (
               <div>
                 <span>{String(index + 1).padStart(2, '0')}</span>
-                <p>{step}</p>
+                <p><InlineMarkdown text={step} /></p>
               </div>
             ))
           }
@@ -149,6 +178,24 @@ const adjacentProblems = allProblems
           }
         </div>
       </section>
+
+      {
+        problemContent.references.length > 0 && (
+          <section class="panel reference-panel" id="references">
+            <div class="section-label">
+              <p class="eyebrow">References</p>
+              <h2>Further reading</h2>
+            </div>
+            <ul class="reference-list">
+              {
+                problemContent.references.map((reference) => (
+                  <li><InlineMarkdown text={reference} /></li>
+                ))
+              }
+            </ul>
+          </section>
+        )
+      }
     </article>
 
     <aside class="problem-rail">
@@ -202,19 +249,33 @@ const adjacentProblems = allProblems
     gap: 1rem;
   }
 
-  .impact-panel {
-    border-color: var(--border-strong);
-    background: var(--surface-strong);
-    color: var(--strong-text);
-  }
-
-  .impact-panel .eyebrow {
-    color: var(--accent);
-  }
-
-  .impact-panel p:last-child {
+  .description-panel p:last-child,
+  .why-panel p:last-child,
+  .code-impact-panel p:last-child {
     margin-bottom: 0;
-    font-size: 1.08rem;
+  }
+
+  .description-panel a,
+  .why-panel a,
+  .code-impact-panel a,
+  .checklist-panel a,
+  .question-panel a,
+  .approach-panel a,
+  .reference-panel a {
+    color: var(--accent-strong);
+    font-weight: 800;
+    text-underline-offset: 0.18em;
+  }
+
+  .description-panel code,
+  .why-panel code,
+  .code-impact-panel code,
+  .checklist-panel code,
+  .question-panel code,
+  .approach-panel code {
+    border: 1px solid var(--border);
+    background: var(--surface-muted);
+    padding: 0 0.2em;
   }
 
   .section-label {
@@ -311,6 +372,13 @@ const adjacentProblems = allProblems
 
   .pattern-card p {
     color: var(--muted);
+  }
+
+  .reference-list {
+    display: grid;
+    gap: 0.55rem;
+    margin: 0;
+    padding-left: 1.25rem;
   }
 
   .rail-panel {

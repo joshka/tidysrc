@@ -50,24 +50,33 @@ const conceptGroups = [
     <div class="page-hero">
       <div class="page-hero-main">
         <p class="eyebrow">Concepts</p>
-        <h1>Source-change concepts for reviewable code.</h1>
+        <h1>Understand the source-change pressure.</h1>
       </div>
       <div class="page-hero-side">
         <p class="lede">
-          Reader burden, behavior contracts, structure changes, and agent context shape whether a
-          change stays understandable after the diff grows.
+          Recurring review feedback often comes from the same forces: reader burden, behavior
+          contracts, change shape, visible effects, and context drift.
         </p>
       </div>
     </div>
   </section>
 
   <section class="section-tight shell">
-    <div class="concept-index">
+    <div class="concept-family-head">
+      <p class="eyebrow">Concept families</p>
+      <h2>Name the tradeoff behind the change.</h2>
+      <p>
+        The right fix sometimes depends on why a piece of code is hard to review, not only on what
+        shape it currently has.
+      </p>
+    </div>
+    <div class="concept-family-grid">
       {
         conceptGroups.map((group) => (
-          <a href={`#${group.id}`}>
-            <span>{group.concepts.length}</span>
-            {group.title}
+          <a class="concept-family-card" href={`#${group.id}`}>
+            <span>{group.concepts.length} concepts</span>
+            <strong>{group.title}</strong>
+            <small>{group.summary}</small>
           </a>
         ))
       }
@@ -107,39 +116,68 @@ const conceptGroups = [
 </BaseLayout>
 
 <style>
-  .concept-index {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
+  .concept-family-head {
+    display: grid;
+    gap: 0.5rem;
+    max-width: 920px;
+    margin-bottom: 1rem;
   }
 
-  .concept-index a {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    border: 2px solid var(--border);
-    background: var(--surface);
-    color: var(--text);
-    padding: 0.65rem 0.8rem;
-    font-size: 0.82rem;
-    font-weight: 800;
-    letter-spacing: 0.06em;
-    text-decoration: none;
+  .concept-family-head h2 {
+    font-size: clamp(1.7rem, 3vw, 2.6rem);
     text-transform: uppercase;
   }
 
-  .concept-index a:hover {
-    background: var(--accent);
-    color: var(--accent-text);
-  }
-
-  .concept-index span {
+  .concept-family-head p:last-child {
     color: var(--muted);
-    font-family: var(--font-mono);
   }
 
-  .concept-index a:hover span {
-    color: inherit;
+  .concept-family-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .concept-family-card {
+    display: grid;
+    align-content: start;
+    gap: 0.7rem;
+    min-height: 190px;
+    border: 2px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    padding: 1.15rem;
+    text-decoration: none;
+  }
+
+  .concept-family-card:hover {
+    background: var(--accent-soft);
+    border-color: var(--border-strong);
+  }
+
+  .concept-family-card span {
+    width: max-content;
+    border: 2px solid var(--border);
+    background: var(--surface-muted);
+    padding: 0.2rem 0.35rem;
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .concept-family-card strong {
+    display: block;
+    font-size: 1.08rem;
+    line-height: 1.15;
+    text-transform: uppercase;
+  }
+
+  .concept-family-card small {
+    color: var(--muted);
+    font-size: 0.95rem;
+    line-height: 1.45;
   }
 
   .concept-groups {
@@ -218,6 +256,7 @@ const conceptGroups = [
   }
 
   @media (max-width: 900px) {
+    .concept-family-grid,
     .concept-group-head,
     .concept-card-grid {
       grid-template-columns: 1fr;

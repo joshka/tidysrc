@@ -4,4 +4,4 @@ title: >-
 href: "https://interface-refactoring.github.io/"
 ---
 
-Catalog focused on interface-level refactorings and API design improvements.
+Interface-level refactorings for cases where the public surface is the part that needs work.

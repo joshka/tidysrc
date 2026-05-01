@@ -1,6 +1,6 @@
 ---
 title: >-
-  Risky legacy change
+  Risky Legacy Change
 status: draft
 category: change-risk
 topics:
@@ -12,17 +12,33 @@ summary: >-
 relatedPatterns:
   - characterize-before-changing
   - separate-structure-from-behavior
-  - observable-behavior-tests
+  - test-observable-behavior
   - smallest-trustworthy-verification
 relatedConcepts:
   - observable-behavior
   - structure-vs-behavior
 ---
 
-## Impact
+## Description
+
+The existing behavior is unclear, under-tested, or coupled to callers that a small edit can break.
+
+The problem is not the existence of the mechanism itself. It is that the ownership, boundary, or
+contract is implicit enough that each caller can interpret it differently.
+
+## Why It Matters
 
 The danger comes from uncertainty about intentional behavior. Without characterization, a tidy can
-silently become a product change.
+
+Reviewers care because the risk is not visible at one call site. They have to reconstruct the
+intended behavior from scattered branches, tests, and boundaries before they can tell whether the
+change is safe.
+
+## Code Impact
+
+The code impact is drift. Related checks, state changes, defaults, errors, or side effects spread
+across files, so a future edit can update one path while leaving another path with the old rule.
+Tests then tend to protect one example rather than the contract that all callers rely on.
 
 ## Signals
 
@@ -48,7 +64,7 @@ silently become a product change.
 
 ## Examples
 
-### Problem: C# legacy parser changes without a behavior pin
+### Problem: legacy parser changes without a behavior pin
 
 The rewrite may change accepted inputs, but no test names the old behavior.
 
@@ -59,7 +75,7 @@ public DateTime ParseDate(string value)
 }
 ```
 
-### Better: C# characterization names the existing contract
+### Better: characterization names the existing contract
 
 The test records behavior before the parser changes.
 
@@ -67,7 +83,7 @@ The test records behavior before the parser changes.
 Assert.Equal(new DateTime(2024, 1, 2), parser.ParseDate("01/02/2024"));
 ```
 
-### Problem: Java cleanup changes legacy error behavior
+### Problem: cleanup changes legacy error behavior
 
 The caller may depend on the current exception shape.
 
@@ -77,7 +93,7 @@ int parseCount(String value) {
 }
 ```
 
-### Better: Java characterization protects the public edge
+### Better: characterization protects the public edge
 
 The test captures the observable failure before cleanup.
 
@@ -85,7 +101,7 @@ The test captures the observable failure before cleanup.
 assertThrows(NumberFormatException.class, () -> parser.parseCount("many"));
 ```
 
-### Problem: Python legacy behavior is edited directly
+### Problem: legacy behavior is edited directly
 
 The function may have undocumented callers.
 
@@ -94,7 +110,7 @@ def parse_count(value):
     return int(value.strip())
 ```
 
-### Better: Python pins current behavior first
+### Better: pins current behavior first
 
 The characterization tells review what changed later.
 
@@ -103,7 +119,7 @@ with pytest.raises(ValueError):
     parse_count("many")
 ```
 
-### Problem: Rust legacy parser is refactored without examples
+### Problem: legacy parser is refactored without examples
 
 The refactor can accidentally change edge-case parsing.
 
@@ -113,7 +129,7 @@ pub fn parse_count(value: &str) -> Result<u32, ParseIntError> {
 }
 ```
 
-### Better: Rust characterization records edge behavior
+### Better: characterization records edge behavior
 
 The test protects the observable parser contract.
 
@@ -124,7 +140,7 @@ fn rejects_words() {
 }
 ```
 
-### Problem: TypeScript legacy output changes silently
+### Problem: legacy output changes silently
 
 The formatter may be part of a public contract.
 
@@ -134,10 +150,90 @@ export function formatCode(value: string) {
 }
 ```
 
-### Better: TypeScript pins the output before cleanup
+### Better: pins the output before cleanup
 
 The test makes the legacy contract explicit.
 
 ```ts title="src/legacy/format.test.ts"
 expect(formatCode(' ab ')).toBe('AB');
+```
+
+### Problem: low-level caller repeats the rule
+
+The low-level path updates state without naming the boundary that owns the rule.
+
+```c title="src/example.c"
+if (request_total < 5000 || user_is_manager(user)) {
+    approve_request(request);
+}
+```
+
+### Better: low-level boundary owns the rule
+
+The caller asks a named boundary instead of repeating the condition.
+
+```c title="src/example.c"
+if (approval_policy_can_approve(policy, user, request)) {
+    approve_request(request);
+}
+```
+
+### Problem: object path repeats the rule
+
+The object caller owns a rule that should have a named boundary.
+
+```cpp title="src/example.cpp"
+if (request.total() < Money::from_cents(500000) || user.is_manager()) {
+    approvals.approve(request);
+}
+```
+
+### Better: object boundary owns the rule
+
+The policy names the rule and narrows the future change radius.
+
+```cpp title="src/example.cpp"
+if (approval_policy.can_approve(user, request)) {
+    approvals.approve(request);
+}
+```
+
+### Problem: service path repeats the rule
+
+The service path makes the rule local to one caller, so another caller can drift.
+
+```go title="internal/example/service.go"
+if request.Total < 5000 || user.IsManager {
+    approvals.Approve(request)
+}
+```
+
+### Better: service boundary owns the rule
+
+The caller uses a named policy boundary.
+
+```go title="internal/example/service.go"
+if approvalPolicy.CanApprove(user, request) {
+    approvals.Approve(request)
+}
+```
+
+### Problem: client path repeats the rule
+
+The client path repeats a rule that should have a named boundary.
+
+```js title="src/example.js"
+if (request.total < 5000 || user.role === 'manager') {
+  approve(request);
+}
+```
+
+### Better: client boundary owns the rule
+
+The caller asks the named policy instead of rebuilding the condition.
+
+```js title="src/example.js"
+if (approvalPolicy.canApprove(user, request)) {
+  approve(request);
+}
 ```

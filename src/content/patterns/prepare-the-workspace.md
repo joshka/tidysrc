@@ -20,85 +20,21 @@ concepts:
   - "context-hygiene"
   - "review-batch-size"
 related:
-  - "repo-local-instructions-win"
+  - "follow-existing-conventions"
   - "smallest-trustworthy-verification"
   - "make-parameters-explicit"
 ---
 
 ## Core Idea
 
-Workspace
-preparation
-reduces
-avoidable
-failures.
-A
-clean
-working
-copy,
-known
-commands,
-local
-docs,
-and
-tool
-access
-give
-humans
-and
-agents
-the
-same
-starting
-facts.
+Workspace preparation reduces avoidable failures. A clean working copy, known commands, local docs,
+and tool access give humans and agents the same starting facts.
 
-The
-problem
-is
-not
-only
-AI
-tooling.
-Human
-reviews
-also
-suffer
-when
-setup,
-generated
-files,
-and
-verification
-commands
-are
-discovered
-halfway
-through
-a
-change.
+The problem is not only AI tooling. Human reviews also suffer when setup, generated files, and
+verification commands are discovered halfway through a change.
 
-The
-tradeoff
-is
-setup
-cost.
-Prepare
-enough
-to
-make
-the
-next
-change
-safe;
-do
-not
-build
-a
-workflow
-platform
-for
-one
-edit.
+The tradeoff is setup cost. Prepare enough to make the next change safe; do not build a workflow
+platform for one edit.
 
 ## Use When
 

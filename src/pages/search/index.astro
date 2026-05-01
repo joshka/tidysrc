@@ -1,0 +1,482 @@
+---
+import { getCollection } from 'astro:content';
+
+import Chips from '../../components/Chips.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import {
+  conceptHref,
+  conceptSearchText,
+  patternHref,
+  patternSearchText,
+  problemCategoryLabel,
+  problemHref,
+  problemSearchText,
+  referenceSearchText,
+} from '../../lib/catalog';
+
+const patterns = await getCollection('patterns');
+const problems = await getCollection('problems');
+const concepts = await getCollection('concepts');
+const references = await getCollection('references');
+const selectedQuery = Astro.url.searchParams.get('q')?.trim() ?? '';
+const selectedQueryLower = selectedQuery.toLowerCase();
+type SearchType = 'concept' | 'pattern' | 'problem' | 'reference';
+type SearchItem = {
+  href: string;
+  id: string;
+  meta: string[];
+  search: string;
+  status: 'seed' | 'draft' | 'reviewed';
+  summary: string;
+  title: string;
+  type: SearchType;
+};
+const typeLabels: Record<SearchType, string> = {
+  concept: 'Concept',
+  pattern: 'Pattern',
+  problem: 'Problem',
+  reference: 'Reference',
+};
+const searchItems: SearchItem[] = [
+  ...problems.map((problem) => ({
+    href: problemHref(problem),
+    id: problem.id,
+    meta: [problemCategoryLabel(problem.data.category), ...problem.data.topics.slice(0, 2)],
+    search: problemSearchText(problem),
+    status: problem.data.status,
+    summary: problem.data.summary,
+    title: problem.data.title,
+    type: 'problem' as const,
+  })),
+  ...patterns.map((pattern) => ({
+    href: patternHref(pattern),
+    id: pattern.id,
+    meta: pattern.data.tags.slice(0, 3),
+    search: patternSearchText(pattern),
+    status: pattern.data.status,
+    summary: pattern.data.summary,
+    title: pattern.data.title,
+    type: 'pattern' as const,
+  })),
+  ...concepts.map((concept) => ({
+    href: conceptHref(concept),
+    id: concept.id,
+    meta: concept.data.tags.slice(0, 3),
+    search: conceptSearchText(concept),
+    status: concept.data.status,
+    summary: concept.data.summary,
+    title: concept.data.title,
+    type: 'concept' as const,
+  })),
+  ...references.map((reference) => ({
+    href: `/references/#${reference.id}`,
+    id: reference.id,
+    meta: ['source'],
+    search: referenceSearchText(reference),
+    status: 'reviewed' as const,
+    summary: reference.body ?? reference.data.href,
+    title: reference.data.title,
+    type: 'reference' as const,
+  })),
+].sort((left, right) => {
+  const typeOrder = ['problem', 'pattern', 'concept', 'reference'];
+  const typeRank = typeOrder.indexOf(left.type) - typeOrder.indexOf(right.type);
+  if (typeRank !== 0) {
+    return typeRank;
+  }
+  return left.title.localeCompare(right.title);
+});
+const visibleCount = searchItems.filter(
+  (item) => selectedQueryLower.length === 0 || item.search.includes(selectedQueryLower),
+).length;
+---
+
+<BaseLayout title="Search" description="Search TidySrc problems, patterns, concepts, and references.">
+  <section class="section shell">
+    <div class="page-hero">
+      <div class="page-hero-main">
+        <p class="eyebrow">Search</p>
+        <h1>Search the catalog.</h1>
+      </div>
+      <div class="page-hero-side">
+        <p class="lede">
+          Search problems, patterns, concepts, and references together. Start with the symptom,
+          pattern name, language, or review phrase you would otherwise repeat.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section-tight shell search-layout">
+    <aside class="panel filters" aria-label="Search filters">
+      <form class="search-controls" action="/search/" role="search" data-search-form>
+        <label for="catalog-search">Search</label>
+        <div class="search-input-row">
+          <input
+            id="catalog-search"
+            name="q"
+            data-global-search
+            type="search"
+            aria-describedby="search-result-count"
+            placeholder="hidden main path, guard clause, behavior"
+            value={selectedQuery}
+          />
+          <button type="submit" aria-label="Search">
+            <svg aria-hidden="true" viewBox="0 0 24 24">
+              <circle cx="10.5" cy="10.5" r="6.5"></circle>
+              <path d="m16 16 5 5"></path>
+            </svg>
+          </button>
+        </div>
+      </form>
+
+      <label>
+        Type
+        <select data-global-type>
+          <option value="">Any type</option>
+          <option value="problem">Problems</option>
+          <option value="pattern">Patterns</option>
+          <option value="concept">Concepts</option>
+          <option value="reference">References</option>
+        </select>
+      </label>
+
+      <div class="filter-note">
+        Global search reads titles, summaries, tags, categories, example notes, section prose, and
+        reference notes.
+      </div>
+    </aside>
+
+    <div class="search-main">
+      <div class="search-results-meta" id="search-result-count" aria-live="polite" aria-atomic="true">
+        <span data-result-count>{visibleCount}</span> entries
+      </div>
+
+      <div class="search-results" data-global-results aria-label="Search results">
+        {
+          searchItems.map((item) => (
+            <a
+              class="pattern-row search-row"
+              href={item.href}
+              data-global-row
+              data-search={item.search}
+              data-type={item.type}
+              hidden={selectedQueryLower.length > 0 && !item.search.includes(selectedQueryLower)}
+            >
+              <div class="row-head">
+                <div>
+                  <p class="eyebrow">{typeLabels[item.type]}</p>
+                  <h2>{item.title}</h2>
+                </div>
+                <Chips items={item.meta} status={item.status} />
+              </div>
+              <p>{item.summary}</p>
+              <span class="read-docs">Open {typeLabels[item.type].toLowerCase()}</span>
+            </a>
+          ))
+        }
+        <p class="empty-state" data-empty-state hidden={visibleCount > 0}>
+          No TidySrc entries match the current search.
+        </p>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  const form = document.querySelector<HTMLFormElement>('[data-search-form]');
+  const search = document.querySelector<HTMLInputElement>('[data-global-search]');
+  const type = document.querySelector<HTMLSelectElement>('[data-global-type]');
+  const rows = Array.from(document.querySelectorAll<HTMLElement>('[data-global-row]'));
+  const empty = document.querySelector<HTMLElement>('[data-empty-state]');
+  const resultCount = document.querySelector<HTMLElement>('[data-result-count]');
+  const params = new URLSearchParams(window.location.search);
+
+  if (search && params.has('q')) {
+    search.value = params.get('q') ?? '';
+  }
+
+  if (type && params.has('type')) {
+    type.value = params.get('type') ?? '';
+  }
+
+  function updateUrl() {
+    const next = new URLSearchParams();
+    const query = search?.value.trim() ?? '';
+    if (query) {
+      next.set('q', query);
+    }
+    if (type?.value) {
+      next.set('type', type.value);
+    }
+
+    const queryString = next.toString();
+    const url = queryString ? `${window.location.pathname}?${queryString}` : window.location.pathname;
+    window.history.replaceState(null, '', url);
+  }
+
+  function applySearch() {
+    const query = search?.value.trim().toLowerCase() ?? '';
+    const typeValue = type?.value ?? '';
+    let visible = 0;
+
+    for (const row of rows) {
+      const matchesQuery = !query || row.dataset.search?.includes(query);
+      const matchesType = !typeValue || row.dataset.type === typeValue;
+      const show = Boolean(matchesQuery && matchesType);
+      row.hidden = !show;
+      if (show) {
+        visible += 1;
+      }
+    }
+
+    if (empty) {
+      empty.hidden = visible > 0;
+    }
+    if (resultCount) {
+      resultCount.textContent = String(visible);
+    }
+    updateUrl();
+  }
+
+  function visibleRows() {
+    return rows.filter((row) => !row.hidden);
+  }
+
+  function isTypingTarget(target: EventTarget | null) {
+    return (
+      target instanceof HTMLInputElement ||
+      target instanceof HTMLTextAreaElement ||
+      target instanceof HTMLSelectElement
+    );
+  }
+
+  function focusVisibleRow(index: number) {
+    const visible = visibleRows();
+    visible[index]?.focus();
+  }
+
+  search?.addEventListener('input', applySearch);
+  form?.addEventListener('submit', (event) => {
+    event.preventDefault();
+    applySearch();
+    focusVisibleRow(0);
+  });
+
+  search?.addEventListener('keydown', (event) => {
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      focusVisibleRow(0);
+    }
+
+    if (event.key === 'Escape' && search.value) {
+      event.preventDefault();
+      search.value = '';
+      applySearch();
+    }
+  });
+
+  type?.addEventListener('change', applySearch);
+  type?.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      type.value = '';
+      applySearch();
+      search?.focus();
+    }
+  });
+
+  for (const row of rows) {
+    row.addEventListener('keydown', (event) => {
+      const visible = visibleRows();
+      const index = visible.indexOf(row);
+
+      if (event.key === 'ArrowDown') {
+        event.preventDefault();
+        focusVisibleRow(Math.min(index + 1, visible.length - 1));
+      }
+
+      if (event.key === 'ArrowUp') {
+        event.preventDefault();
+        if (index <= 0) {
+          search?.focus();
+        } else {
+          focusVisibleRow(index - 1);
+        }
+      }
+    });
+  }
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === '/' && !isTypingTarget(event.target)) {
+      event.preventDefault();
+      search?.focus();
+      search?.select();
+    }
+  });
+
+  applySearch();
+
+  if (search && window.matchMedia('(min-width: 900px)').matches) {
+    search.focus();
+    search.select();
+  }
+</script>
+
+<style>
+  .search-layout {
+    display: grid;
+    grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
+    gap: 1rem;
+    align-items: start;
+  }
+
+  .filters {
+    display: grid;
+    gap: 1rem;
+    position: sticky;
+    top: 80px;
+  }
+
+  .filters label {
+    display: grid;
+    gap: 0.35rem;
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+
+  .search-controls {
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  .search-controls label {
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+
+  .search-input-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 48px;
+  }
+
+  .filters input,
+  .filters select {
+    border: 2px solid var(--border);
+    border-radius: 0;
+    background: var(--surface);
+    color: var(--text);
+    font: inherit;
+    padding: 0.65rem 0.75rem;
+    text-transform: none;
+  }
+
+  .search-input-row input {
+    border-right: 0;
+    min-width: 0;
+  }
+
+  .search-input-row button {
+    border: 2px solid var(--border);
+    border-radius: 0;
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    font: inherit;
+    font-weight: 900;
+    line-height: 1;
+    padding: 0;
+  }
+
+  .search-input-row button svg {
+    width: 1.15rem;
+    height: 1.15rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: square;
+    stroke-linejoin: miter;
+    stroke-width: 3;
+  }
+
+  .search-input-row button:hover,
+  .search-input-row button:focus-visible {
+    background: var(--accent);
+    color: var(--accent-text);
+  }
+
+  .search-input-row button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  .filter-note {
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+
+  .search-main {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .search-results {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .search-results-meta {
+    align-self: end;
+    color: var(--muted);
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .search-row {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .search-row .eyebrow {
+    margin-bottom: 0.35rem;
+  }
+
+  .search-row h2 {
+    font-size: 1.1rem;
+    text-transform: uppercase;
+  }
+
+  .search-row p {
+    color: var(--muted);
+  }
+
+  .read-docs {
+    display: inline-flex;
+    width: max-content;
+    border-top: 2px solid var(--border);
+    margin-top: 0.9rem;
+    padding-top: 0.55rem;
+    color: var(--accent-strong);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .empty-state {
+    border: 2px dashed var(--border);
+    padding: 1rem;
+    color: var(--muted);
+  }
+
+  @media (max-width: 900px) {
+    .search-layout {
+      grid-template-columns: 1fr;
+    }
+
+    .filters {
+      position: static;
+    }
+  }
+</style>

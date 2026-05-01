@@ -27,69 +27,13 @@ related:
 
 ## Core Idea
 
-Cohesion
-is
-about
-what
-belongs
-together.
-A
-cohesive
-unit
-lets
-the
-reader
-understand
-one
-concept
-without
-collecting
-fragments
-from
-unrelated
-places.
+Cohesion is about what belongs together. A cohesive unit lets the reader understand one concept
+without collecting fragments from unrelated places.
 
-Use
-this
-when
-data,
-validation,
-state
-transitions,
-and
-behavior
-are
-repeatedly
-edited
-together.
-Bring
-the
-concept
-together
-or
-give
-the
-boundary
-a
-better
-name.
+Use this when data, validation, state transitions, and behavior are repeatedly edited together.
+Bring the concept together or give the boundary a better name.
 
-The
-tradeoff
-is
-size.
-A
-cohesive
-module
-can
-become
-too
-large
-if
-it
-starts
-collecting
-unrelated
+The tradeoff is size. A cohesive module can become too large if it starts collecting unrelated
 responsibilities.
 
 ## Use When
@@ -129,4 +73,4 @@ function publish(pattern: DraftPattern): PublishedPattern {
 
 ## References
 
-- Tidy First? chapter themes: use as inspiration, not a direct content source.
+- [Tidy First?: Cohesion](https://www.oreilly.com/library/view/tidy-first/9781098151232/ch32.html)

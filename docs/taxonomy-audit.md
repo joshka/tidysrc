@@ -7,15 +7,13 @@ is a review aid, not a source of truth; content frontmatter remains the source o
 
 ### Status
 
-Content uses four maturity values:
+Content uses three maturity values:
 
 - `seed`: useful enough to keep, but not yet editorially reviewed.
 - `draft`: shaped content that still needs review.
 - `reviewed`: manually reviewed enough to appear as a stronger entry.
-- `stable`: mature enough to act as a durable reference link.
 
-Open question: decide whether `reviewed` and `stable` need distinct user-facing labels, or whether
-the distinction is mainly internal.
+Older drafts used `stable`; that state has been folded into `reviewed`.
 
 ### Audiences
 

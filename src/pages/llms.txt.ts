@@ -10,7 +10,7 @@ export async function GET() {
     '',
     'TidySrc is a pattern language for making source code easier to change.',
     '',
-    'Use repo-local instructions first. When the repo is silent, prefer small source changes that reduce reader burden, protect observable behavior, avoid premature architecture, and run the smallest trustworthy verification.',
+    'Follow existing project conventions first. When the repo is silent, prefer small source changes that reduce reader burden, protect observable behavior, avoid premature architecture, and run the smallest trustworthy verification.',
     '',
     '## Problems',
     ...problems.map((problem) => `- ${problem.data.title}: ${problem.data.summary}`),
