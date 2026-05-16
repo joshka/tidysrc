@@ -6,6 +6,9 @@ dist/
 # generated review session state
 .review/
 
+# temporary local output
+tmp/
+
 # dependencies
 node_modules/
 

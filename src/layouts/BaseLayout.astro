@@ -1,4 +1,6 @@
 ---
+import { sitePath } from '../lib/site';
+
 type Props = {
   title: string;
   description?: string;
@@ -22,8 +24,8 @@ const pageTitle = title === 'TidySrc' ? title : `${title} | TidySrc`;
     <meta name="description" content={description} />
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description} />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="icon" href="/favicon.ico" />
+    <link rel="icon" type="image/svg+xml" href={sitePath('/favicon.svg')} />
+    <link rel="icon" href={sitePath('/favicon.ico')} />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -53,16 +55,16 @@ const pageTitle = title === 'TidySrc' ? title : `${title} | TidySrc`;
     <a class="skip-link" href="#content">Skip to content</a>
     <header class="site-header">
       <nav class="nav" aria-label="Primary">
-        <a class="brand" href="/">TIDYSRC</a>
+        <a class="brand" href={sitePath('/')}>TIDYSRC</a>
         <div class="nav-links">
-          <a href="/problems/">Problems</a>
-          <a href="/patterns/">Patterns</a>
-          <a href="/concepts/">Concepts</a>
-          <a href="/agents/">Agents</a>
-          <a href="/references/">References</a>
-          <a class="nav-search-link" href="/search/">Search</a>
+          <a href={sitePath('/problems/')}>Problems</a>
+          <a href={sitePath('/patterns/')}>Patterns</a>
+          <a href={sitePath('/concepts/')}>Concepts</a>
+          <a href={sitePath('/agents/')}>Agents</a>
+          <a href={sitePath('/references/')}>References</a>
+          <a class="nav-search-link" href={sitePath('/search/')}>Search</a>
         </div>
-        <form class="nav-search" action="/search/" role="search">
+        <form class="nav-search" action={sitePath('/search/')} role="search">
           <label class="sr-only" for="site-search">Search TidySrc</label>
           <input id="site-search" name="q" type="search" placeholder="Search" />
           <button class="sr-only" type="submit">Search</button>
@@ -92,7 +94,7 @@ const pageTitle = title === 'TidySrc' ? title : `${title} | TidySrc`;
         </div>
         <nav class="footer-links" aria-label="Footer">
           <a href="https://www.joshka.net/">joshka.net</a>
-          <a href="/llms.txt">llms.txt</a>
+          <a href={sitePath('/llms.txt')}>llms.txt</a>
         </nav>
       </div>
     </footer>

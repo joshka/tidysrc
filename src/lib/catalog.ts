@@ -2,6 +2,7 @@ import type { CollectionEntry } from 'astro:content';
 
 import { parsePatternContent } from './patternContent';
 import { parseProblemContent } from './problemContent';
+import { sitePath } from './site';
 
 export type PatternEntry = CollectionEntry<'patterns'>;
 export type ConceptEntry = CollectionEntry<'concepts'>;
@@ -10,17 +11,17 @@ export type ReferenceEntry = CollectionEntry<'references'>;
 
 export function patternHref(pattern: PatternEntry | string): string {
   const slug = typeof pattern === 'string' ? pattern : pattern.id;
-  return `/patterns/${slug}/`;
+  return sitePath(`/patterns/${slug}/`);
 }
 
 export function conceptHref(concept: ConceptEntry | string): string {
   const slug = typeof concept === 'string' ? concept : concept.id;
-  return `/concepts/${slug}/`;
+  return sitePath(`/concepts/${slug}/`);
 }
 
 export function problemHref(problem: ProblemEntry | string): string {
   const slug = typeof problem === 'string' ? problem : problem.id;
-  return `/problems/${slug}/`;
+  return sitePath(`/problems/${slug}/`);
 }
 
 export function sortedPatterns(patterns: PatternEntry[]): PatternEntry[] {

@@ -15,6 +15,7 @@ import {
   sortedLanguageCodes,
 } from '../../lib/catalog';
 import { parsePatternContent } from '../../lib/patternContent';
+import { sitePath } from '../../lib/site';
 
 export async function getStaticPaths() {
   const patterns = await getCollection('patterns');
@@ -66,8 +67,10 @@ const referenceTargets = [
   ['Agent guidance', '/concepts/agent-guidance/'],
   ['Ed Page’s Rust Style', 'https://epage.github.io/dev/rust-style/'],
 ] as const;
-const referenceHref = (reference: string) =>
-  referenceTargets.find(([label]) => reference.startsWith(label))?.[1];
+const referenceHref = (reference: string) => {
+  const href = referenceTargets.find(([label]) => reference.startsWith(label))?.[1];
+  return href?.startsWith('/') ? sitePath(href) : href;
+};
 const hasInlineMarkdownLink = (reference: string) => /\[[^\]]+\]\([^)]+\)/.test(reference);
 const isExternalReference = (href: string) => href.startsWith('http');
 const reviewProblem = pattern.data.problems[0] ?? relatedProblems[0]?.data.summary ?? pattern.data.summary;

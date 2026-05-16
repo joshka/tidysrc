@@ -13,6 +13,7 @@ import {
   sortedProblems,
 } from '../../lib/catalog';
 import { parseProblemContent } from '../../lib/problemContent';
+import { sitePath } from '../../lib/site';
 
 const problems = sortedProblems(await getCollection('problems'));
 const categories = allProblemCategories(problems);
@@ -180,10 +181,13 @@ const visibleProblemCount = [...initialVisibility.values()].filter(Boolean).leng
           const problemContent = parseProblemContent(problem.body ?? '', problem.id);
           const cardChips = [problem.data.category, ...problem.data.topics.slice(0, 2)];
           const chipLinks = Object.fromEntries([
-            [problem.data.category, `/problems/?category=${encodeURIComponent(problem.data.category)}`],
+            [
+              problem.data.category,
+              sitePath(`/problems/?category=${encodeURIComponent(problem.data.category)}`),
+            ],
             ...problem.data.topics.slice(0, 2).map((topic) => [
               topic,
-              `/problems/?q=${encodeURIComponent(topic)}`,
+              sitePath(`/problems/?q=${encodeURIComponent(topic)}`),
             ]),
           ]);
           const relatedPatterns = problem.data.relatedPatterns
@@ -211,7 +215,9 @@ const visibleProblemCount = [...initialVisibility.values()].filter(Boolean).leng
                     labels={categoryLabels}
                     links={chipLinks}
                     status={problem.data.status}
-                    statusHref={`/problems/?status=${encodeURIComponent(problem.data.status)}`}
+                    statusHref={sitePath(
+                      `/problems/?status=${encodeURIComponent(problem.data.status)}`,
+                    )}
                   />
                 </div>
                 <p>{problem.data.summary}</p>

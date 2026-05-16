@@ -7,6 +7,7 @@ import { chromium } from '@playwright/test';
 const host = '127.0.0.1';
 const port = 4322;
 const baseUrl = `http://${host}:${port}`;
+const siteBase = (process.env.TIDYSRC_SITE_BASE ?? '/tidysrc').replace(/\/$/, '');
 
 function walk(dir, files = []) {
   for (const name of fs.readdirSync(dir)) {
@@ -23,14 +24,14 @@ function walk(dir, files = []) {
 
 function routeForHtml(file) {
   const route = file.slice('dist'.length).replace(/\/index\.html$/, '/') || '/';
-  return route;
+  return `${siteBase}${route}`;
 }
 
 function checkInternalLinks() {
   const files = walk('dist');
   const htmlFiles = files.filter((file) => file.endsWith('.html'));
   const routes = new Set(htmlFiles.map(routeForHtml));
-  const assets = new Set(files.map((file) => `/${file.slice('dist/'.length)}`));
+  const assets = new Set(files.map((file) => `${siteBase}/${file.slice('dist/'.length)}`));
   const missing = [];
 
   for (const file of htmlFiles) {
@@ -40,10 +41,12 @@ function checkInternalLinks() {
       const href = match[1].split('#')[0].split('?')[0];
       if (
         !href ||
+        href.includes('<') ||
+        href.includes('{') ||
         href.startsWith('http') ||
         href.startsWith('mailto:') ||
         href.startsWith('data:') ||
-        href.startsWith('/_astro/')
+        href.startsWith(`${siteBase}/_astro/`)
       ) {
         continue;
       }
@@ -51,6 +54,10 @@ function checkInternalLinks() {
       const route = href.endsWith('/') ? href : `${href}/`;
       if (!routes.has(route) && !assets.has(href)) {
         missing.push(`${from} -> ${href}`);
+      }
+
+      if (href.startsWith('/') && !href.startsWith(`${siteBase}/`)) {
+        missing.push(`${from} -> ${href} does not include site base ${siteBase}`);
       }
     }
   }
@@ -87,7 +94,7 @@ function contrastRatio(foreground, background) {
 async function waitForPreview() {
   for (let attempt = 0; attempt < 60; attempt += 1) {
     try {
-      const response = await fetch(baseUrl);
+      const response = await fetch(`${baseUrl}${siteBase}/`);
       if (response.ok) {
         return;
       }

@@ -4,6 +4,7 @@ import { getCollection } from 'astro:content';
 import CopyBox from '../../components/CopyBox.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { patternHref } from '../../lib/catalog';
+import { sitePath } from '../../lib/site';
 
 const patterns = await getCollection('patterns');
 const agentPatterns = patterns.filter((pattern) => pattern.data.tags.includes('agent-guidance'));
@@ -124,7 +125,8 @@ trustworthy verification before claiming the work is done.`;
     <aside class="panel">
       <h2>Machine-readable surfaces</h2>
       <p>
-        The prototype includes <a href="/llms.txt">llms.txt</a> as a compact summary for tools.
+        The prototype includes <a href={sitePath('/llms.txt')}>llms.txt</a> as a compact summary
+        for tools.
         Future versions can add generated pattern packs by tag or audience.
       </p>
     </aside>

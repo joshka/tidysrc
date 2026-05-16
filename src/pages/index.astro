@@ -4,6 +4,7 @@ import { getCollection } from 'astro:content';
 import Chips from '../components/Chips.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { conceptHref, patternHref, problemHref, sortedProblems } from '../lib/catalog';
+import { sitePath } from '../lib/site';
 
 const patterns = await getCollection('patterns');
 const concepts = await getCollection('concepts');
@@ -40,7 +41,7 @@ const representativeConcepts = entriesById(concepts, representativeConceptIds);
         page gives reviewers and coding agents the same vocabulary for the risk, the pattern, and
         the fix.
       </p>
-      <form class="hero-search" action="/search/">
+      <form class="hero-search" action={sitePath('/search/')}>
         <label for="home-search">Search TidySrc</label>
         <div>
           <input
@@ -56,23 +57,23 @@ const representativeConcepts = entriesById(concepts, representativeConceptIds);
   </section>
 
   <section class="section-tight shell grid grid-3 primary-grid" aria-label="Primary sections">
-    <a class="panel nav-panel" href="/problems/">
+    <a class="panel nav-panel" href={sitePath('/problems/')}>
       <strong>Problems</strong>
       <span>Diagnose the source-change smell before choosing the pattern.</span>
     </a>
-    <a class="panel nav-panel" href="/patterns/">
+    <a class="panel nav-panel" href={sitePath('/patterns/')}>
       <strong>Patterns</strong>
       <span>Short, linkable entries for review and implementation.</span>
     </a>
-    <a class="panel nav-panel" href="/concepts/">
+    <a class="panel nav-panel" href={sitePath('/concepts/')}>
       <strong>Concepts</strong>
       <span>Deeper ideas that repeat across several patterns.</span>
     </a>
-    <a class="panel nav-panel" href="/agents/">
+    <a class="panel nav-panel" href={sitePath('/agents/')}>
       <strong>Agents</strong>
       <span>Copyable operating guidance for coding agents.</span>
     </a>
-    <a class="panel nav-panel" href="/references/">
+    <a class="panel nav-panel" href={sitePath('/references/')}>
       <strong>References</strong>
       <span>Influences, catalogs, and prior art behind the pattern language.</span>
     </a>
@@ -113,7 +114,7 @@ const representativeConcepts = entriesById(concepts, representativeConceptIds);
           architecture added before the code earns it.
         </p>
       </div>
-      <a class="button" href="/problems/">Browse all {problems.length}</a>
+      <a class="button" href={sitePath('/problems/')}>Browse all {problems.length}</a>
     </div>
     <div class="grid grid-3 feature-grid">
       {
@@ -138,7 +139,7 @@ const representativeConcepts = entriesById(concepts, representativeConceptIds);
           flatten the path, protect behavior, and keep related ideas close.
         </p>
       </div>
-      <a class="button" href="/patterns/">Browse all {patterns.length}</a>
+      <a class="button" href={sitePath('/patterns/')}>Browse all {patterns.length}</a>
     </div>
     <div class="grid grid-3 feature-grid">
       {

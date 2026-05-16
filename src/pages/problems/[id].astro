@@ -14,6 +14,7 @@ import {
   problemHref,
 } from '../../lib/catalog';
 import { parseProblemContent } from '../../lib/problemContent';
+import { sitePath } from '../../lib/site';
 
 export async function getStaticPaths() {
   const problems = await getCollection('problems');
@@ -28,10 +29,13 @@ const problemContent = parseProblemContent(problem.body ?? '', problem.id);
 const problemChips = [problem.data.category, ...problem.data.topics];
 const chipLabels = { [problem.data.category]: problemCategoryLabel(problem.data.category) };
 const chipLinks = Object.fromEntries([
-  [problem.data.category, `/problems/?category=${encodeURIComponent(problem.data.category)}`],
+  [
+    problem.data.category,
+    sitePath(`/problems/?category=${encodeURIComponent(problem.data.category)}`),
+  ],
   ...problem.data.topics.map((topic) => [
     topic,
-    `/problems/?q=${encodeURIComponent(topic)}`,
+    sitePath(`/problems/?q=${encodeURIComponent(topic)}`),
   ]),
 ]);
 const patterns = await getCollection('patterns');
@@ -73,9 +77,9 @@ const adjacentProblems = allProblems
           labels={chipLabels}
           links={chipLinks}
           status={problem.data.status}
-          statusHref={`/problems/?status=${encodeURIComponent(problem.data.status)}`}
+          statusHref={sitePath(`/problems/?status=${encodeURIComponent(problem.data.status)}`)}
         />
-        <a class="button" href="/problems/">Problem index</a>
+        <a class="button" href={sitePath('/problems/')}>Problem index</a>
       </div>
     </div>
   </section>

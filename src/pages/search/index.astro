@@ -13,6 +13,7 @@ import {
   problemSearchText,
   referenceSearchText,
 } from '../../lib/catalog';
+import { sitePath } from '../../lib/site';
 
 const patterns = await getCollection('patterns');
 const problems = await getCollection('problems');
@@ -69,7 +70,7 @@ const searchItems: SearchItem[] = [
     type: 'concept' as const,
   })),
   ...references.map((reference) => ({
-    href: `/references/#${reference.id}`,
+    href: sitePath(`/references/#${reference.id}`),
     id: reference.id,
     meta: ['source'],
     search: referenceSearchText(reference),
@@ -109,7 +110,7 @@ const visibleCount = searchItems.filter(
 
   <section class="section-tight shell search-layout">
     <aside class="panel filters" aria-label="Search filters">
-      <form class="search-controls" action="/search/" role="search" data-search-form>
+      <form class="search-controls" action={sitePath('/search/')} role="search" data-search-form>
         <label for="catalog-search">Search</label>
         <div class="search-input-row">
           <input

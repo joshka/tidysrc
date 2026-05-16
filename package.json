@@ -19,14 +19,14 @@
     "astro": "astro"
   },
   "dependencies": {
-    "@astrojs/mdx": "^5.0.4",
-    "astro": "^6.1.10",
+    "@astrojs/mdx": "^5.0.6",
+    "astro": "^6.3.3",
     "astro-expressive-code": "^0.41.7"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.9",
-    "@playwright/test": "^1.59.1",
-    "@types/node": "^25.6.0",
+    "@playwright/test": "^1.60.0",
+    "@types/node": "^25.8.0",
     "typescript": "^5.9.3"
   }
 }

@@ -5,6 +5,8 @@ import mdx from '@astrojs/mdx';
 
 // https://astro.build/config
 export default defineConfig({
+  site: 'https://www.joshka.net',
+  base: '/tidysrc',
   integrations: [
     expressiveCode({
       themes: ['github-light', 'github-dark'],
