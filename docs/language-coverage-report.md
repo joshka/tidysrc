@@ -6,11 +6,11 @@ Required launch languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeS
 
 ## Summary
 
-- problems: 24/33 complete
-- patterns: 20/58 complete
-- concepts: 10/18 complete
+- problems: 24/34 complete
+- patterns: 23/61 complete
+- concepts: 10/19 complete
 
-Overall: 54/109 complete.
+Overall: 57/114 complete.
 
 ## Interpretation
 
@@ -30,6 +30,9 @@ to verify.
 - `problems/guess-driven-debugging`
   - Present: TypeScript
   - Missing: C, C++, C#, Go, Java, JavaScript, Python, Rust
+- `problems/interface-narration-obscures-task`
+  - Present: none
+  - Missing: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
 - `problems/repeated-validation-rules`
   - Present: TypeScript
   - Missing: C, C++, C#, Go, Java, JavaScript, Python, Rust
@@ -174,6 +177,9 @@ to verify.
 - `concepts/coupling`
   - Present: TypeScript
   - Missing: C, C++, C#, Go, Java, JavaScript, Python, Rust
+- `concepts/documentation-surface`
+  - Present: none
+  - Missing: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript
 - `concepts/reversibility`
   - Present: TypeScript
   - Missing: C, C++, C#, Go, Java, JavaScript, Python, Rust

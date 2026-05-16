@@ -8,7 +8,7 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 
 - P0: 6
 - P1: 49
-- P2: 55
+- P2: 60
 
 ## Queue
 
@@ -708,6 +708,18 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Findings:
   - none
 
+### P2 problems/interface-narration-obscures-task
+
+- Title: Interface Narration Obscures the Task
+- Status: seed
+- Source: `src/content/problems/interface-narration-obscures-task.md`
+- Route: `/problems/interface-narration-obscures-task/`
+- Present languages: Markdown
+- Missing languages:
+  - none
+- Findings:
+  - none
+
 ### P2 problems/repeated-validation-rules
 
 - Title: Repeated Validation Rules
@@ -835,6 +847,18 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Source: `src/content/patterns/contain-observability-policy.md`
 - Route: `/patterns/contain-observability-policy/`
 - Present languages: TypeScript
+- Missing languages:
+  - none
+- Findings:
+  - none
+
+### P2 patterns/cut-interface-narration
+
+- Title: Cut Interface Narration
+- Status: seed
+- Source: `src/content/patterns/cut-interface-narration.md`
+- Route: `/patterns/cut-interface-narration/`
+- Present languages: Markdown
 - Missing languages:
   - none
 - Findings:
@@ -996,6 +1020,18 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Findings:
   - none
 
+### P2 patterns/match-documentation-shape-to-reader-task
+
+- Title: Match Documentation Shape to Reader Task
+- Status: seed
+- Source: `src/content/patterns/match-documentation-shape-to-reader-task.md`
+- Route: `/patterns/match-documentation-shape-to-reader-task/`
+- Present languages: Markdown
+- Missing languages:
+  - none
+- Findings:
+  - none
+
 ### P2 patterns/measure-before-optimizing
 
 - Title: Measure Before Optimizing
@@ -1051,6 +1087,18 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Source: `src/content/patterns/name-coupling.md`
 - Route: `/patterns/name-coupling/`
 - Present languages: TypeScript
+- Missing languages:
+  - none
+- Findings:
+  - none
+
+### P2 patterns/name-destinations-not-directions
+
+- Title: Name Destinations, Not Directions
+- Status: seed
+- Source: `src/content/patterns/name-destinations-not-directions.md`
+- Route: `/patterns/name-destinations-not-directions/`
+- Present languages: Markdown
 - Missing languages:
   - none
 - Findings:
@@ -1279,6 +1327,18 @@ Required launch example languages: C, C++, C#, Go, Java, JavaScript, Python, Rus
 - Source: `src/content/concepts/coupling.md`
 - Route: `/concepts/coupling/`
 - Present languages: TypeScript
+- Missing languages:
+  - none
+- Findings:
+  - none
+
+### P2 concepts/documentation-surface
+
+- Title: Documentation Surface
+- Status: seed
+- Source: `src/content/concepts/documentation-surface.md`
+- Route: `/concepts/documentation-surface/`
+- Present languages: none
 - Missing languages:
   - none
 - Findings:

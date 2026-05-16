@@ -79,6 +79,46 @@ function exampleLanguages(source) {
   return [...new Set([...source.matchAll(/^```([A-Za-z0-9_+#-]+)/gm)].map((match) => match[1]))];
 }
 
+function parseFenceTitle(meta) {
+  return meta.match(/\btitle=(?:"([^"]+)"|'([^']+)'|(\S+))/)?.slice(1).find(Boolean);
+}
+
+function validateRenderedExamples(errors, owner, examplesSection, { requiredBlocks }) {
+  if (!examplesSection) {
+    return;
+  }
+
+  const matches = [...examplesSection.matchAll(/^###\s+(.+)$/gm)];
+  if (requiredBlocks && examplesSection.trim() && matches.length === 0) {
+    errors.push(`${owner} has "## Examples" but no "###" example blocks`);
+    return;
+  }
+
+  for (const [index, match] of matches.entries()) {
+    const title = match[1].trim();
+    const start = (match.index ?? 0) + match[0].length;
+    const end =
+      index + 1 < matches.length
+        ? (matches[index + 1].index ?? examplesSection.length)
+        : examplesSection.length;
+    const body = examplesSection.slice(start, end).trim();
+    const codeMatch = body.match(/```([A-Za-z0-9_+#-]+)([^\n]*)\n([\s\S]*?)\n```/);
+
+    if (!codeMatch) {
+      errors.push(
+        `${owner} example "${title}" must include a fenced code block with language metadata`,
+      );
+      continue;
+    }
+
+    if (!parseFenceTitle(codeMatch[2])) {
+      errors.push(
+        `${owner} example "${title}" must include title="path/to/file" on its code fence`,
+      );
+    }
+  }
+}
+
 function hasTsFamily(languages) {
   return languages.some((language) => ['js', 'javascript', 'ts', 'typescript', 'tsx'].includes(language));
 }
@@ -134,6 +174,8 @@ for (const file of patternFiles) {
     errors.push(`${owner} needs at least two core idea paragraphs`);
   }
 
+  validateRenderedExamples(errors, owner, section(source, 'Examples'), { requiredBlocks: false });
+
   reportMissing(errors, owner, 'related', data.related, patternIds);
   reportMissing(errors, owner, 'concepts', data.concepts, conceptIds);
 
@@ -160,6 +202,7 @@ for (const file of problemFiles) {
 
   reportMissing(errors, owner, 'relatedPatterns', data.relatedPatterns, patternIds);
   reportMissing(errors, owner, 'relatedConcepts', data.relatedConcepts, conceptIds);
+  validateRenderedExamples(errors, owner, section(source, 'Examples'), { requiredBlocks: true });
 
   if (data.status !== 'seed') {
     const missing = missingCoreExamples(exampleLanguages(source));
@@ -176,6 +219,7 @@ for (const file of conceptFiles) {
   const owner = `concept:${id}`;
 
   reportMissing(errors, owner, 'relatedPatterns', data.relatedPatterns, patternIds);
+  validateRenderedExamples(errors, owner, section(source, 'Examples'), { requiredBlocks: true });
 
   const sectionCount = [...source.matchAll(/^##\s+(.+)$/gm)].filter(
     (match) => match[1].trim().toLowerCase() !== 'examples',
