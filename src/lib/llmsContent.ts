@@ -8,7 +8,7 @@ import { parseProblemContent } from './problemContent';
 export const canonicalRoot = 'https://www.joshka.net/tidysrc/';
 
 export const introduction =
-  'TidySrc is a pattern language for making source code easier to change. ' +
+  'TidySrc names recurring source-change problems and the patterns that address them. ' +
   'This file is for coding agents such as Codex and Claude Code. ' +
   'Human-facing summaries live on the site pages; use this file as an operating guide and lookup index.';
 

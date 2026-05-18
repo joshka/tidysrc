@@ -34,12 +34,10 @@ const representativeConcepts = entriesById(concepts, representativeConceptIds);
 <BaseLayout title="TidySrc">
   <section class="section shell hero">
     <div class="hero-panel">
-      <p class="eyebrow">Pattern language for everyday source change</p>
-      <h1>TidySrc is a pattern language for making source code easier to change.</h1>
+      <p class="eyebrow">Source-change problems and patterns</p>
+      <h1>Shared names for recurring source-change problems</h1>
       <p class="lede">
-        Paste a canonical link into review when a source-change problem needs a shared name. The
-        page gives reviewers and coding agents the same vocabulary for the risk, the pattern, and
-        the fix.
+        When review feedback repeats, TidySrc gives it a name, a link, and a practical fix.
       </p>
       <form class="hero-search" action={sitePath('/search/')}>
         <label for="home-search">Search TidySrc</label>
@@ -59,15 +57,15 @@ const representativeConcepts = entriesById(concepts, representativeConceptIds);
   <section class="section-tight shell grid grid-3 primary-grid" aria-label="Primary sections">
     <a class="panel nav-panel" href={sitePath('/problems/')}>
       <strong>Problems</strong>
-      <span>Diagnose the source-change smell before choosing the pattern.</span>
+      <span>Recurring source-change risks and symptoms.</span>
     </a>
     <a class="panel nav-panel" href={sitePath('/patterns/')}>
       <strong>Patterns</strong>
-      <span>Short, linkable entries for review and implementation.</span>
+      <span>Linkable fixes for review and implementation.</span>
     </a>
     <a class="panel nav-panel" href={sitePath('/concepts/')}>
       <strong>Concepts</strong>
-      <span>Deeper ideas that repeat across several patterns.</span>
+      <span>Ideas that connect several patterns.</span>
     </a>
     <a class="panel nav-panel" href={sitePath('/agents/')}>
       <strong>Agents</strong>
@@ -75,11 +73,11 @@ const representativeConcepts = entriesById(concepts, representativeConceptIds);
     </a>
     <a class="panel nav-panel" href={sitePath('/references/')}>
       <strong>References</strong>
-      <span>Influences, catalogs, and prior art behind the pattern language.</span>
+      <span>Source material and prior art.</span>
     </a>
     <a class="panel nav-panel" href="#why-this-exists">
       <strong>Why TidySrc</strong>
-      <span>The repeated review feedback this site turns into shared language.</span>
+      <span>When the same review comment keeps coming back, the problem probably needs a name.</span>
     </a>
   </section>
 
@@ -87,7 +85,7 @@ const representativeConcepts = entriesById(concepts, representativeConceptIds);
     <div class="panel why-band">
       <div>
         <p class="eyebrow">Why this exists</p>
-        <h2>Repeated review feedback should become shared language.</h2>
+        <h2>Repeated feedback is expensive to rewrite</h2>
       </div>
       <div>
         <p>
@@ -96,9 +94,9 @@ const representativeConcepts = entriesById(concepts, representativeConceptIds);
           many files.
         </p>
         <p>
-          Some of that feedback can become automated checks. The rest is judgment about reader
-          burden, change radius, behavior contracts, and tradeoffs. TidySrc turns those recurring
-          source-change concerns into linkable problems and patterns.
+          Some of that feedback can become automated checks. The rest needs shared judgment about
+          reader burden, change radius, behavior contracts, and tradeoffs. TidySrc gives those
+          concerns stable problem and pattern names.
         </p>
       </div>
     </div>
@@ -108,13 +106,13 @@ const representativeConcepts = entriesById(concepts, representativeConceptIds);
     <div class="section-head">
       <div>
         <p class="eyebrow">Problem index</p>
-        <h2>Find the review comment you keep rewriting.</h2>
+        <h2>Review comments by problem shape</h2>
         <p>
           These examples are deliberately ordinary: hard-to-find main logic, brittle tests, and
           architecture added before the code earns it.
         </p>
       </div>
-      <a class="button" href={sitePath('/problems/')}>Browse all {problems.length}</a>
+      <a class="button" href={sitePath('/problems/')}>All problems ({problems.length})</a>
     </div>
     <div class="grid grid-3 feature-grid">
       {
@@ -133,13 +131,13 @@ const representativeConcepts = entriesById(concepts, representativeConceptIds);
     <div class="section-head">
       <div>
         <p class="eyebrow">Featured patterns</p>
-        <h2>Practical patterns for improving code.</h2>
+        <h2>Practical source-change patterns</h2>
         <p>
           The first patterns should handle common review feedback without requiring a new framework:
           flatten the path, protect behavior, and keep related ideas close.
         </p>
       </div>
-      <a class="button" href={sitePath('/patterns/')}>Browse all {patterns.length}</a>
+      <a class="button" href={sitePath('/patterns/')}>All patterns ({patterns.length})</a>
     </div>
     <div class="grid grid-3 feature-grid">
       {
@@ -158,7 +156,7 @@ const representativeConcepts = entriesById(concepts, representativeConceptIds);
     <div class="section-head">
       <div>
         <p class="eyebrow">Concept anchors</p>
-        <h2>Core ideas behind maintainable source changes.</h2>
+        <h2>Core source-change concepts</h2>
         <p>
           Repeated comments often point to the same pressures: limited reader attention, change
           radius, and behavior that tests should protect.

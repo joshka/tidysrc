@@ -100,7 +100,7 @@ const visibleProblemCount = [...initialVisibility.values()].filter(Boolean).leng
     <div class="page-hero">
       <div class="page-hero-main">
         <p class="eyebrow">Problem index</p>
-        <h1>Name the source-change problem.</h1>
+        <h1>Source-change problems</h1>
       </div>
       <div class="page-hero-side">
         <p class="lede">
@@ -114,7 +114,7 @@ const visibleProblemCount = [...initialVisibility.values()].filter(Boolean).leng
   <section class="section-tight shell">
     <div class="pathway-head">
       <p class="eyebrow">Problem pathways</p>
-      <h2>Diagnose the pressure on the next change.</h2>
+      <h2>Problem pathways</h2>
       <p>
         Categories group recurring pressures in source changes: reading friction, weak evidence,
         leaky boundaries, hidden state, change risk, and workflow drift.
@@ -149,7 +149,7 @@ const visibleProblemCount = [...initialVisibility.values()].filter(Boolean).leng
         />
       </label>
       <div class="filter-note">
-        Search for the symptom, the affected code shape, or the pattern you expect to apply.
+        Filter by symptom, affected code shape, or likely pattern.
       </div>
       <label>
         Status
@@ -230,6 +230,7 @@ const visibleProblemCount = [...initialVisibility.values()].filter(Boolean).leng
                     <span>{signal}</span>
                   ))}
                 </div>
+                <a class="read-docs" href={problemHref(problem)}>Open problem</a>
               </div>
               <div class="problem-card-side">
                 <h3>Related patterns</h3>
@@ -514,6 +515,31 @@ const visibleProblemCount = [...initialVisibility.values()].filter(Boolean).leng
   .signal-strip span + span {
     border-left: 2px solid var(--border);
     padding-left: 0.75rem;
+  }
+
+  .read-docs {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    justify-self: end;
+    width: max-content;
+    border: 2px solid var(--border-strong);
+    margin-top: 0.1rem;
+    padding: 0.42rem 0.6rem;
+    background: var(--surface);
+    color: var(--text);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-decoration: none;
+    text-transform: uppercase;
+  }
+
+  .read-docs:hover,
+  .read-docs:focus-visible {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: var(--accent-text);
   }
 
   .problem-card-side {
