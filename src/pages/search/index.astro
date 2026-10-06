@@ -97,12 +97,12 @@ const visibleCount = searchItems.filter(
     <div class="page-hero">
       <div class="page-hero-main">
         <p class="eyebrow">Search</p>
-        <h1>Search the catalog.</h1>
+        <h1>Catalog search</h1>
       </div>
       <div class="page-hero-side">
         <p class="lede">
-          Search problems, patterns, concepts, and references together. Start with the symptom,
-          pattern name, language, or review phrase you would otherwise repeat.
+          Search by symptom, pattern name, language, or repeated review phrase across problems,
+          patterns, concepts, and references.
         </p>
       </div>
     </div>
@@ -172,7 +172,6 @@ const visibleCount = searchItems.filter(
                 <Chips items={item.meta} status={item.status} />
               </div>
               <p>{item.summary}</p>
-              <span class="read-docs">Open {typeLabels[item.type].toLowerCase()}</span>
             </a>
           ))
         }
@@ -450,19 +449,6 @@ const visibleCount = searchItems.filter(
 
   .search-row p {
     color: var(--muted);
-  }
-
-  .read-docs {
-    display: inline-flex;
-    width: max-content;
-    border-top: 2px solid var(--border);
-    margin-top: 0.9rem;
-    padding-top: 0.55rem;
-    color: var(--accent-strong);
-    font-size: 0.72rem;
-    font-weight: 800;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
   }
 
   .empty-state {
